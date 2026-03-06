@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MNQ Trading Dashboard</title>
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Hebrew:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -36,7 +37,28 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .stat-value{font-family:var(--mono);font-size:20px;font-weight:600}
 .c-green{color:var(--green)}.c-red{color:var(--red)}.c-blue{color:var(--blue)}.c-yellow{color:var(--yellow)}
 
-.main{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 108px)}
+/* FILTER BAR */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filter-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.date-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 10px;border-radius:5px;cursor:pointer}
+.date-input:focus{outline:none;border-color:var(--blue)}
+.quick-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .2s}
+.quick-btn:hover,.quick-btn.active{background:var(--blue);border-color:var(--blue);color:#000;font-weight:600}
+.filter-count{margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ANALYSIS SECTION */
+.analysis-bar{background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:1px}
+.analysis-panel{padding:14px 18px}
+.analysis-title{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:600;letter-spacing:1px;margin-bottom:10px}
+.chart-wrap{height:90px;position:relative}
+.analysis-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.a-stat{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px;text-align:center}
+.a-stat-label{font-size:9px;color:var(--muted);margin-bottom:2px;text-transform:uppercase}
+.a-stat-val{font-family:var(--mono);font-size:13px;font-weight:600}
+.analysis-text{font-size:12px;color:var(--text);line-height:1.6}
+.analysis-text .insight{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;padding:5px 8px;background:var(--surface);border-radius:4px;border-right:2px solid var(--blue)}
+
+.main{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 185px)}
 .panel{border-left:1px solid var(--border);overflow-y:auto}
 .panel-header{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .panel-title{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);letter-spacing:1px}
@@ -133,11 +155,39 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
   </header>
 
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">📅 תאריך:</span>
+    <input type="date" class="date-input" id="dateFilter">
+    <button class="quick-btn active" id="btnToday" onclick="setQuickDate(0)">היום</button>
+    <button class="quick-btn" id="btnYest" onclick="setQuickDate(-1)">אתמול</button>
+    <button class="quick-btn" id="btnWeek" onclick="setQuickDate(-7)">שבוע</button>
+    <button class="quick-btn" id="btnAll" onclick="setQuickDate(null)">הכל</button>
+    <span class="filter-count" id="filterCount"></span>
+  </div>
+
   <div class="stats-bar">
     <div class="stat"><div class="stat-label">סה"כ</div><div class="stat-value c-blue" id="statTotal">—</div></div>
     <div class="stat"><div class="stat-label">✅ WIN</div><div class="stat-value c-green" id="statWins">—</div></div>
     <div class="stat"><div class="stat-label">❌ LOSS</div><div class="stat-value c-red" id="statLosses">—</div></div>
     <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value c-yellow" id="statRate">—</div></div>
+  </div>
+
+  <!-- ANALYSIS BAR -->
+  <div class="analysis-bar">
+    <div class="analysis-panel">
+      <div class="analysis-title">📊 LONG / SHORT</div>
+      <div class="analysis-stats">
+        <div class="a-stat"><div class="a-stat-label">▲ LONG</div><div class="a-stat-val c-green" id="aLong">—</div></div>
+        <div class="a-stat"><div class="a-stat-label">▼ SHORT</div><div class="a-stat-val c-red" id="aShort">—</div></div>
+        <div class="a-stat"><div class="a-stat-label">ממוצע ציון</div><div class="a-stat-val c-yellow" id="aAvgScore">—</div></div>
+      </div>
+      <div class="chart-wrap"><canvas id="dirChart"></canvas></div>
+    </div>
+    <div class="analysis-panel">
+      <div class="analysis-title">🧠 ניתוח יומי</div>
+      <div class="analysis-text" id="dailyAnalysis"><span style="color:var(--muted)">טוען נתונים...</span></div>
+    </div>
   </div>
 
   <div class="main">
@@ -208,6 +258,12 @@ async function signIn() {
 function startDash() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
+  // Set date filter to today
+  document.getElementById('dateFilter').value = todayStr();
+  document.getElementById('dateFilter').onchange = function() {
+    ['btnToday','btnYest','btnWeek','btnAll'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+    applyFilter();
+  };
   if (Notification && Notification.permission === 'default') Notification.requestPermission();
   refresh();
   setInterval(refresh, REFRESH);
@@ -263,28 +319,46 @@ function buildPriceBar(entry, sl, tp1, tp2, direction) {
   var tpW  = (maxProp / total * 100).toFixed(1);
   var tp1LineW = (tp1PropRaw / maxProp * 100).toFixed(1);
 
+  // Determine which side is SL and which is TP based on price
+  // For LONG: SL < Entry < TP  →  left=SL(red), right=TP(green)
+  // For SHORT: TP < Entry < SL →  left=TP(green), right=SL(red)
+  var isLong = s < e;
+
+  var leftW    = slW;
+  var rightW   = tpW;
+  var leftBg   = isLong ? 'rgba(255,69,96,0.30)'   : 'rgba(0,208,132,0.25)';
+  var leftBdr  = isLong ? 'rgba(255,69,96,0.5)'    : 'rgba(0,208,132,0.4)';
+  var rightBg  = isLong ? 'rgba(0,208,132,0.25)'   : 'rgba(255,69,96,0.30)';
+  var rightBdr = isLong ? 'rgba(0,208,132,0.4)'    : 'rgba(255,69,96,0.5)';
+  var leftPrice  = isLong ? s  : (t2||t1);
+  var rightPrice = isLong ? (t2||t1) : s;
+  var leftColor  = isLong ? '#ff4560' : '#00d084';
+  var rightColor = isLong ? '#00d084' : '#ff4560';
+
   var html = '<div style="margin:10px 0 6px 0;direction:ltr">';
+  html += '<div style="display:flex;align-items:stretch;height:30px;border-radius:6px;overflow:hidden;gap:2px">';
 
-  // === MAIN BAR ===
-  html += '<div style="display:flex;align-items:stretch;height:28px;border-radius:6px;overflow:hidden;gap:2px">';
-
-  // SL zone (red)
-  html += '<div style="width:' + slW + '%;background:rgba(255,69,96,0.25);border:1px solid rgba(255,69,96,0.4);border-radius:5px;display:flex;align-items:center;justify-content:center;position:relative">';
-  html += '<span style="font-family:var(--mono);font-size:11px;color:#ff4560;font-weight:600">' + s + '</span>';
+  // Left zone
+  html += '<div style="width:' + leftW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:5px 0 0 5px;display:flex;align-items:center;justify-content:center">';
+  html += '<span style="font-family:var(--mono);font-size:12px;color:' + leftColor + ';font-weight:700">' + leftPrice + '</span>';
   html += '</div>';
 
   // Entry divider
-  html += '<div style="width:3px;background:white;flex-shrink:0;border-radius:2px"></div>';
+  html += '<div style="width:4px;background:white;flex-shrink:0"></div>';
 
-  // TP zone (green) - with TP1 marker inside
-  html += '<div style="width:' + tpW + '%;background:rgba(0,208,132,0.2);border:1px solid rgba(0,208,132,0.35);border-radius:5px;display:flex;align-items:center;position:relative;overflow:hidden">';
-  // TP1 line inside TP zone
-  if (t2) {
-    html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:rgba(0,208,132,0.6)"></div>';
-    html += '<span style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.8);margin-right:6px;z-index:1;padding-right:4px">' + t1 + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:11px;color:#00d084;font-weight:600;position:absolute;right:6px">' + t2 + '</span>';
+  // Right zone
+  html += '<div style="width:' + rightW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 5px 5px 0;display:flex;align-items:center;position:relative;overflow:hidden">';
+  if (isLong && t2) {
+    // Show TP1 line + both prices
+    html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:rgba(0,208,132,0.5)"></div>';
+    html += '<span style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.75);padding-right:8px;z-index:1">' + t1 + '</span>';
+    html += '<span style="font-family:var(--mono);font-size:12px;color:#00d084;font-weight:700;position:absolute;right:8px">' + t2 + '</span>';
+  } else if (!isLong && t2) {
+    html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:rgba(0,208,132,0.5)"></div>';
+    html += '<span style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.75);padding-right:8px;z-index:1">' + t2 + '</span>';
+    html += '<span style="font-family:var(--mono);font-size:12px;color:#00d084;font-weight:700;position:absolute;right:8px">' + t1 + '</span>';
   } else {
-    html += '<span style="font-family:var(--mono);font-size:11px;color:#00d084;font-weight:600;margin:0 auto">' + t1 + '</span>';
+    html += '<span style="font-family:var(--mono);font-size:12px;color:' + rightColor + ';font-weight:700;margin:0 auto">' + rightPrice + '</span>';
   }
   html += '</div>';
   html += '</div>';
@@ -422,15 +496,112 @@ function showPopup(item) {
   document.getElementById('overlay').classList.add('show');
 }
 
-async function refresh() {
+var allSignals = [], dirChart = null;
+
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function setQuickDate(offset) {
+  ['btnToday','btnYest','btnWeek','btnAll'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  if (offset === null) {
+    document.getElementById('btnAll').classList.add('active');
+    document.getElementById('dateFilter').value = '';
+  } else {
+    var d = new Date(); d.setDate(d.getDate() + offset);
+    var val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    document.getElementById('dateFilter').value = val;
+    if (offset === 0) document.getElementById('btnToday').classList.add('active');
+    else if (offset === -1) document.getElementById('btnYest').classList.add('active');
+    else document.getElementById('btnWeek').classList.add('active');
+  }
+  applyFilter();
+}
+
+function applyFilter() {
+  var dateVal = document.getElementById('dateFilter').value;
+  var filtered;
+  if (!dateVal) {
+    filtered = allSignals;
+  } else {
+    var isRange = document.getElementById('btnWeek').classList.contains('active');
+    filtered = allSignals.filter(function(it) {
+      if (!it.SignalTime) return false;
+      var d = new Date(it.SignalTime);
+      var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      return isRange ? ds >= dateVal : ds === dateVal;
+    });
+  }
+  document.getElementById('filterCount').textContent = filtered.length + ' סיגנלים';
+  renderSignals(filtered);
+  updateStats(filtered);
+  updateAnalysis(filtered);
+}
+
+function updateAnalysis(items) {
+  var longs  = items.filter(function(it){ return (it.Direction||'').toUpperCase()==='LONG'; });
+  var shorts = items.filter(function(it){ return (it.Direction||'').toUpperCase()==='SHORT'; });
+  var takes  = items.filter(function(it){ return (it.ClaudeVerdict||'').toUpperCase()==='TAKE'; });
+  var skips  = items.filter(function(it){ return (it.ClaudeVerdict||'').toUpperCase()==='SKIP'; });
+  var wins   = items.filter(function(it){ return (it.Result||'').toUpperCase()==='WIN'; });
+  var losses = items.filter(function(it){ return (it.Result||'').toUpperCase()==='LOSS'; });
+  var scores = items.map(function(it){ return parseFloat(it.ClaudeScore)||0; }).filter(Boolean);
+  var avgScore = scores.length ? (scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1) : '—';
+
+  document.getElementById('aLong').textContent = longs.length;
+  document.getElementById('aShort').textContent = shorts.length;
+  document.getElementById('aAvgScore').textContent = avgScore;
+
+  // Chart
+  if (typeof Chart !== 'undefined') {
+    var ctx = document.getElementById('dirChart').getContext('2d');
+    var lW=longs.filter(function(it){return (it.Result||'').toUpperCase()==='WIN';}).length;
+    var lL=longs.filter(function(it){return (it.Result||'').toUpperCase()==='LOSS';}).length;
+    var sW=shorts.filter(function(it){return (it.Result||'').toUpperCase()==='WIN';}).length;
+    var sL=shorts.filter(function(it){return (it.Result||'').toUpperCase()==='LOSS';}).length;
+    if (dirChart) dirChart.destroy();
+    dirChart = new Chart(ctx, {
+      type:'bar',
+      data:{ labels:['▲ LONG','▼ SHORT'],
+        datasets:[
+          {label:'WIN',  data:[lW,sW], backgroundColor:'rgba(0,208,132,0.75)', borderRadius:3},
+          {label:'LOSS', data:[lL,sL], backgroundColor:'rgba(255,69,96,0.75)',  borderRadius:3},
+          {label:'⏳',   data:[longs.length-lW-lL, shorts.length-sW-sL], backgroundColor:'rgba(74,96,128,0.4)', borderRadius:3}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#4a6080',font:{size:10},boxWidth:10}}},
+        scales:{
+          x:{stacked:true,ticks:{color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+          y:{stacked:true,ticks:{color:'#4a6080',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}}
+        }}
+    });
+  }
+
+  // Analysis text
+  if (!items.length) { document.getElementById('dailyAnalysis').innerHTML='<span style="color:var(--muted)">אין סיגנלים בתאריך זה</span>'; return; }
+  var ins=[];
+  if (longs.length > shorts.length*1.5) ins.push({i:'📈',t:'נטיה ל-LONG: '+longs.length+' מתוך '+items.length+' סיגנלים'});
+  else if (shorts.length > longs.length*1.5) ins.push({i:'📉',t:'נטיה ל-SHORT: '+shorts.length+' מתוך '+items.length+' סיגנלים'});
+  else ins.push({i:'⚖️',t:'שוק מאוזן: '+longs.length+' LONG / '+shorts.length+' SHORT'});
+  if (takes.length) ins.push({i:'🎯',t:'TAKE על '+takes.length+' סיגנלים ('+Math.round(takes.length/items.length*100)+'%)'});
+  if (skips.length) ins.push({i:'⛔',t:'SKIP על '+skips.length+' סיגנלים'});
+  if (parseFloat(avgScore)>=7) ins.push({i:'⭐',t:'ציון ממוצע גבוה: '+avgScore+'/10'});
+  else if (parseFloat(avgScore)<5 && avgScore!=='—') ins.push({i:'⚠️',t:'ציון ממוצע נמוך: '+avgScore+'/10'});
+  if (wins.length+losses.length>0) ins.push({i:Math.round(wins.length/(wins.length+losses.length)*100)>=60?'✅':'❌',t:'Win Rate: '+Math.round(wins.length/(wins.length+losses.length)*100)+'% ('+wins.length+'/'+(wins.length+losses.length)+')'});
+  else ins.push({i:'⏳',t:'כל הסיגנלים עדיין ממתינים'});
+  document.getElementById('dailyAnalysis').innerHTML=ins.map(function(x){return '<div class="insight"><span>'+x.i+'</span><span>'+x.t+'</span></div>';}).join('');
+}
+
+
   var dot = document.getElementById('statusDot');
   dot.className = 'dot';
   try {
-    var signals = await fetchList('TradingPredictions', '$orderby=SignalTime%20desc&$top=20');
+    allSignals = await fetchList('TradingPredictions', '$orderby=SignalTime%20desc&$top=100');
     var scans = await fetchList('TradingScans', '$orderby=ScanTime%20desc&$top=10');
-    renderSignals(signals);
+    if (allSignals.length > 0) console.log('SignalTime raw:', allSignals[0].SignalTime);
+    applyFilter();
     renderScans(scans);
-    updateStats(signals);
     dot.className = 'dot';
     document.getElementById('statusText').textContent = 'מחובר';
     var now = new Date();
