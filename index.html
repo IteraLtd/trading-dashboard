@@ -73,9 +73,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .pt-dist{font-size:10px;color:var(--muted)}
 
 /* PRICE BAR */
-.price-bar-wrap{position:relative;height:20px;margin:4px 0 18px 0;background:rgba(255,255,255,.03);border-radius:3px}
-.pb-line{position:absolute;top:0;bottom:0;width:2px;border-radius:2px}
-.pb-label{position:absolute;bottom:-15px;font-size:9px;font-family:var(--mono);transform:translateX(-50%);white-space:nowrap}
+
 
 /* SCAN ROW */
 .scan-row{border-bottom:1px solid var(--border);padding:10px 16px}
@@ -244,36 +242,64 @@ function dist(a, b) {
   return Math.abs(parseFloat(a) - parseFloat(b)).toFixed(1);
 }
 
-function buildPriceBar(entry, sl, tp1, tp2) {
+function buildPriceBar(entry, sl, tp1, tp2, direction) {
   var e = parseFloat(entry), s = parseFloat(sl), t1 = parseFloat(tp1), t2 = parseFloat(tp2)||0;
   if (!e || !s || !t1) return '';
-  var pts = [s, e, t1];
-  if (t2) pts.push(t2);
-  var lo = Math.min.apply(null, pts) - 3;
-  var hi = Math.max.apply(null, pts) + 3;
-  var rng = hi - lo;
-  function pct(v) { return ((v - lo) / rng * 100).toFixed(1); }
-  
-  var slPct = pct(s), ePct = pct(e), t1Pct = pct(t1), t2Pct = t2 ? pct(t2) : null;
-  
-  // Red zone: SL to entry, Green zone: entry to TP2 (or TP1)
-  var redLeft = Math.min(parseFloat(slPct), parseFloat(ePct));
-  var redWidth = Math.abs(parseFloat(ePct) - parseFloat(slPct));
-  var greenLeft = Math.min(parseFloat(ePct), parseFloat(t1Pct));
-  var greenWidth = t2Pct 
-    ? Math.abs(parseFloat(t2Pct) - parseFloat(ePct))
-    : Math.abs(parseFloat(t1Pct) - parseFloat(ePct));
 
-  var html = '<div class="price-bar-wrap">';
-  // Red fill (SL zone)
-  html += '<div style="position:absolute;top:4px;bottom:4px;left:' + redLeft + '%;width:' + redWidth + '%;background:rgba(255,69,96,0.25);border-radius:2px"></div>';
-  // Green fill (profit zone)
-  html += '<div style="position:absolute;top:4px;bottom:4px;left:' + greenLeft + '%;width:' + greenWidth + '%;background:rgba(0,208,132,0.2);border-radius:2px"></div>';
-  // Lines
-  html += '<div class="pb-line" style="left:' + slPct + '%;background:var(--red)"><span class="pb-label" style="color:var(--red)">' + s + '</span></div>';
-  html += '<div class="pb-line" style="left:' + ePct + '%;background:white;width:3px"><span class="pb-label" style="color:white">' + e + '</span></div>';
-  html += '<div class="pb-line" style="left:' + t1Pct + '%;background:var(--green)"><span class="pb-label" style="color:var(--green)">' + t1 + '</span></div>';
-  if (t2Pct) html += '<div class="pb-line" style="left:' + t2Pct + '%;background:rgba(0,208,132,.6)"><span class="pb-label" style="color:rgba(0,208,132,.7)">' + t2 + '</span></div>';
+  var slDist  = Math.abs(e - s).toFixed(1);
+  var tp1Dist = Math.abs(t1 - e).toFixed(1);
+  var tp2Dist = t2 ? Math.abs(t2 - e).toFixed(1) : null;
+  var rr1 = (Math.abs(t1-e) / Math.abs(e-s)).toFixed(2);
+  var rr2 = t2 ? (Math.abs(t2-e) / Math.abs(e-s)).toFixed(2) : null;
+
+  // Calculate proportional widths based on distances
+  var slPropRaw  = Math.abs(e - s);
+  var tp1PropRaw = Math.abs(t1 - e);
+  var tp2PropRaw = t2 ? Math.abs(t2 - e) : 0;
+  var maxProp = tp2PropRaw || tp1PropRaw;
+  var total = slPropRaw + maxProp;
+
+  var slW  = (slPropRaw / total * 100).toFixed(1);
+  var tpW  = (maxProp / total * 100).toFixed(1);
+  var tp1LineW = (tp1PropRaw / maxProp * 100).toFixed(1);
+
+  var html = '<div style="margin:10px 0 6px 0">';
+
+  // === MAIN BAR ===
+  html += '<div style="display:flex;align-items:stretch;height:28px;border-radius:6px;overflow:hidden;gap:2px">';
+
+  // SL zone (red)
+  html += '<div style="width:' + slW + '%;background:rgba(255,69,96,0.25);border:1px solid rgba(255,69,96,0.4);border-radius:5px;display:flex;align-items:center;justify-content:center;position:relative">';
+  html += '<span style="font-family:var(--mono);font-size:11px;color:#ff4560;font-weight:600">' + s + '</span>';
+  html += '</div>';
+
+  // Entry divider
+  html += '<div style="width:3px;background:white;flex-shrink:0;border-radius:2px"></div>';
+
+  // TP zone (green) - with TP1 marker inside
+  html += '<div style="width:' + tpW + '%;background:rgba(0,208,132,0.2);border:1px solid rgba(0,208,132,0.35);border-radius:5px;display:flex;align-items:center;position:relative;overflow:hidden">';
+  // TP1 line inside TP zone
+  if (t2) {
+    html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:rgba(0,208,132,0.6)"></div>';
+    html += '<span style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.8);margin-right:6px;z-index:1;padding-right:4px">' + t1 + '</span>';
+    html += '<span style="font-family:var(--mono);font-size:11px;color:#00d084;font-weight:600;position:absolute;right:6px">' + t2 + '</span>';
+  } else {
+    html += '<span style="font-family:var(--mono);font-size:11px;color:#00d084;font-weight:600;margin:0 auto">' + t1 + '</span>';
+  }
+  html += '</div>';
+  html += '</div>';
+
+  // === BOTTOM ROW: Entry price + distances + R:R ===
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">';
+  // SL distance
+  html += '<div style="font-family:var(--mono);font-size:10px;color:rgba(255,69,96,0.7)">−' + slDist + 'p</div>';
+  // Entry center
+  html += '<div style="font-family:var(--mono);font-size:12px;color:white;font-weight:600">⬥ ' + e + '</div>';
+  // TP distances + R:R
+  var rrTxt = t2 ? ('1:' + rr1 + ' / 1:' + rr2) : ('R:R 1:' + rr1);
+  html += '<div style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.7)">+' + (tp2Dist||tp1Dist) + 'p &nbsp;<span style="background:rgba(0,208,132,0.15);border:1px solid rgba(0,208,132,0.3);padding:1px 6px;border-radius:3px;color:#00d084;font-size:10px">' + rrTxt + '</span></div>';
+  html += '</div>';
+
   html += '</div>';
   return html;
 }
@@ -339,7 +365,7 @@ function renderSignals(items) {
     html += '</tr></tbody></table>';
 
     // Price bar
-    html += buildPriceBar(entry, sl, tp1, tp2);
+    html += buildPriceBar(entry, sl, tp1, tp2, it.Direction);
 
     html += '</div>';
   }
