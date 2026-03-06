@@ -226,7 +226,7 @@ const REFRESH = 30000;
 
 const msalCfg = {
   auth: { clientId: CLIENT_ID, authority: 'https://login.microsoftonline.com/iteracoil.onmicrosoft.com', redirectUri: location.origin + location.pathname },
-  cache: { cacheLocation: 'localStorage' }
+  cache: { cacheLocation: 'sessionStorage' }
 };
 
 let msalApp = null, account = null, lastSigId = null, isFirst = true;
@@ -273,7 +273,7 @@ function startDash() {
 async function getToken() {
   const app = await getApp();
   try { return (await app.acquireTokenSilent({ scopes: SCOPES, account })).accessToken; }
-  catch { return (await app.acquireTokenPopup({ scopes: SCOPES })).accessToken; }
+  catch(e2) { return (await app.acquireTokenPopup({ scopes: SCOPES })).accessToken; }
 }
 
 async function fetchList(list, query) {
@@ -594,7 +594,7 @@ function updateAnalysis(items) {
   document.getElementById('dailyAnalysis').innerHTML=ins.map(function(x){return '<div class="insight"><span>'+x.i+'</span><span>'+x.t+'</span></div>';}).join('');
 }
 
-
+async function refresh() {
   var dot = document.getElementById('statusDot');
   dot.className = 'dot';
   try {
