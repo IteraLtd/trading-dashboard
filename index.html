@@ -235,11 +235,12 @@ async function getApp() {
   if (!msalApp) {
     msalApp = new msal.PublicClientApplication(msalCfg);
     await msalApp.initialize();
+    // Clear only interaction_in_progress to prevent stuck state
+    Object.keys(sessionStorage).filter(function(k){ return k.includes('interaction.status'); }).forEach(function(k){ sessionStorage.removeItem(k); });
     const result = await msalApp.handleRedirectPromise();
     if (result && result.account) {
       account = result.account;
     }
-    Object.keys(sessionStorage).filter(k => k.includes('msal')).forEach(k => sessionStorage.removeItem(k));
   }
   return msalApp;
 }
@@ -625,9 +626,13 @@ document.getElementById('overlay').onclick = function(e) { if (e.target.id === '
 
 (async function init() {
   var app = await getApp();
+  // account may have been set by handleRedirectPromise above
   if (account) { startDash(); return; }
+  // Check cached accounts
   var accounts = app.getAllAccounts();
-  if (accounts.length > 0) { account = accounts[0]; startDash(); }
+  if (accounts.length > 0) { account = accounts[0]; startDash(); return; }
+  // Show login screen
+  document.getElementById('loginScreen').style.display = 'flex';
 })();
 </script>
 </body>
