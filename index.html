@@ -177,7 +177,7 @@ const SCOPES = ['https://iteracoil.sharepoint.com/AllSites.Read'];
 const REFRESH = 30000;
 
 const msalCfg = {
-  auth: { clientId: CLIENT_ID, authority: 'https://login.microsoftonline.com/iteracoil.onmicrosoft.com', redirectUri: location.href.split('?')[0] },
+  auth: { clientId: CLIENT_ID, authority: 'https://login.microsoftonline.com/iteracoil.onmicrosoft.com', redirectUri: location.origin + location.pathname },
   cache: { cacheLocation: 'localStorage' }
 };
 
@@ -187,7 +187,10 @@ async function getApp() {
   if (!msalApp) {
     msalApp = new msal.PublicClientApplication(msalCfg);
     await msalApp.initialize();
-    try { await msalApp.handleRedirectPromise(); } catch(e) {}
+    const result = await msalApp.handleRedirectPromise();
+    if (result && result.account) {
+      account = result.account;
+    }
     Object.keys(sessionStorage).filter(k => k.includes('msal')).forEach(k => sessionStorage.removeItem(k));
   }
   return msalApp;
@@ -196,9 +199,7 @@ async function getApp() {
 async function signIn() {
   try {
     const app = await getApp();
-    const r = await app.loginPopup({ scopes: SCOPES });
-    account = r.account;
-    startDash();
+    await app.loginRedirect({ scopes: SCOPES });
   } catch(e) {
     const el = document.getElementById('loginError');
     el.style.display = 'block';
@@ -416,7 +417,6 @@ async function refresh() {
   dot.className = 'dot';
   try {
     var signals = await fetchList('TradingPredictions', '$orderby=SignalTime%20desc&$top=20');
-if (signals.length > 0) console.log('SignalTime raw:', signals[0].SignalTime);
     var scans = await fetchList('TradingScans', '$orderby=ScanTime%20desc&$top=10');
     renderSignals(signals);
     renderScans(scans);
@@ -444,6 +444,7 @@ document.getElementById('overlay').onclick = function(e) { if (e.target.id === '
 
 (async function init() {
   var app = await getApp();
+  if (account) { startDash(); return; }
   var accounts = app.getAllAccounts();
   if (accounts.length > 0) { account = accounts[0]; startDash(); }
 })();
