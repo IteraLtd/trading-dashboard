@@ -603,6 +603,8 @@ async function refresh() {
   try {
     allSignals = await fetchList('TradingPredictions', '$orderby=SignalTime%20desc&$top=100');
     var scans = await fetchList('TradingScans', '$orderby=ScanTime%20desc&$top=10');
+if (scans.length > 0) console.log('SCAN FIELDS:', JSON.stringify(Object.keys(scans[0])));
+if (scans.length > 0) console.log('SCAN DATA:', JSON.stringify(scans[0]));
     if (allSignals.length > 0) console.log('SignalTime raw:', allSignals[0].SignalTime);
     applyFilter();
     renderScans(scans);
