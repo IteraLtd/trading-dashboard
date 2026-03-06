@@ -135,7 +135,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 </head>
 <body>
 
-<div id="loginScreen">
+<div id="loginScreen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px">
   <div class="login-logo">MNQ <span>//</span> DASHBOARD</div>
   <div class="login-sub">התחבר עם חשבון Microsoft שלך</div>
   <button class="login-btn" id="loginBtn">🔐 התחבר עם Microsoft</button>
@@ -235,12 +235,15 @@ async function getApp() {
   if (!msalApp) {
     msalApp = new msal.PublicClientApplication(msalCfg);
     await msalApp.initialize();
-    // Clear only interaction_in_progress to prevent stuck state
+    // Handle redirect FIRST before any cleanup
+    try {
+      const result = await msalApp.handleRedirectPromise();
+      if (result && result.account) {
+        account = result.account;
+      }
+    } catch(e) { console.warn('redirect error', e); }
+    // Clean up stuck interaction state AFTER processing
     Object.keys(sessionStorage).filter(function(k){ return k.includes('interaction.status'); }).forEach(function(k){ sessionStorage.removeItem(k); });
-    const result = await msalApp.handleRedirectPromise();
-    if (result && result.account) {
-      account = result.account;
-    }
   }
   return msalApp;
 }
@@ -626,12 +629,12 @@ document.getElementById('overlay').onclick = function(e) { if (e.target.id === '
 
 (async function init() {
   var app = await getApp();
-  // account may have been set by handleRedirectPromise above
+  // account set by handleRedirectPromise = just came back from Microsoft
   if (account) { startDash(); return; }
-  // Check cached accounts
+  // Check cached session
   var accounts = app.getAllAccounts();
   if (accounts.length > 0) { account = accounts[0]; startDash(); return; }
-  // Show login screen
+  // Not logged in - show login
   document.getElementById('loginScreen').style.display = 'flex';
 })();
 </script>
