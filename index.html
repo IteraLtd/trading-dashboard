@@ -223,8 +223,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <div class="analysis-bar">
     <div class="analysis-panel">
       <div class="analysis-title">📊 LONG / SHORT</div>
-      <div style="display:grid;grid-template-columns:1fr 180px;gap:12px;align-items:center">
-        <div>
+      <div style="display:flex;flex-direction:row;gap:12px;align-items:center;direction:ltr">
+        <div style="flex:1;direction:rtl">
           <div class="inline-stats">
             <div class="i-stat"><div class="i-stat-label">סה"כ</div><div class="i-stat-value c-blue" id="statTotal">—</div></div>
             <div class="i-stat"><div class="i-stat-label">✅ WIN</div><div class="i-stat-value c-green" id="statWins">—</div></div>
@@ -237,7 +237,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
             <div class="a-stat"><div class="a-stat-label">ממוצע ציון</div><div class="a-stat-val c-yellow" id="aAvgScore">—</div></div>
           </div>
         </div>
-        <div class="chart-wrap" style="height:110px"><canvas id="dirChart"></canvas></div>
+        <div style="width:180px;height:110px;flex-shrink:0;position:relative"><canvas id="dirChart"></canvas></div>
       </div>
     </div>
     <div class="analysis-panel">
