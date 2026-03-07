@@ -31,10 +31,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer}
 
-.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.stat{background:var(--surface);padding:14px 16px;text-align:center}
-.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-.stat-value{font-family:var(--mono);font-size:20px;font-weight:600}
+.stats-bar{display:none}
 .c-green{color:var(--green)}.c-red{color:var(--red)}.c-blue{color:var(--blue)}.c-yellow{color:var(--yellow)}
 
 /* FILTER BAR */
@@ -57,6 +54,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .a-stat-val{font-family:var(--mono);font-size:13px;font-weight:600}
 .analysis-text{font-size:12px;color:var(--text);line-height:1.6}
 .analysis-text .insight{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;padding:5px 8px;background:var(--surface);border-radius:4px;border-right:2px solid var(--blue)}
+/* Inline stats row inside long/short panel */
+.inline-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.i-stat{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:6px 8px;text-align:center}
+.i-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.i-stat-value{font-family:var(--mono);font-size:16px;font-weight:600}
 
 .main{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 185px);min-height:400px}
 .panel{border-left:1px solid var(--border);overflow-y:auto}
@@ -139,16 +141,15 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .logo{font-size:13px;letter-spacing:1px}
   .logout-btn{font-size:10px;padding:3px 8px}
 
-  /* Stats bar - 2x2 grid */
-  .stats-bar{grid-template-columns:repeat(2,1fr)}
-  .stat{padding:10px 12px}
-  .stat-value{font-size:17px}
-
   /* Filter bar */
   .filter-bar{padding:8px 12px;gap:6px}
   .date-input{font-size:11px;padding:4px 8px;width:100%}
   .quick-btn{font-size:10px;padding:4px 10px}
   .filter-count{width:100%;margin-right:0;margin-top:2px}
+
+  /* Inline stats - 2x2 on mobile */
+  .inline-stats{grid-template-columns:repeat(2,1fr)}
+  .i-stat-value{font-size:14px}
 
   /* Analysis bar - stack vertically */
   .analysis-bar{grid-template-columns:1fr}
@@ -164,9 +165,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .sig-row{padding:10px 12px}
   .scan-row{padding:10px 12px}
 
-  /* Price bar text smaller */
-  .price-table td{font-size:11px}
-
   /* Popup - full width on mobile */
   .popup{width:calc(100vw - 24px);max-width:380px}
   .overlay{align-items:flex-end;padding-bottom:0}
@@ -178,8 +176,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 @media (max-width: 480px) {
   .logo{font-size:12px}
-  .stat-value{font-size:15px}
-  .stat-label{font-size:9px}
+  .i-stat-value{font-size:13px}
+  .i-stat-label{font-size:8px}
   .quick-btn{font-size:10px;padding:4px 8px}
   .analysis-title{font-size:10px}
   .a-stat-val{font-size:12px}
@@ -219,17 +217,18 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <span class="filter-count" id="filterCount"></span>
   </div>
 
-  <div class="stats-bar">
-    <div class="stat"><div class="stat-label">סה"כ</div><div class="stat-value c-blue" id="statTotal">—</div></div>
-    <div class="stat"><div class="stat-label">✅ WIN</div><div class="stat-value c-green" id="statWins">—</div></div>
-    <div class="stat"><div class="stat-label">❌ LOSS</div><div class="stat-value c-red" id="statLosses">—</div></div>
-    <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value c-yellow" id="statRate">—</div></div>
-  </div>
+
 
   <!-- ANALYSIS BAR -->
   <div class="analysis-bar">
     <div class="analysis-panel">
       <div class="analysis-title">📊 LONG / SHORT</div>
+      <div class="inline-stats">
+        <div class="i-stat"><div class="i-stat-label">סה"כ</div><div class="i-stat-value c-blue" id="statTotal">—</div></div>
+        <div class="i-stat"><div class="i-stat-label">✅ WIN</div><div class="i-stat-value c-green" id="statWins">—</div></div>
+        <div class="i-stat"><div class="i-stat-label">❌ LOSS</div><div class="i-stat-value c-red" id="statLosses">—</div></div>
+        <div class="i-stat"><div class="i-stat-label">Win Rate</div><div class="i-stat-value c-yellow" id="statRate">—</div></div>
+      </div>
       <div class="analysis-stats">
         <div class="a-stat"><div class="a-stat-label">▲ LONG</div><div class="a-stat-val c-green" id="aLong">—</div></div>
         <div class="a-stat"><div class="a-stat-label">▼ SHORT</div><div class="a-stat-val c-red" id="aShort">—</div></div>
