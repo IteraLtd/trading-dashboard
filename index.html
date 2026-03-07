@@ -58,7 +58,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .analysis-text{font-size:12px;color:var(--text);line-height:1.6}
 .analysis-text .insight{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;padding:5px 8px;background:var(--surface);border-radius:4px;border-right:2px solid var(--blue)}
 
-.main{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 185px)}
+.main{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 185px);min-height:400px}
 .panel{border-left:1px solid var(--border);overflow-y:auto}
 .panel-header{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .panel-title{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);letter-spacing:1px}
@@ -131,6 +131,59 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .empty{padding:30px;text-align:center;color:var(--muted);font-size:13px}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 #dashboard{display:none}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* Header */
+  header{padding:10px 12px}
+  .logo{font-size:13px;letter-spacing:1px}
+  .logout-btn{font-size:10px;padding:3px 8px}
+
+  /* Stats bar - 2x2 grid */
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+  .stat{padding:10px 12px}
+  .stat-value{font-size:17px}
+
+  /* Filter bar */
+  .filter-bar{padding:8px 12px;gap:6px}
+  .date-input{font-size:11px;padding:4px 8px;width:100%}
+  .quick-btn{font-size:10px;padding:4px 10px}
+  .filter-count{width:100%;margin-right:0;margin-top:2px}
+
+  /* Analysis bar - stack vertically */
+  .analysis-bar{grid-template-columns:1fr}
+  .analysis-panel{padding:10px 12px}
+  .chart-wrap{height:80px}
+  .analysis-stats{grid-template-columns:repeat(3,1fr)}
+
+  /* Main - stack panels vertically */
+  .main{grid-template-columns:1fr;height:auto;min-height:0}
+  .panel{border-left:none;border-top:1px solid var(--border);overflow-y:visible;max-height:none}
+
+  /* Signal rows */
+  .sig-row{padding:10px 12px}
+  .scan-row{padding:10px 12px}
+
+  /* Price bar text smaller */
+  .price-table td{font-size:11px}
+
+  /* Popup - full width on mobile */
+  .popup{width:calc(100vw - 24px);max-width:380px}
+  .overlay{align-items:flex-end;padding-bottom:0}
+  .overlay.show .popup{border-radius:12px 12px 0 0}
+
+  /* Panel header sticky */
+  .panel-header{position:sticky;top:0;z-index:10}
+}
+
+@media (max-width: 480px) {
+  .logo{font-size:12px}
+  .stat-value{font-size:15px}
+  .stat-label{font-size:9px}
+  .quick-btn{font-size:10px;padding:4px 8px}
+  .analysis-title{font-size:10px}
+  .a-stat-val{font-size:12px}
+}
 </style>
 </head>
 <body>
