@@ -718,7 +718,7 @@ function renderSignals(items) {
   for (var i = 0; i < items.length; i++) {
     var it = items[i];
     var e = parseFloat(it.Entry||0), s = parseFloat(it.SL||0);
-    var t2 = parseFloat(it['TP2']||0) || parseFloat(it['TP1']||0);
+    var t2 = parseFloat(it['_x0054_P2']||0) || parseFloat(it['_x0054_P1']||0);
     if (e && s && t2) {
       var r = Math.abs(e - s) + Math.abs(t2 - e);
       if (r > maxRange) maxRange = r;
@@ -731,8 +731,8 @@ function renderSignals(items) {
     var v = (it.ClaudeVerdict||'').toLowerCase();
     var d = (it.Direction||'').toLowerCase();
     var r = (it.Result||'PENDING').toUpperCase();
-    var tp1 = it['TP1'] || '';
-    var tp2 = it['TP2'] || '';
+    var tp1 = it['_x0054_P1'] || '';
+    var tp2 = it['_x0054_P2'] || '';
     var entry = it.Entry || '';
     var sl = it.SL || '';
     var vClass = v === 'take' ? 'v-take' : v === 'skip' ? 'v-skip' : v === 'wait' ? 'v-wait' : 'v-neutral';
@@ -815,8 +815,8 @@ function updateStats(items) {
 function showPopup(item) {
   var v = (item.ClaudeVerdict||'').toLowerCase();
   var d = (item.Direction||'').toLowerCase();
-  var tp1 = item['TP1'] || '—';
-  var tp2 = item['TP2'] || '—';
+  var tp1 = item['_x0054_P1'] || '—';
+  var tp2 = item['_x0054_P2'] || '—';
   document.getElementById('popupHdr').className = 'popup-hdr ' + (v || 'neutral');
   document.getElementById('popupVerdict').textContent = (v === 'take' ? '🎯' : v === 'skip' ? '⛔' : '⏳') + ' ' + (item.ClaudeVerdict||'');
   document.getElementById('popupVerdict').style.color = v === 'take' ? 'var(--green)' : v === 'skip' ? 'var(--red)' : 'var(--yellow)';
