@@ -236,6 +236,16 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <button class="quick-btn" id="btnYest" onclick="setQuickDate(-1)">אתמול</button>
     <button class="quick-btn" id="btnWeek" onclick="setQuickDate(-7)">שבוע</button>
     <button class="quick-btn" id="btnAll" onclick="setQuickDate(null)">הכל</button>
+    <span style="width:1px;background:var(--border);height:18px;margin:0 4px"></span>
+    <span class="filter-label">🎯 פסיקה:</span>
+    <button class="quick-btn active" id="vfAll"  onclick="setVerdictFilter(null)">הכל</button>
+    <button class="quick-btn" id="vfTake" onclick="setVerdictFilter('take')" style="color:#00d084;border-color:#00d08440">TAKE</button>
+    <button class="quick-btn" id="vfSkip" onclick="setVerdictFilter('skip')" style="color:#ff4560;border-color:#ff456040">SKIP</button>
+    <button class="quick-btn" id="vfWait" onclick="setVerdictFilter('wait')" style="color:#ffa500;border-color:#ffa50040">WAIT</button>
+    <span style="width:1px;background:var(--border);height:18px;margin:0 4px"></span>
+    <button class="quick-btn" id="dfAll"   onclick="setDirFilter(null)" style="font-weight:700">↕</button>
+    <button class="quick-btn" id="dfLong"  onclick="setDirFilter('long')"  style="color:#00d084">▲ LONG</button>
+    <button class="quick-btn" id="dfShort" onclick="setDirFilter('short')" style="color:#ff4560">▼ SHORT</button>
     <span class="filter-count" id="filterCount"></span>
     <div style="margin-right:auto;display:flex;gap:4px">
       <button class="quick-btn active" id="tabSignals" onclick="switchTab('signals')">📡 סיגנלים</button>
@@ -734,6 +744,7 @@ function renderSignals(items) {
     // === SINGLE HEADER ROW — time left, badges center ===
     html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">';
     html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">' + fmtTime(it.SignalTime) + '</span>';
+    if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
     html += '<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">';
     html += '<span class="score-txt" style="font-size:12px">⭐' + (it.ClaudeScore||'—') + '</span>';
     html += '<span class="res-badge ' + rClass + '">' + resultLabel(r) + '</span>';
@@ -823,6 +834,8 @@ function showPopup(item) {
 }
 
 var allSignals = [], dirChart = null;
+var verdictFilter = null;
+var dirFilter = null;
 
 function isWin(r) { return r === 'WIN' || r === 'TP1_HIT' || r === 'TP2_HIT'; }
 function isLoss(r) { return r === 'LOSS' || r === 'SL_HIT'; }
@@ -863,19 +876,42 @@ function setQuickDate(offset) {
   applyFilter();
 }
 
+function setVerdictFilter(v) {
+  verdictFilter = v;
+  ['vfAll','vfTake','vfSkip','vfWait'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  var btnId = v ? 'vf'+v.charAt(0).toUpperCase()+v.slice(1) : 'vfAll';
+  var btn = document.getElementById(btnId); if(btn) btn.classList.add('active');
+  applyFilter();
+}
+
+function setDirFilter(d) {
+  dirFilter = d;
+  ['dfAll','dfLong','dfShort'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  var btnId = d ? 'df'+d.charAt(0).toUpperCase()+d.slice(1) : 'dfAll';
+  var btn = document.getElementById(btnId); if(btn) btn.classList.add('active');
+  applyFilter();
+}
+
 function applyFilter() {
   var dateVal = document.getElementById('dateFilter').value;
-  var filtered;
-  if (!dateVal) {
-    filtered = allSignals;
-  } else {
+  var filtered = allSignals;
+  // Date filter
+  if (dateVal) {
     var isRange = document.getElementById('btnWeek').classList.contains('active');
-    filtered = allSignals.filter(function(it) {
+    filtered = filtered.filter(function(it) {
       if (!it.SignalTime) return false;
       var d = new Date(it.SignalTime);
       var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
       return isRange ? ds >= dateVal : ds === dateVal;
     });
+  }
+  // Verdict filter
+  if (verdictFilter) {
+    filtered = filtered.filter(function(it){ return (it.ClaudeVerdict||'').toLowerCase() === verdictFilter; });
+  }
+  // Direction filter
+  if (dirFilter) {
+    filtered = filtered.filter(function(it){ return (it.Direction||'').toLowerCase() === dirFilter; });
   }
   document.getElementById('filterCount').textContent = filtered.length + ' סיגנלים';
   renderSignals(filtered);
