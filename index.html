@@ -30,7 +30,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .login-sub{color:var(--muted);font-size:13px}
 #loginError{color:var(--red);font-size:13px;display:none}
 
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--blue);letter-spacing:2px}
 .logo span{color:var(--muted)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-left:6px;animation:pulse 2s infinite}
@@ -47,7 +47,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .c-green{color:var(--green)}.c-red{color:var(--red)}.c-blue{color:var(--blue)}.c-yellow{color:var(--yellow)}
 
 /* FILTER BAR */
-.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:45px;z-index:99}
 .filter-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .date-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 10px;border-radius:5px;cursor:pointer}
 .date-input:focus{outline:none;border-color:var(--blue)}
@@ -72,8 +72,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .i-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
 .i-stat-value{font-family:var(--mono);font-size:16px;font-weight:600}
 
-.main{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 185px);min-height:400px}
-.panel{border-left:1px solid var(--border);overflow-y:auto}
+.main{display:grid;grid-template-columns:1fr 340px;min-height:400px}
+.panel{border-left:1px solid var(--border)}
 .panel-header{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .panel-title{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);letter-spacing:1px}
 .badge{background:var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:10px}
@@ -220,7 +220,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
         <span class="dot" id="statusDot"></span>
         <span id="statusText">טוען...</span>
-        <span id="lastUpdate" style="margin-right:6px"></span>
+        <span id="lastUpdate" style="margin-right:8px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--blue)"></span>
       </span>
       <button class="sys-btn" id="sysBtn" onclick="toggleSystem()">⏳ טוען...</button>
       <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="החלף ערכת צבעים">🌙</button>
@@ -859,7 +859,7 @@ async function refresh() {
     dot.className = 'dot';
     document.getElementById('statusText').textContent = 'מחובר';
     var now = new Date();
-    document.getElementById('lastUpdate').textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('lastUpdate').textContent = '🕐 ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
     isFirst = false;
   } catch(e) {
     dot.className = 'dot err';
