@@ -493,7 +493,7 @@ function dist(a, b) {
   return Math.abs(parseFloat(a) - parseFloat(b)).toFixed(1);
 }
 
-function buildPriceBar(entry, sl, tp1, tp2, direction) {
+function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var e = parseFloat(entry), s = parseFloat(sl), t1 = parseFloat(tp1), t2 = parseFloat(tp2)||0;
   if (!e || !s || !t1) return '';
 
@@ -503,35 +503,45 @@ function buildPriceBar(entry, sl, tp1, tp2, direction) {
   var rr1 = (Math.abs(t1-e) / Math.abs(e-s)).toFixed(2);
   var rr2 = t2 ? (Math.abs(t2-e) / Math.abs(e-s)).toFixed(2) : null;
 
-  // Calculate proportional widths based on distances
   var slPropRaw  = Math.abs(e - s);
   var tp1PropRaw = Math.abs(t1 - e);
   var tp2PropRaw = t2 ? Math.abs(t2 - e) : 0;
-  var maxProp = tp2PropRaw || tp1PropRaw;
-  var total = slPropRaw + maxProp;
+  var maxProp    = tp2PropRaw || tp1PropRaw;
+  var totalRange = slPropRaw + maxProp;
 
-  var slW  = (slPropRaw / total * 100).toFixed(1);
-  var tpW  = (maxProp / total * 100).toFixed(1);
+  var barPct = maxRange && maxRange > 0 ? Math.max(18, (totalRange / maxRange * 100)) : 100;
+
+  var slW      = (slPropRaw / totalRange * 100).toFixed(1);
+  var tpW      = (maxProp   / totalRange * 100).toFixed(1);
   var tp1LineW = (tp1PropRaw / maxProp * 100).toFixed(1);
 
-  // Determine which side is SL and which is TP based on price
-  // For LONG: SL < Entry < TP  →  left=SL(red), right=TP(green)
-  // For SHORT: TP < Entry < SL →  left=TP(green), right=SL(red)
   var isLong = s < e;
 
-  var leftW    = slW;
-  var rightW   = tpW;
-  var leftBg   = isLong ? 'rgba(255,69,96,0.30)'   : 'rgba(0,208,132,0.25)';
-  var leftBdr  = isLong ? 'rgba(255,69,96,0.5)'    : 'rgba(0,208,132,0.4)';
-  var rightBg  = isLong ? 'rgba(0,208,132,0.25)'   : 'rgba(255,69,96,0.30)';
-  var rightBdr = isLong ? 'rgba(0,208,132,0.4)'    : 'rgba(255,69,96,0.5)';
+  // Color intensity based on verdict
+  var v = (verdict||'').toLowerCase();
+  var greenAlpha, redAlpha, greenBdr, redBdr, entryColor;
+  if (v === 'take') {
+    greenAlpha = '0.55'; redAlpha = '0.45'; greenBdr = '0.85'; redBdr = '0.7'; entryColor = '#00d084';
+  } else if (v === 'skip') {
+    greenAlpha = '0.12'; redAlpha = '0.55'; greenBdr = '0.25'; redBdr = '0.85'; entryColor = '#ff4560';
+  } else if (v === 'wait') {
+    greenAlpha = '0.25'; redAlpha = '0.25'; greenBdr = '0.4'; redBdr = '0.4'; entryColor = '#ffa500';
+  } else {
+    greenAlpha = '0.18'; redAlpha = '0.22'; greenBdr = '0.3'; redBdr = '0.35'; entryColor = 'white';
+  }
+
+  var leftW    = slW, rightW = tpW;
+  var leftBg   = isLong ? 'rgba(255,69,96,'+redAlpha+')'   : 'rgba(0,208,132,'+greenAlpha+')';
+  var leftBdr  = isLong ? 'rgba(255,69,96,'+redBdr+')'     : 'rgba(0,208,132,'+greenBdr+')';
+  var rightBg  = isLong ? 'rgba(0,208,132,'+greenAlpha+')' : 'rgba(255,69,96,'+redAlpha+')';
+  var rightBdr = isLong ? 'rgba(0,208,132,'+greenBdr+')'   : 'rgba(255,69,96,'+redBdr+')';
   var leftPrice  = isLong ? s  : (t2||t1);
   var rightPrice = isLong ? (t2||t1) : s;
   var leftColor  = isLong ? '#ff4560' : '#00d084';
   var rightColor = isLong ? '#00d084' : '#ff4560';
 
   var html = '<div style="margin:10px 0 6px 0;direction:ltr">';
-  html += '<div style="display:flex;align-items:stretch;height:30px;border-radius:6px;overflow:hidden;gap:2px">';
+  html += '<div style="width:' + barPct.toFixed(1) + '%;display:flex;align-items:stretch;height:30px;border-radius:6px;overflow:hidden;gap:2px">';
 
   // Left zone
   html += '<div style="width:' + leftW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:5px 0 0 5px;display:flex;align-items:center;justify-content:center">';
@@ -539,7 +549,7 @@ function buildPriceBar(entry, sl, tp1, tp2, direction) {
   html += '</div>';
 
   // Entry divider
-  html += '<div style="width:4px;background:white;flex-shrink:0"></div>';
+  html += '<div style="width:4px;background:' + entryColor + ';flex-shrink:0;opacity:0.9"></div>';
 
   // Right zone
   html += '<div style="width:' + rightW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 5px 5px 0;display:flex;align-items:center;position:relative;overflow:hidden">';
@@ -563,7 +573,7 @@ function buildPriceBar(entry, sl, tp1, tp2, direction) {
   // SL distance
   html += '<div style="font-family:var(--mono);font-size:10px;color:rgba(255,69,96,0.7)">−' + slDist + 'p</div>';
   // Entry center
-  html += '<div style="font-family:var(--mono);font-size:12px;color:white;font-weight:600">⬥ ' + e + '</div>';
+  html += '<div style="font-family:var(--mono);font-size:12px;color:' + entryColor + ';font-weight:600">⬥ ' + e + '</div>';
   // TP distances + R:R
   var rrTxt = t2 ? ('1:' + rr1 + ' / 1:' + rr2) : ('R:R 1:' + rr1);
   html += '<div style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.7)">+' + (tp2Dist||tp1Dist) + 'p &nbsp;<span style="background:rgba(0,208,132,0.15);border:1px solid rgba(0,208,132,0.3);padding:1px 6px;border-radius:3px;color:#00d084;font-size:10px">' + rrTxt + '</span></div>';
@@ -587,6 +597,18 @@ function renderSignals(items) {
     }
   }
   lastSigId = items[0].ID;
+
+  // Calculate max total range across all signals for proportional bar scaling
+  var maxRange = 0;
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    var e = parseFloat(it.Entry||0), s = parseFloat(it.SL||0);
+    var t2 = parseFloat(it['OData__x0054_P2']||0) || parseFloat(it['OData__x0054_P1']||0);
+    if (e && s && t2) {
+      var r = Math.abs(e - s) + Math.abs(t2 - e);
+      if (r > maxRange) maxRange = r;
+    }
+  }
 
   var html = '';
   for (var i = 0; i < items.length; i++) {
@@ -618,7 +640,7 @@ function renderSignals(items) {
     html += '<div style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-bottom:8px">🕐 ' + fmtTime(it.SignalTime) + ' &nbsp;·&nbsp; <span style="color:var(--muted)">' + (it.SignalType||'') + '</span></div>';
 
     // Price bar
-    html += buildPriceBar(entry, sl, tp1, tp2, it.Direction);
+    html += buildPriceBar(entry, sl, tp1, tp2, it.Direction, maxRange, v);
 
     html += '</div>';
   }
