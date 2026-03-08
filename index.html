@@ -521,11 +521,11 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var v = (verdict||'').toLowerCase();
   var greenAlpha, redAlpha, greenBdr, redBdr, entryColor;
   if (v === 'take') {
-    greenAlpha = '0.55'; redAlpha = '0.45'; greenBdr = '0.85'; redBdr = '0.7'; entryColor = '#00d084';
+    greenAlpha = '0.75'; redAlpha = '0.20'; greenBdr = '1'; redBdr = '0.4'; entryColor = '#00d084';
   } else if (v === 'skip') {
-    greenAlpha = '0.12'; redAlpha = '0.55'; greenBdr = '0.25'; redBdr = '0.85'; entryColor = '#ff4560';
+    greenAlpha = '0.10'; redAlpha = '0.75'; greenBdr = '0.2'; redBdr = '1'; entryColor = '#ff4560';
   } else if (v === 'wait') {
-    greenAlpha = '0.25'; redAlpha = '0.25'; greenBdr = '0.4'; redBdr = '0.4'; entryColor = '#ffa500';
+    greenAlpha = '0.35'; redAlpha = '0.35'; greenBdr = '0.6'; redBdr = '0.6'; entryColor = '#ffa500';
   } else {
     greenAlpha = '0.18'; redAlpha = '0.22'; greenBdr = '0.3'; redBdr = '0.35'; entryColor = 'white';
   }
