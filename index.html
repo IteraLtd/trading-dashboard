@@ -232,10 +232,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <div class="filter-bar">
     <span class="filter-label">📅 תאריך:</span>
     <input type="date" class="date-input" id="dateFilter">
-    <button class="quick-btn active" id="btnToday" onclick="setQuickDate(0)">היום</button>
+    <button class="quick-btn" id="btnToday" onclick="setQuickDate(0)">היום</button>
     <button class="quick-btn" id="btnYest" onclick="setQuickDate(-1)">אתמול</button>
     <button class="quick-btn" id="btnWeek" onclick="setQuickDate(-7)">שבוע</button>
-    <button class="quick-btn" id="btnAll" onclick="setQuickDate(null)">הכל</button>
+    <button class="quick-btn active" id="btnAll" onclick="setQuickDate(null)">הכל</button>
     <span class="filter-count" id="filterCount"></span>
     <div style="margin-right:auto;display:flex;gap:4px">
       <button class="quick-btn active" id="tabSignals" onclick="switchTab('signals')">📡 סיגנלים</button>
@@ -452,8 +452,8 @@ async function signIn() {
 function startDash() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  // Set date filter to today
-  document.getElementById('dateFilter').value = todayStr();
+  // Default to "הכל"
+  setQuickDate(null);
   document.getElementById('dateFilter').onchange = function() {
     ['btnToday','btnYest','btnWeek','btnAll'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
     applyFilter();
@@ -549,8 +549,6 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var slPrice  = isLong ? s        : (t2||t1);
   var tp2Price = isLong ? (t2||t1) : t1;
   var tp1Price = t2 ? (isLong ? t1 : t2) : null;
-
-  var barW = barPct.toFixed(0);
 
   // Full width, centered - no alignment offset
   var align = '';
