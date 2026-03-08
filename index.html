@@ -348,7 +348,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 <script>
 const CLIENT_ID = '75028ce6-328d-432a-a595-5bc41fe2399a';
 const SITE = 'https://iteracoil.sharepoint.com/sites/Trading';
-const SCOPES = ['https://iteracoil.sharepoint.com/AllSites.Read'];
+const SCOPES = ['https://iteracoil.sharepoint.com/AllSites.Manage'];
 const REFRESH = 30000;
 
 const FLOW_URL = 'https://default091d179c539f49e5ad857c8399ab46.36.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/988b25a359b9420d9d848fcfaf77ee56/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=73_fdguSWBqZYPcCrtjP_OVr6V979i3MXRtX8d9VSHs';
@@ -380,20 +380,37 @@ function updateSysBtn() {
 async function toggleSystem() {
   var btn = document.getElementById('sysBtn');
   var newState = !systemEnabled;
-  var cmd = newState ? 'SYSTEM_ON' : 'SYSTEM_OFF';
   btn.textContent = '⏳ מעדכן...';
   btn.disabled = true;
   try {
-    await fetch(FLOW_URL, {
+    // Get item ID first
+    var items = await fetchList('TradingSettings', "$filter=Title eq 'SystemEnabled'&$top=1");
+    if (!items.length) throw new Error('SystemEnabled item not found');
+    var itemId = items[0].ID;
+    var token = await getToken();
+
+    // Update directly via SharePoint REST API
+    await fetch(SITE + "/_api/web/lists/getbytitle('TradingSettings')/items(" + itemId + ")", {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ signal: cmd, ticker: 'SYSTEM' })
+      headers: {
+        Authorization: 'Bearer ' + token,
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-HTTP-Method': 'MERGE',
+        'IF-MATCH': '*'
+      },
+      body: JSON.stringify({
+        '__metadata': { 'type': 'SP.Data.TradingSettingsListItem' },
+        'SystemEnabled': newState ? 'true' : 'false'
+      })
     });
+
     systemEnabled = newState;
     updateSysBtn();
   } catch(e) {
+    console.error('toggleSystem error', e);
     btn.textContent = '⚠️ שגיאה';
-    console.error(e);
+    setTimeout(updateSysBtn, 2000);
   }
   btn.disabled = false;
 }
