@@ -547,38 +547,43 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var rrTxt    = t2 ? ('1:' + rr1 + ' / 1:' + rr2) : ('1:' + rr1);
   var slPrice  = isLong ? s  : (t2||t1);
   var tp2Price = isLong ? (t2||t1) : t1;
-  var tp1Price = isLong ? t1 : t2;
+  var tp1Price = t2 ? (isLong ? t1 : t2) : null;
 
-  // === ROW ABOVE BAR: SL right (RTL), TP left (RTL) ===
-  html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">';
-  html += '<div style="display:flex;align-items:baseline;gap:4px">';
-  html += '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:' + slColor + '">' + slPrice + '</span>';
-  html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">−' + slDist + 'p</span>';
-  html += '</div>';
-  html += '<div style="display:flex;align-items:baseline;gap:4px">';
-  html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px">' + rrTxt + '</span>';
-  html += '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:' + tpColor + '">' + tp2Price + '</span>';
-  if (t2 && tp1Price) html += '<span style="font-family:var(--mono);font-size:11px;color:' + tpColor + ';opacity:0.6">' + tp1Price + '</span>';
-  html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
-  html += '</div>';
+  // Container with relative positioning for label alignment
+  var barW = barPct.toFixed(0);
+  html += '<div style="position:relative;direction:ltr;width:' + barW + '%">';
+
+  // === LABELS ABOVE BAR — positioned over SL zone, entry, TP zone ===
+  // SL label: left edge of bar
+  var entryLeftPct = parseFloat(slW);  // % from left where entry divider is
+  html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;left:0;display:flex;align-items:baseline;gap:2px">';
+  html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + slColor + '">' + slPrice + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">−' + slDist + 'p</span>';
   html += '</div>';
 
-  // === BAR — width proportional to maxRange, direction:ltr for correct SL/TP placement ===
-  html += '<div style="width:' + barPct.toFixed(0) + '%;direction:ltr">';
-  html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px">';
+  // Entry label: above the entry divider
+  html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;left:' + entryLeftPct + '%;transform:translateX(-50%);white-space:nowrap">';
+  html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + entryColor + '">⬥ ' + e + '</span>';
+  html += '</div>';
+
+  // TP labels: right edge
+  html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;right:0;display:flex;align-items:baseline;gap:3px">';
+  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
+  if (tp1Price) html += '<span style="font-family:var(--mono);font-size:10px;color:' + tpColor + ';opacity:0.6">' + tp1Price + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + tpColor + '">' + tp2Price + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px">' + rrTxt + '</span>';
+  html += '</div>';
+
+  // === BAR ===
+  html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px;margin-top:18px">';
   html += '<div style="width:' + slW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:4px 0 0 4px"></div>';
   html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0"></div>';
   html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 4px 4px 0;position:relative">';
   if (t2) html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:' + entryColor + ';opacity:0.5"></div>';
   html += '</div>';
   html += '</div>';
-  html += '</div>';
 
-  // === ENTRY BELOW BAR ===
-  html += '<div style="text-align:center;margin-top:4px">';
-  html += '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:' + entryColor + '">⬥ ' + e + '</span>';
-  html += '</div>';
-
+  html += '</div>'; // end relative container
   html += '</div>';
   return html;
 }
@@ -894,7 +899,7 @@ async function refresh() {
     dot.className = 'dot';
     document.getElementById('statusText').textContent = 'מחובר';
     var now = new Date();
-    document.getElementById('lastUpdate').textContent = '🕐 ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('lastUpdate').textContent = 'עדכון: ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
     isFirst = false;
   } catch(e) {
     dot.className = 'dot err';
