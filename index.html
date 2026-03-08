@@ -540,43 +540,40 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var leftColor  = isLong ? '#ff4560' : '#00d084';
   var rightColor = isLong ? '#00d084' : '#ff4560';
 
-  var html = '<div style="margin:10px 0 6px 0;direction:ltr">';
-  html += '<div style="width:' + barPct.toFixed(1) + '%;display:flex;align-items:stretch;height:30px;border-radius:6px;overflow:hidden;gap:2px">';
+  var html = '<div style="margin:8px 0 4px 0;direction:ltr">';
 
-  // Left zone
-  html += '<div style="width:' + leftW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:5px 0 0 5px;display:flex;align-items:center;justify-content:center">';
-  html += '<span style="font-family:var(--mono);font-size:12px;color:' + leftColor + ';font-weight:700">' + leftPrice + '</span>';
-  html += '</div>';
-
+  // === BAR (no text inside) ===
+  html += '<div style="width:' + barPct.toFixed(1) + '%;display:flex;align-items:stretch;height:12px;border-radius:4px;overflow:hidden;gap:1px">';
+  // Left zone - no text
+  html += '<div style="width:' + leftW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:4px 0 0 4px"></div>';
   // Entry divider
-  html += '<div style="width:4px;background:' + entryColor + ';flex-shrink:0;opacity:0.9"></div>';
-
-  // Right zone
-  html += '<div style="width:' + rightW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 5px 5px 0;display:flex;align-items:center;position:relative;overflow:hidden">';
-  if (isLong && t2) {
-    // Show TP1 line + both prices
-    html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:rgba(0,208,132,0.5)"></div>';
-    html += '<span style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.75);padding-right:8px;z-index:1">' + t1 + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:12px;color:#00d084;font-weight:700;position:absolute;right:8px">' + t2 + '</span>';
-  } else if (!isLong && t2) {
-    html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:rgba(0,208,132,0.5)"></div>';
-    html += '<span style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.75);padding-right:8px;z-index:1">' + t2 + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:12px;color:#00d084;font-weight:700;position:absolute;right:8px">' + t1 + '</span>';
-  } else {
-    html += '<span style="font-family:var(--mono);font-size:12px;color:' + rightColor + ';font-weight:700;margin:0 auto">' + rightPrice + '</span>';
-  }
+  html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0"></div>';
+  // Right zone - no text, with TP1 line if applicable
+  html += '<div style="width:' + rightW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 4px 4px 0;position:relative">';
+  if (t2) html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:' + entryColor + ';opacity:0.5"></div>';
   html += '</div>';
   html += '</div>';
 
-  // === BOTTOM ROW: Entry price + distances + R:R ===
-  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">';
-  // SL distance
-  html += '<div style="font-family:var(--mono);font-size:10px;color:rgba(255,69,96,0.7)">−' + slDist + 'p</div>';
+  // === PRICES ROW (below bar, high contrast) ===
+  var slColor   = isLong ? 'var(--red)'   : 'var(--green)';
+  var tp1Color  = isLong ? 'var(--green)' : 'var(--red)';
+  var rrTxt = t2 ? ('1:' + rr1 + ' / 1:' + rr2) : ('1:' + rr1);
+
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px;gap:4px">';
+  // SL side
+  html += '<div style="display:flex;align-items:center;gap:4px">';
+  html += '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:' + slColor + '">' + (isLong ? s : (t2||t1)) + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">−' + slDist + 'p</span>';
+  html += '</div>';
   // Entry center
-  html += '<div style="font-family:var(--mono);font-size:12px;color:' + entryColor + ';font-weight:600">⬥ ' + e + '</div>';
-  // TP distances + R:R
-  var rrTxt = t2 ? ('1:' + rr1 + ' / 1:' + rr2) : ('R:R 1:' + rr1);
-  html += '<div style="font-family:var(--mono);font-size:10px;color:rgba(0,208,132,0.7)">+' + (tp2Dist||tp1Dist) + 'p &nbsp;<span style="background:rgba(0,208,132,0.15);border:1px solid rgba(0,208,132,0.3);padding:1px 6px;border-radius:3px;color:#00d084;font-size:10px">' + rrTxt + '</span></div>';
+  html += '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + entryColor + ';background:var(--surface2);border:1px solid var(--border);padding:1px 10px;border-radius:4px">⬥ ' + e + '</div>';
+  // TP side
+  html += '<div style="display:flex;align-items:center;gap:4px">';
+  html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
+  if (t2) html += '<span style="font-family:var(--mono);font-size:10px;color:' + tp1Color + ';opacity:0.7">' + (isLong ? t1 : t2) + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:' + tp1Color + '">' + (isLong ? (t2||t1) : t1) + '</span>';
+  html += '<span style="background:var(--surface2);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-family:var(--mono);font-size:10px;color:var(--muted)">' + rrTxt + '</span>';
+  html += '</div>';
   html += '</div>';
 
   html += '</div>';
