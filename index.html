@@ -231,7 +231,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <!-- FILTER BAR -->
   <div class="filter-bar">
     <span class="filter-label">📅 תאריך:</span>
-    <input type="text" class="date-input" id="dateFilter" placeholder="dd/mm/yyyy" maxlength="10" style="width:100px;text-align:center" oninput="onDateTextInput(this.value)">
+    <input type="date" class="date-input" id="dateFilter">
     <button class="quick-btn active" id="btnToday" onclick="setQuickDate(0)">היום</button>
     <button class="quick-btn" id="btnYest" onclick="setQuickDate(-1)">אתמול</button>
     <button class="quick-btn" id="btnWeek" onclick="setQuickDate(-7)">שבוע</button>
@@ -553,8 +553,8 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var tp2Price = isLong ? (t2||t1) : t1;
   var tp1Price = t2 ? (isLong ? t1 : t2) : null;
 
-  // LONG anchored right, SHORT anchored left
-  var align = isLong ? 'margin-left:auto' : 'margin-right:auto';
+  // LONG anchored left, SHORT anchored right
+  var align = isLong ? 'margin-right:auto' : 'margin-left:auto';
   html += '<div style="position:relative;direction:ltr;width:' + barW + '%;' + align + '">';
 
   // SL label
@@ -757,15 +757,7 @@ function resultLabel(r) {
 
 function todayStr() {
   var d = new Date();
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
-}
-
-// Convert dd/mm/yyyy → yyyy-mm-dd for comparison
-function displayToIso(val) {
-  if (!val || val.length < 10) return '';
-  var p = val.split('/');
-  if (p.length !== 3) return '';
-  return p[2] + '-' + p[1] + '-' + p[0];
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
 function onDateTextInput(val) {
@@ -780,7 +772,7 @@ function setQuickDate(offset) {
     document.getElementById('dateFilter').value = '';
   } else {
     var d = new Date(); d.setDate(d.getDate() + offset);
-    var val = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+    var val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     document.getElementById('dateFilter').value = val;
     if (offset === 0) document.getElementById('btnToday').classList.add('active');
     else if (offset === -1) document.getElementById('btnYest').classList.add('active');
@@ -790,13 +782,10 @@ function setQuickDate(offset) {
 }
 
 function applyFilter() {
-  var rawVal = document.getElementById('dateFilter').value;
-  var dateVal = displayToIso(rawVal);
+  var dateVal = document.getElementById('dateFilter').value;
   var filtered;
-  if (!rawVal) {
+  if (!dateVal) {
     filtered = allSignals;
-  } else if (!dateVal) {
-    filtered = allSignals; // incomplete input — show all
   } else {
     var isRange = document.getElementById('btnWeek').classList.contains('active');
     filtered = allSignals.filter(function(it) {
@@ -953,9 +942,8 @@ function toggleTheme() {
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
   // Redraw charts with updated colors
   if (allSignals.length) updateAnalysis(allSignals.filter(function(it){
-    var rawVal = document.getElementById('dateFilter').value;
-    var dateVal = displayToIso(rawVal);
-    if (!rawVal || !dateVal) return true;
+    var dateVal = document.getElementById('dateFilter').value;
+    if (!dateVal) return true;
     var d = new Date(it.SignalTime);
     var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     return document.getElementById('btnWeek').classList.contains('active') ? ds >= dateVal : ds === dateVal;
