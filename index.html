@@ -240,6 +240,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div style="margin-right:auto;display:flex;gap:4px">
       <button class="quick-btn active" id="tabSignals" onclick="switchTab('signals')">📡 סיגנלים</button>
       <button class="quick-btn" id="tabAnalytics" onclick="switchTab('analytics')">📈 אנליטיקס</button>
+      <button class="quick-btn" id="tabLegend" onclick="switchTab('legend')">📖 מקרא</button>
     </div>
   </div>
 
@@ -278,6 +279,78 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   </div>
 
   <!-- ANALYTICS PANEL -->
+  <div id="legendPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;max-width:1100px;margin:0 auto">
+
+      <!-- Verdict -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">🎯 פסיקת קלוד (Verdict)</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><span class="verdict-badge v-take">TAKE</span><span style="font-size:12px;color:var(--muted)">כנס לעסקה — ביטחון גבוה</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="verdict-badge v-skip">SKIP</span><span style="font-size:12px;color:var(--muted)">דלג — תנאים לא מתאימים</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="verdict-badge v-wait">WAIT</span><span style="font-size:12px;color:var(--muted)">המתן לאישור נוסף</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="verdict-badge v-neutral">NEUTRAL</span><span style="font-size:12px;color:var(--muted)">ניטרלי — אין המלצה ברורה</span></div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">📊 תוצאה (Result)</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><span class="res-badge r-pending">PENDING ⏳</span><span style="font-size:12px;color:var(--muted)">עסקה פתוחה, ממתין לתוצאה</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="res-badge r-win">TP1 ✅</span><span style="font-size:12px;color:var(--muted)">הגיע ל-Take Profit 1</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="res-badge r-win">TP2 ✅</span><span style="font-size:12px;color:var(--muted)">הגיע ל-Take Profit 2</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="res-badge r-loss">SL ❌</span><span style="font-size:12px;color:var(--muted)">פגע ב-Stop Loss</span></div>
+        </div>
+      </div>
+
+      <!-- Direction -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">📐 כיוון (Direction)</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><span class="dir-badge dir-long">▲ LONG</span><span style="font-size:12px;color:var(--muted)">עסקת קנייה — הבר צמוד שמאל</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="dir-badge dir-short">▼ SHORT</span><span style="font-size:12px;color:var(--muted)">עסקת מכירה — הבר צמוד ימין</span></div>
+        </div>
+      </div>
+
+      <!-- Price Bar -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">📏 סרגל מחירים</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--muted)">
+          <div>🔴 <b style="color:var(--red)">SL</b> — אזור Stop Loss (הפסד)</div>
+          <div>🟢 <b style="color:var(--green)">TP</b> — אזור Take Profit (רווח)</div>
+          <div>⬥ — מחיר כניסה (Entry)</div>
+          <div>קו דק בתוך ה-TP — רמת TP1 ביניים</div>
+          <div style="margin-top:4px">גודל הסרגל יחסי לטווח הסיגנל</div>
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">⭐ ציון קלוד (Score)</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--muted)">
+          <div><b style="color:#00d084">8–10</b> — ביטחון גבוה מאוד</div>
+          <div><b style="color:#ffd700">6–7</b> — ביטחון בינוני</div>
+          <div><b style="color:#ff4560">1–5</b> — ביטחון נמוך</div>
+        </div>
+      </div>
+
+      <!-- R:R -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">⚖️ יחס סיכון/סיכוי (R:R)</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--muted)">
+          <div><b>1:1.00</b> — על כל נקודת סיכון, 1 נקודת רווח</div>
+          <div><b>1:2.00</b> — על כל נקודת סיכון, 2 נקודות רווח</div>
+          <div style="margin-top:4px">פורמט: <b>1:TP1 / 1:TP2</b> כשיש שני יעדים</div>
+          <div>−Xp = מרחק ב-נקודות ל-SL</div>
+          <div>+Xp = מרחק ב-נקודות ל-TP</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div id="analyticsPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <!-- P&L Chart -->
@@ -962,10 +1035,12 @@ function toggleTheme() {
 
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById('mainPanel').style.display = tab === 'signals' ? '' : 'none';
+  document.getElementById('mainPanel').style.display     = tab === 'signals'   ? '' : 'none';
   document.getElementById('analyticsPanel').style.display = tab === 'analytics' ? '' : 'none';
-  document.getElementById('tabSignals').classList.toggle('active', tab === 'signals');
+  document.getElementById('legendPanel').style.display    = tab === 'legend'    ? '' : 'none';
+  document.getElementById('tabSignals').classList.toggle('active',  tab === 'signals');
   document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
+  document.getElementById('tabLegend').classList.toggle('active',   tab === 'legend');
   if (tab === 'analytics') updateAnalytics(allSignals);
 }
 
