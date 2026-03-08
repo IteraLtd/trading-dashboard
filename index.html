@@ -14,6 +14,13 @@
   --yellow:#ffa500;--blue:#4da6ff;
   --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans Hebrew',sans-serif;
 }
+body.light {
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8eef5;--border:#d0dae6;
+  --text:#1a2535;--muted:#7a90a8;--green:#00a86b;--red:#e0304a;
+  --yellow:#d48000;--blue:#1a7fd4;
+}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:13px;padding:4px 10px;border-radius:4px;cursor:pointer;transition:all .2s}
+.theme-btn:hover{border-color:var(--blue);color:var(--blue)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
 #loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px}
@@ -216,6 +223,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <span id="lastUpdate" style="margin-right:6px"></span>
       </span>
       <button class="sys-btn" id="sysBtn" onclick="toggleSystem()">⏳ טוען...</button>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="החלף ערכת צבעים">🌙</button>
       <button class="logout-btn" id="logoutBtn">יציאה</button>
     </div>
   </header>
@@ -863,6 +871,21 @@ async function refresh() {
 var pnlChart = null;
 var currentTab = 'signals';
 
+function toggleTheme() {
+  var isLight = document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent = isLight ? '🌑' : '🌙';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  // Redraw charts with updated colors
+  if (allSignals.length) updateAnalysis(allSignals.filter(function(it){
+    var dateVal = document.getElementById('dateFilter').value;
+    if (!dateVal) return true;
+    var d = new Date(it.SignalTime);
+    var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return document.getElementById('btnWeek').classList.contains('active') ? ds >= dateVal : ds === dateVal;
+  }));
+  if (currentTab === 'analytics') updateAnalytics(allSignals);
+}
+
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('mainPanel').style.display = tab === 'signals' ? '' : 'none';
@@ -965,6 +988,12 @@ document.getElementById('popupClose').onclick = function() { document.getElement
 document.getElementById('overlay').onclick = function(e) { if (e.target.id === 'overlay') document.getElementById('overlay').classList.remove('show'); };
 
 (async function init() {
+  // Apply saved theme
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+    var tb = document.getElementById('themeBtn');
+    if (tb) tb.textContent = '🌑';
+  }
   var app = await getApp();
   // account set by handleRedirectPromise = just came back from Microsoft
   if (account) { startDash(); return; }
