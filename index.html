@@ -551,74 +551,53 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
 
   var barW = barPct.toFixed(0);
 
-  // LONG: anchored RIGHT → SL on right, TP on left (bar direction rtl)
-  // SHORT: anchored LEFT → SL on left, TP on right (bar direction ltr)
-  // Both bars: SL zone first (closest to entry divider anchor), then TP zone
-  // We always render: [SL zone][divider][TP zone] but flip visually
+  // Full-width wrapper — bar floats right for LONG, left for SHORT
+  var align = isLong ? 'margin-left:auto' : 'margin-right:auto';
+  html += '<div style="position:relative;direction:ltr;width:' + barW + '%;' + align + '">';
 
+  // SL label
+  var slAnchor = isLong ? 'right:0' : 'left:0';
+  html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;' + slAnchor + ';display:flex;align-items:baseline;gap:2px;white-space:nowrap">';
+  html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + slColor + '">' + slPrice + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">−' + slDist + 'p</span>';
+  html += '</div>';
+
+  // Entry label — above divider (for LONG: slW% from right; for SHORT: slW% from left)
   if (isLong) {
-    // Anchor to right, bar grows leftward
-    // SL label: right side, TP label: left side
-    // entry divider at (tpW)% from the left = (slW)% from the right
-    var entryFromRight = parseFloat(slW);
-    html += '<div style="position:relative;direction:ltr;width:' + barW + '%;margin-left:auto">';
+    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;right:' + parseFloat(slW) + '%;transform:translateX(50%);white-space:nowrap">';
+  } else {
+    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;left:' + parseFloat(slW) + '%;transform:translateX(-50%);white-space:nowrap">';
+  }
+  html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + entryColor + '">⬥ ' + e + '</span>';
+  html += '</div>';
 
-    // SL label — right edge
-    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;right:0;display:flex;align-items:baseline;gap:2px;white-space:nowrap">';
-    html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + slColor + '">' + slPrice + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">−' + slDist + 'p</span>';
-    html += '</div>';
-    // Entry label — above divider
-    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;right:' + entryFromRight + '%;transform:translateX(50%);white-space:nowrap">';
-    html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + entryColor + '">⬥ ' + e + '</span>';
-    html += '</div>';
-    // TP label — left edge
-    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;left:0;display:flex;align-items:baseline;gap:3px;white-space:nowrap">';
-    html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px">' + rrTxt + '</span>';
-    if (tp1Price) html += '<span style="font-family:var(--mono);font-size:10px;color:' + tpColor + ';opacity:0.6">' + tp1Price + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + tpColor + '">' + tp2Price + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
-    html += '</div>';
-    // BAR: TP on left, SL on right (reversed render)
-    html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px;margin-top:18px">';
+  // TP label
+  var tpAnchor = isLong ? 'left:0' : 'right:0';
+  html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;' + tpAnchor + ';display:flex;align-items:baseline;gap:3px;white-space:nowrap">';
+  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px">' + rrTxt + '</span>';
+  if (tp1Price) html += '<span style="font-family:var(--mono);font-size:10px;color:' + tpColor + ';opacity:0.6">' + tp1Price + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + tpColor + '">' + tp2Price + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
+  html += '</div>';
+
+  // BAR — LONG: TP left → SL right; SHORT: SL left → TP right
+  html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px;margin-top:18px">';
+  if (isLong) {
+    // TP zone on left, SL zone on right
     html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:4px 0 0 4px;position:relative">';
     if (t2) html += '<div style="position:absolute;right:' + (100-parseFloat(tp1LineW)) + '%;top:0;bottom:0;width:1px;background:' + entryColor + ';opacity:0.5"></div>';
     html += '</div>';
     html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0"></div>';
     html += '<div style="width:' + slW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:0 4px 4px 0"></div>';
-    html += '</div>';
-
   } else {
-    // SHORT: anchor to left, bar grows rightward
-    // SL label: left edge, TP label: right edge
-    var entryFromLeft = parseFloat(slW);
-    html += '<div style="position:relative;direction:ltr;width:' + barW + '%">';
-
-    // SL label — left edge
-    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;left:0;display:flex;align-items:baseline;gap:2px;white-space:nowrap">';
-    html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + slColor + '">' + slPrice + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">−' + slDist + 'p</span>';
-    html += '</div>';
-    // Entry label — above divider
-    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;left:' + entryFromLeft + '%;transform:translateX(-50%);white-space:nowrap">';
-    html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + entryColor + '">⬥ ' + e + '</span>';
-    html += '</div>';
-    // TP label — right edge
-    html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;right:0;display:flex;align-items:baseline;gap:3px;white-space:nowrap">';
-    html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
-    if (tp1Price) html += '<span style="font-family:var(--mono);font-size:10px;color:' + tpColor + ';opacity:0.6">' + tp1Price + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + tpColor + '">' + tp2Price + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px">' + rrTxt + '</span>';
-    html += '</div>';
-    // BAR: SL on left, TP on right
-    html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px;margin-top:18px">';
+    // SL zone on left, TP zone on right
     html += '<div style="width:' + slW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:4px 0 0 4px"></div>';
     html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0"></div>';
     html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 4px 4px 0;position:relative">';
     if (t2) html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:' + entryColor + ';opacity:0.5"></div>';
     html += '</div>';
-    html += '</div>';
   }
+  html += '</div>';
 
   html += '</div>';
   html += '</div>';
