@@ -231,11 +231,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <!-- FILTER BAR -->
   <div class="filter-bar">
     <span class="filter-label">📅 תאריך:</span>
-    <input type="date" class="date-input" id="dateFilter">
-    <button class="quick-btn" id="btnToday" onclick="setQuickDate(0)">היום</button>
+    <input type="text" class="date-input" id="dateFilter" placeholder="dd/mm/yyyy" maxlength="10" style="width:100px;text-align:center" oninput="onDateTextInput(this.value)">
+    <button class="quick-btn active" id="btnToday" onclick="setQuickDate(0)">היום</button>
     <button class="quick-btn" id="btnYest" onclick="setQuickDate(-1)">אתמול</button>
     <button class="quick-btn" id="btnWeek" onclick="setQuickDate(-7)">שבוע</button>
-    <button class="quick-btn active" id="btnAll" onclick="setQuickDate(null)">הכל</button>
+    <button class="quick-btn" id="btnAll" onclick="setQuickDate(null)">הכל</button>
     <span class="filter-count" id="filterCount"></span>
     <div style="margin-right:auto;display:flex;gap:4px">
       <button class="quick-btn active" id="tabSignals" onclick="switchTab('signals')">📡 סיגנלים</button>
@@ -452,8 +452,8 @@ async function signIn() {
 function startDash() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  // Default to "הכל"
-  setQuickDate(null);
+  // Default to "היום"
+  setQuickDate(0);
   document.getElementById('dateFilter').onchange = function() {
     ['btnToday','btnYest','btnWeek','btnAll'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
     applyFilter();
@@ -757,7 +757,20 @@ function resultLabel(r) {
 
 function todayStr() {
   var d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+}
+
+// Convert dd/mm/yyyy → yyyy-mm-dd for comparison
+function displayToIso(val) {
+  if (!val || val.length < 10) return '';
+  var p = val.split('/');
+  if (p.length !== 3) return '';
+  return p[2] + '-' + p[1] + '-' + p[0];
+}
+
+function onDateTextInput(val) {
+  ['btnToday','btnYest','btnWeek','btnAll'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  applyFilter();
 }
 
 function setQuickDate(offset) {
@@ -767,7 +780,7 @@ function setQuickDate(offset) {
     document.getElementById('dateFilter').value = '';
   } else {
     var d = new Date(); d.setDate(d.getDate() + offset);
-    var val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    var val = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
     document.getElementById('dateFilter').value = val;
     if (offset === 0) document.getElementById('btnToday').classList.add('active');
     else if (offset === -1) document.getElementById('btnYest').classList.add('active');
@@ -777,10 +790,13 @@ function setQuickDate(offset) {
 }
 
 function applyFilter() {
-  var dateVal = document.getElementById('dateFilter').value;
+  var rawVal = document.getElementById('dateFilter').value;
+  var dateVal = displayToIso(rawVal);
   var filtered;
-  if (!dateVal) {
+  if (!rawVal) {
     filtered = allSignals;
+  } else if (!dateVal) {
+    filtered = allSignals; // incomplete input — show all
   } else {
     var isRange = document.getElementById('btnWeek').classList.contains('active');
     filtered = allSignals.filter(function(it) {
@@ -937,8 +953,9 @@ function toggleTheme() {
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
   // Redraw charts with updated colors
   if (allSignals.length) updateAnalysis(allSignals.filter(function(it){
-    var dateVal = document.getElementById('dateFilter').value;
-    if (!dateVal) return true;
+    var rawVal = document.getElementById('dateFilter').value;
+    var dateVal = displayToIso(rawVal);
+    if (!rawVal || !dateVal) return true;
     var d = new Date(it.SignalTime);
     var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     return document.getElementById('btnWeek').classList.contains('active') ? ds >= dateVal : ds === dateVal;
