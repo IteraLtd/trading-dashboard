@@ -509,7 +509,8 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var maxProp    = tp2PropRaw || tp1PropRaw;
   var totalRange = slPropRaw + maxProp;
 
-  var barPct = maxRange && maxRange > 0 ? Math.max(18, (totalRange / maxRange * 100)) : 100;
+  // Always full width - proportional scaling removed
+  var barW = 100;
 
   var slW      = (slPropRaw / totalRange * 100).toFixed(1);
   var tpW      = (maxProp   / totalRange * 100).toFixed(1);
@@ -551,9 +552,9 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
 
   var barW = barPct.toFixed(0);
 
-  // Full-width wrapper — bar floats right for LONG, left for SHORT
-  var align = isLong ? 'margin-left:auto' : 'margin-right:auto';
-  html += '<div style="position:relative;direction:ltr;width:' + barW + '%;' + align + '">';
+  // Full width, centered - no alignment offset
+  var align = '';
+  html += '<div style="position:relative;direction:ltr;width:' + barW + '%">';
 
   // SL label
   var slAnchor = isLong ? 'right:0' : 'left:0';
