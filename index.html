@@ -540,7 +540,7 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var leftColor  = isLong ? '#ff4560' : '#00d084';
   var rightColor = isLong ? '#00d084' : '#ff4560';
 
-  var html = '<div style="margin:4px 0">';
+  var html = '<div style="margin:4px 0;padding-top:22px">';
 
   var slColor  = isLong ? 'var(--red)'   : 'var(--green)';
   var tpColor  = isLong ? 'var(--green)' : 'var(--red)';
@@ -559,7 +559,7 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var slAnchor = isLong ? 'right:0' : 'left:0';
   html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;' + slAnchor + ';display:flex;align-items:baseline;gap:2px;white-space:nowrap">';
   html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + slColor + '">' + slPrice + '</span>';
-  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">−' + slDist + 'p</span>';
+  html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">−' + slDist + 'p</span>';
   html += '</div>';
 
   // Entry label — above divider (for LONG: slW% from right; for SHORT: slW% from left)
@@ -574,15 +574,15 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   // TP label
   var tpAnchor = isLong ? 'left:0' : 'right:0';
   html += '<div style="position:absolute;bottom:100%;margin-bottom:3px;' + tpAnchor + ';display:flex;align-items:baseline;gap:3px;white-space:nowrap">';
-  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px">' + rrTxt + '</span>';
-  if (tp1Price) html += '<span style="font-family:var(--mono);font-size:10px;color:' + tpColor + ';opacity:0.6">' + tp1Price + '</span>';
+  html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px">' + rrTxt + '</span>';
+  if (tp1Price) html += '<span style="font-family:var(--mono);font-size:11px;color:' + tpColor + ';opacity:0.6">' + tp1Price + '</span>';
   html += '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:' + tpColor + '">' + tp2Price + '</span>';
-  html += '<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
+  html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">+' + (tp2Dist||tp1Dist) + 'p</span>';
   html += '</div>';
 
   // BAR — LONG: TP left → SL right; SHORT: SL left → TP right
-  html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px;margin-top:18px">';
-  if (isLong) {
+  html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px">';
+    if (isLong) {
     // TP zone on left, SL zone on right
     html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:4px 0 0 4px;position:relative">';
     if (t2) html += '<div style="position:absolute;right:' + (100-parseFloat(tp1LineW)) + '%;top:0;bottom:0;width:1px;background:' + entryColor + ';opacity:0.5"></div>';
