@@ -1040,6 +1040,8 @@ async function refresh() {
     loadTradingStats();
     if (scans.length > 0) { console.log('SCAN KEYS:', JSON.stringify(Object.keys(scans[0]))); console.log('SCAN DATA:', JSON.stringify(scans[0])); }
     if (allSignals.length > 0) console.log('SignalTime raw:', allSignals[0].SignalTime);
+    if (allSignals.length > 0) console.log('SIGNAL KEYS:', JSON.stringify(Object.keys(allSignals[0])));
+    if (allSignals.length > 0) console.log('SIGNAL TP1:', allSignals[0].TP1, '| TP2:', allSignals[0].TP2, '| Entry:', allSignals[0].Entry, '| SL:', allSignals[0].SL);
     applyFilter();
     renderScans(scans);
     dot.className = 'dot';
