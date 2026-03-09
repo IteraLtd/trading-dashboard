@@ -223,6 +223,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <span id="lastUpdate" style="margin-right:8px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--blue)"></span>
       </span>
       <button class="sys-btn" id="sysBtn" onclick="toggleSystem()">⏳ טוען...</button>
+      <button class="theme-btn" id="soundBtn" onclick="toggleSound()" title="התראות קוליות">🔇</button>
       <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="החלף ערכת צבעים">🌙</button>
       <button class="logout-btn" id="logoutBtn">יציאה</button>
     </div>
@@ -542,6 +543,7 @@ function startDash() {
     applyFilter();
   };
   if (Notification && Notification.permission === 'default') Notification.requestPermission();
+  initSoundBtn();
   loadSystemStatus();
   refresh();
   setInterval(refresh, REFRESH);
@@ -705,6 +707,7 @@ function renderSignals(items) {
 
   if (!isFirst && lastSigId && items[0].ID !== lastSigId) {
     showPopup(items[0]);
+    playSignalSound(items[0].Direction, items[0].ClaudeVerdict);
     if (Notification.permission === 'granted') {
       new Notification('🎯 ' + (items[0].ClaudeVerdict||'') + ': ' + (items[0].Direction||'') + ' ' + (items[0].Ticker||''), {
         body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'')
@@ -718,7 +721,7 @@ function renderSignals(items) {
   for (var i = 0; i < items.length; i++) {
     var it = items[i];
     var e = parseFloat(it.Entry||0), s = parseFloat(it.SL||0);
-    var t2 = parseFloat(it['_x0054_P2']||0) || parseFloat(it['_x0054_P1']||0);
+    var t2 = parseFloat(it['TP2']||0) || parseFloat(it['TP1']||0);
     if (e && s && t2) {
       var r = Math.abs(e - s) + Math.abs(t2 - e);
       if (r > maxRange) maxRange = r;
@@ -731,8 +734,8 @@ function renderSignals(items) {
     var v = (it.ClaudeVerdict||'').toLowerCase();
     var d = (it.Direction||'').toLowerCase();
     var r = (it.Result||'PENDING').toUpperCase();
-    var tp1 = it['_x0054_P1'] || '';
-    var tp2 = it['_x0054_P2'] || '';
+    var tp1 = it['TP1'] || '';
+    var tp2 = it['TP2'] || '';
     var entry = it.Entry || '';
     var sl = it.SL || '';
     var vClass = v === 'take' ? 'v-take' : v === 'skip' ? 'v-skip' : v === 'wait' ? 'v-wait' : 'v-neutral';
@@ -815,8 +818,8 @@ function updateStats(items) {
 function showPopup(item) {
   var v = (item.ClaudeVerdict||'').toLowerCase();
   var d = (item.Direction||'').toLowerCase();
-  var tp1 = item['_x0054_P1'] || '—';
-  var tp2 = item['_x0054_P2'] || '—';
+  var tp1 = item['TP1'] || '—';
+  var tp2 = item['TP2'] || '—';
   document.getElementById('popupHdr').className = 'popup-hdr ' + (v || 'neutral');
   document.getElementById('popupVerdict').textContent = (v === 'take' ? '🎯' : v === 'skip' ? '⛔' : '⏳') + ' ' + (item.ClaudeVerdict||'');
   document.getElementById('popupVerdict').style.color = v === 'take' ? 'var(--green)' : v === 'skip' ? 'var(--red)' : 'var(--yellow)';
@@ -1053,6 +1056,40 @@ async function refresh() {
 
 var pnlChart = null;
 var currentTab = 'signals';
+
+// === SOUND ALERTS ===
+var soundEnabled = localStorage.getItem('sound') !== 'off';
+function initSoundBtn() {
+  document.getElementById('soundBtn').textContent = soundEnabled ? '🔔' : '🔇';
+}
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('sound', soundEnabled ? 'on' : 'off');
+  document.getElementById('soundBtn').textContent = soundEnabled ? '🔔' : '🔇';
+}
+function playSignalSound(direction, verdict) {
+  if (!soundEnabled) return;
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var isLong = (direction||'').toUpperCase() === 'LONG';
+    var isTake = (verdict||'').toUpperCase() === 'TAKE';
+    // LONG = ascending (low→high), SHORT = descending (high→low)
+    var notes = isLong ? [330, 415, 523] : [523, 415, 330];
+    var gain  = isTake ? 0.35 : 0.18;
+    var wave  = isTake ? 'sine' : 'triangle';
+    notes.forEach(function(freq, i) {
+      var osc = ctx.createOscillator();
+      var g   = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = wave; osc.frequency.value = freq;
+      var t = ctx.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + 0.04);
+      g.gain.linearRampToValueAtTime(0, t + 0.22);
+      osc.start(t); osc.stop(t + 0.25);
+    });
+  } catch(e) {}
+}
 
 function toggleTheme() {
   var isLight = document.body.classList.toggle('light');
