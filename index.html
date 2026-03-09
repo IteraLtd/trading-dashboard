@@ -359,10 +359,26 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
       </div>
 
-    </div>
-  </div>
+      <!-- Chart Levels -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">📍 רמות מחיר (Chart Levels)</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12px">
+          <div style="display:flex;gap:8px"><span style="color:#f85149;font-weight:700;min-width:52px">DR</span><span style="color:var(--muted)">Daily Resistance — התנגדות יומית</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#3fb950;font-weight:700;min-width:52px">DS</span><span style="color:var(--muted)">Daily Support — תמיכה יומית</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#f85149;font-weight:700;min-width:52px">4hR</span><span style="color:var(--muted)">4h Resistance — התנגדות 4 שעות</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#3fb950;font-weight:700;min-width:52px">4hS</span><span style="color:var(--muted)">4h Support — תמיכה 4 שעות</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#f85149;font-weight:700;min-width:52px">1hR</span><span style="color:var(--muted)">1h Resistance — התנגדות שעתית</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#3fb950;font-weight:700;min-width:52px">1hS</span><span style="color:var(--muted)">1h Support — תמיכה שעתית</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#f85149;font-weight:700;min-width:52px">PDH</span><span style="color:var(--muted)">Previous Day High — שיא יום קודם</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#3fb950;font-weight:700;min-width:52px">PDL</span><span style="color:var(--muted)">Previous Day Low — שפל יום קודם</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#ffd700;font-weight:700;min-width:52px">RN</span><span style="color:var(--muted)">Round Number — מחיר עגול (×100)</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#d2a8ff;font-weight:700;min-width:52px">SO</span><span style="color:var(--muted)">Session Open — פתיחת מסחר</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#79c0ff;font-weight:700;min-width:52px">WS</span><span style="color:var(--muted)">Weekly Support — תמיכה שבועית</span></div>
+        </div>
+      </div>
 
-  <div id="analyticsPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
+    </div>
+  </div> style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <!-- P&L Chart -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
