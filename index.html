@@ -714,7 +714,9 @@ function renderSignals(items) {
 
   if (!isFirst && lastSigId && items[0].ID !== lastSigId) {
     showPopup(items[0]);
-    playSignalSound(items[0].Direction, items[0].ClaudeVerdict);
+    if ((items[0].ClaudeVerdict||'').toUpperCase() === 'TAKE') {
+      playSignalSound(items[0].Direction, items[0].ClaudeVerdict);
+    }
     if (Notification.permission === 'granted') {
       new Notification('🎯 ' + (items[0].ClaudeVerdict||'') + ': ' + (items[0].Direction||'') + ' ' + (items[0].Ticker||''), {
         body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'')
