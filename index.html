@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MNQ Trading Dashboard</title>
-<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js">
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Hebrew:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
@@ -1348,6 +1349,14 @@ document.getElementById('overlay').onclick = function(e) { if (e.target.id === '
   // account set by handleRedirectPromise = just came back from Microsoft
   if (account) { startDash(); return; }
   // Check cached session
+
+
+  var accounts = app.getAllAccounts();
+  if (accounts.length > 0) { account = accounts[0]; startDash(); return; }
+  // Not logged in - show login
+  document.getElementById('loginScreen').style.display = 'flex';
+})();
+
 // ===================== SETTINGS =====================
 var PRESETS = {
   conservative: { openMin:9, middayMin:8, closeMin:7, atrThresh:15, atrScore:9, volMode:'block',  label:'🛡 שמרני' },
@@ -1517,12 +1526,6 @@ async function loadSystemSettings() {
   } catch(e) {}
 }
 // ===================== END SETTINGS =====================
-
-  var accounts = app.getAllAccounts();
-  if (accounts.length > 0) { account = accounts[0]; startDash(); return; }
-  // Not logged in - show login
-  document.getElementById('loginScreen').style.display = 'flex';
-})();
 </script>
 </body>
 </html>
