@@ -202,6 +202,17 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .analysis-title{font-size:10px}
   .a-stat-val{font-size:12px}
 }
+.setting-row{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
+.setting-label{font-size:12px;color:var(--muted)}
+.setting-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue)}
+.setting-slider{width:100%;accent-color:var(--blue);cursor:pointer}
+.preset-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:12px;color:var(--fg);cursor:pointer;transition:all .15s}
+.preset-btn:hover{border-color:var(--blue);color:var(--blue)}
+.preset-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.vol-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s}
+.vol-btn.vol-active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.config-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 12px}
+.config-item button{background:none;border:none;cursor:pointer;font-size:12px;padding:2px 6px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -252,6 +263,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <button class="quick-btn active" id="tabSignals" onclick="switchTab('signals')">📡 סיגנלים</button>
       <button class="quick-btn" id="tabAnalytics" onclick="switchTab('analytics')">📈 אנליטיקס</button>
       <button class="quick-btn" id="tabLegend" onclick="switchTab('legend')">📖 מקרא</button>
+      <button class="quick-btn" id="tabSettings" onclick="switchTab('settings')">⚙️ כיוונון</button>
     </div>
   </div>
 
@@ -377,6 +389,71 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
       </div>
 
+    </div>
+  </div>
+
+
+  <!-- SETTINGS PANEL -->
+  <div id="settingsPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
+    <div style="max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">🎛 פרסטים מובנים</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button onclick="applyPreset('conservative')" class="preset-btn" id="preset-conservative">🛡 שמרני</button>
+          <button onclick="applyPreset('balanced')"     class="preset-btn" id="preset-balanced">⚖️ מאוזן</button>
+          <button onclick="applyPreset('aggressive')"   class="preset-btn" id="preset-aggressive">⚡ אגרסיבי</button>
+          <button onclick="applyPreset('scalping')"     class="preset-btn" id="preset-scalping">🎯 סקאלפינג</button>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">🔧 פרמטרים</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">⏰ OPEN — ציון מינימום</span><span class="setting-val" id="val-open-min">8</span></div>
+            <input type="range" min="5" max="10" step="1" id="open-min" oninput="onSlider('open-min')" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>5</span><span>10</span></div>
+          </div>
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">🌤 MIDDAY — ציון מינימום</span><span class="setting-val" id="val-midday-min">7</span></div>
+            <input type="range" min="5" max="10" step="1" id="midday-min" oninput="onSlider('midday-min')" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>5</span><span>10</span></div>
+          </div>
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">🌆 CLOSE — ציון מינימום</span><span class="setting-val" id="val-close-min">7</span></div>
+            <input type="range" min="5" max="10" step="1" id="close-min" oninput="onSlider('close-min')" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>5</span><span>10</span></div>
+          </div>
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">📊 ATR — סף תנודתיות גבוהה</span><span class="setting-val" id="val-atr-thresh">15</span></div>
+            <input type="range" min="10" max="30" step="1" id="atr-thresh" oninput="onSlider('atr-thresh')" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>10</span><span>30</span></div>
+          </div>
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">🔥 ATR גבוה — ציון מינימום</span><span class="setting-val" id="val-atr-score">9</span></div>
+            <input type="range" min="5" max="10" step="1" id="atr-score" oninput="onSlider('atr-score')" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>5</span><span>10</span></div>
+          </div>
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">📉 Volume חלש</span><span class="setting-val" id="val-vol-weak" style="font-size:11px">חוסם</span></div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button onclick="setVolMode('block')"  id="vol-block"  class="vol-btn vol-active">חוסם לגמרי</button>
+              <button onclick="setVolMode('reduce')" id="vol-reduce" class="vol-btn">מפחית ציון</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">💾 תצורות אישיות</div>
+        <div id="customConfigsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="configNameInput" placeholder="שם התצורה..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--fg);font-size:13px;direction:rtl">
+          <button onclick="saveCustomConfig()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;white-space:nowrap">💾 שמור תצורה</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button onclick="saveSettingsToSP()" id="saveSettingsBtn" style="background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">✅ שמור והפעל</button>
+        <span id="saveSettingsStatus" style="font-size:12px;color:var(--muted)"></span>
+      </div>
     </div>
   </div>
 
@@ -1083,6 +1160,7 @@ async function refresh() {
     allSignals = await fetchList('TradingPredictions', '$orderby=SignalTime%20desc&$top=100');
     var scans = await fetchList('TradingScans', '$orderby=ScanTime%20desc&$top=10');
     loadTradingStats();
+    loadSystemSettings();
     if (scans.length > 0) { console.log('SCAN KEYS:', JSON.stringify(Object.keys(scans[0]))); console.log('SCAN DATA:', JSON.stringify(scans[0])); }
     if (allSignals.length > 0) console.log('SignalTime raw:', allSignals[0].SignalTime);
     if (allSignals.length > 0) console.log('SIGNAL KEYS:', JSON.stringify(Object.keys(allSignals[0])));
@@ -1155,13 +1233,16 @@ function toggleTheme() {
 
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById('mainPanel').style.display     = tab === 'signals'   ? '' : 'none';
+  document.getElementById('mainPanel').style.display      = tab === 'signals'   ? '' : 'none';
   document.getElementById('analyticsPanel').style.display = tab === 'analytics' ? '' : 'none';
   document.getElementById('legendPanel').style.display    = tab === 'legend'    ? '' : 'none';
+  document.getElementById('settingsPanel').style.display  = tab === 'settings'  ? '' : 'none';
   document.getElementById('tabSignals').classList.toggle('active',  tab === 'signals');
   document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
   document.getElementById('tabLegend').classList.toggle('active',   tab === 'legend');
+  document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
   if (tab === 'analytics') updateAnalytics(allSignals);
+  if (tab === 'settings')  initSettingsPanel();
 }
 
 function updateAnalytics(items) {
@@ -1267,6 +1348,176 @@ document.getElementById('overlay').onclick = function(e) { if (e.target.id === '
   // account set by handleRedirectPromise = just came back from Microsoft
   if (account) { startDash(); return; }
   // Check cached session
+// ===================== SETTINGS =====================
+var PRESETS = {
+  conservative: { openMin:9, middayMin:8, closeMin:7, atrThresh:15, atrScore:9, volMode:'block',  label:'🛡 שמרני' },
+  balanced:     { openMin:8, middayMin:7, closeMin:7, atrThresh:15, atrScore:8, volMode:'block',  label:'⚖️ מאוזן' },
+  aggressive:   { openMin:7, middayMin:6, closeMin:6, atrThresh:20, atrScore:8, volMode:'reduce', label:'⚡ אגרסיבי' },
+  scalping:     { openMin:7, middayMin:7, closeMin:8, atrThresh:25, atrScore:9, volMode:'block',  label:'🎯 סקאלפינג' }
+};
+
+var currentSettings = { openMin:8, middayMin:7, closeMin:7, atrThresh:15, atrScore:9, volMode:'block' };
+var customConfigs = JSON.parse(localStorage.getItem('customConfigs') || '[]');
+
+function initSettingsPanel() {
+  applySettingsToUI(currentSettings);
+  renderCustomConfigs();
+}
+
+function applySettingsToUI(s) {
+  document.getElementById('open-min').value    = s.openMin;
+  document.getElementById('midday-min').value  = s.middayMin;
+  document.getElementById('close-min').value   = s.closeMin;
+  document.getElementById('atr-thresh').value  = s.atrThresh;
+  document.getElementById('atr-score').value   = s.atrScore;
+  document.getElementById('val-open-min').textContent   = s.openMin;
+  document.getElementById('val-midday-min').textContent = s.middayMin;
+  document.getElementById('val-close-min').textContent  = s.closeMin;
+  document.getElementById('val-atr-thresh').textContent = s.atrThresh;
+  document.getElementById('val-atr-score').textContent  = s.atrScore;
+  setVolMode(s.volMode, true);
+  // mark active preset
+  Object.keys(PRESETS).forEach(function(k) {
+    var btn = document.getElementById('preset-' + k);
+    if (btn) btn.classList.remove('active');
+  });
+}
+
+function applyPreset(key) {
+  var p = PRESETS[key];
+  if (!p) return;
+  currentSettings = Object.assign({}, p);
+  applySettingsToUI(currentSettings);
+  Object.keys(PRESETS).forEach(function(k) {
+    var btn = document.getElementById('preset-' + k);
+    if (btn) btn.classList.toggle('active', k === key);
+  });
+}
+
+function onSlider(id) {
+  var val = parseInt(document.getElementById(id).value);
+  var map = { 'open-min':'openMin','midday-min':'middayMin','close-min':'closeMin','atr-thresh':'atrThresh','atr-score':'atrScore' };
+  var valMap = { 'open-min':'val-open-min','midday-min':'val-midday-min','close-min':'val-close-min','atr-thresh':'val-atr-thresh','atr-score':'val-atr-score' };
+  if (map[id]) currentSettings[map[id]] = val;
+  document.getElementById(valMap[id]).textContent = val;
+  // clear preset active
+  Object.keys(PRESETS).forEach(function(k) {
+    var btn = document.getElementById('preset-' + k);
+    if (btn) btn.classList.remove('active');
+  });
+}
+
+function setVolMode(mode, silent) {
+  currentSettings.volMode = mode;
+  document.getElementById('vol-block').classList.toggle('vol-active',  mode === 'block');
+  document.getElementById('vol-reduce').classList.toggle('vol-active', mode === 'reduce');
+  document.getElementById('val-vol-weak').textContent = mode === 'block' ? 'חוסם' : 'מפחית';
+}
+
+function saveCustomConfig() {
+  var name = (document.getElementById('configNameInput').value || '').trim();
+  if (!name) { alert('הכנס שם לתצורה'); return; }
+  customConfigs = customConfigs.filter(function(c){ return c.name !== name; });
+  customConfigs.push({ name: name, settings: Object.assign({}, currentSettings) });
+  if (customConfigs.length > 3) customConfigs = customConfigs.slice(-3);
+  localStorage.setItem('customConfigs', JSON.stringify(customConfigs));
+  document.getElementById('configNameInput').value = '';
+  renderCustomConfigs();
+}
+
+function renderCustomConfigs() {
+  var el = document.getElementById('customConfigsList');
+  if (!customConfigs.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted)">אין תצורות שמורות עדיין</div>';
+    return;
+  }
+  el.innerHTML = customConfigs.map(function(c, i) {
+    return '<div class="config-item">' +
+      '<span style="font-size:13px;font-weight:600;flex:1">' + c.name + '</span>' +
+      '<span style="font-size:10px;color:var(--muted)">OPEN:' + c.settings.openMin + ' MID:' + c.settings.middayMin + ' ATR:' + c.settings.atrThresh + '</span>' +
+      '<button onclick="loadCustomConfig(' + i + ')" style="color:var(--blue)">טען</button>' +
+      '<button onclick="deleteCustomConfig(' + i + ')" style="color:var(--red)">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+function loadCustomConfig(i) {
+  currentSettings = Object.assign({}, customConfigs[i].settings);
+  applySettingsToUI(currentSettings);
+}
+
+function deleteCustomConfig(i) {
+  customConfigs.splice(i, 1);
+  localStorage.setItem('customConfigs', JSON.stringify(customConfigs));
+  renderCustomConfigs();
+}
+
+async function saveSettingsToSP() {
+  var btn = document.getElementById('saveSettingsBtn');
+  var status = document.getElementById('saveSettingsStatus');
+  btn.disabled = true; btn.textContent = '⏳ שומר...';
+  try {
+    var settingsJson = JSON.stringify(currentSettings);
+    // Get TradingSettings item ID for SystemSettings row
+    var items = await fetchList('TradingSettings', "$filter=Title eq 'SystemSettings'&$top=1");
+    var token = await getDigest();
+    if (items.length > 0) {
+      // Update existing
+      await fetch(SITE + "/_api/web/lists/getbytitle('TradingSettings')/items(" + items[0].ID + ")", {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + (await getToken()),
+          'Content-Type': 'application/json;odata=verbose',
+          'X-HTTP-Method': 'MERGE',
+          'IF-MATCH': '*',
+          'X-RequestDigest': token
+        },
+        body: JSON.stringify({ '__metadata': { 'type': 'SP.Data.TradingSettingsListItem' }, 'StatsJSON': settingsJson })
+      });
+    } else {
+      // Create new
+      await fetch(SITE + "/_api/web/lists/getbytitle('TradingSettings')/items", {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + (await getToken()),
+          'Content-Type': 'application/json;odata=verbose',
+          'X-RequestDigest': token
+        },
+        body: JSON.stringify({ '__metadata': { 'type': 'SP.Data.TradingSettingsListItem' }, 'Title': 'SystemSettings', 'StatsJSON': settingsJson })
+      });
+    }
+    btn.disabled = false; btn.textContent = '✅ שמור והפעל';
+    status.textContent = 'נשמר בהצלחה! ' + new Date().toLocaleTimeString('he-IL');
+    status.style.color = 'var(--green)';
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '✅ שמור והפעל';
+    status.textContent = 'שגיאה: ' + e.message;
+    status.style.color = 'var(--red)';
+  }
+}
+
+async function getDigest() {
+  try {
+    var r = await fetch(SITE + '/_api/contextinfo', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + (await getToken()), 'Accept': 'application/json;odata=verbose' }
+    });
+    var d = await r.json();
+    return d.d.GetContextWebInformation.FormDigestValue;
+  } catch(e) { return ''; }
+}
+
+async function loadSystemSettings() {
+  try {
+    var items = await fetchList('TradingSettings', "$filter=Title eq 'SystemSettings'&$top=1");
+    if (items.length > 0 && items[0].StatsJSON) {
+      var s = JSON.parse(items[0].StatsJSON);
+      currentSettings = Object.assign(currentSettings, s);
+    }
+  } catch(e) {}
+}
+// ===================== END SETTINGS =====================
+
   var accounts = app.getAllAccounts();
   if (accounts.length > 0) { account = accounts[0]; startDash(); return; }
   // Not logged in - show login
