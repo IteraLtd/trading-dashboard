@@ -57,7 +57,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .filter-count{margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
 
 /* ANALYSIS SECTION */
-.analysis-bar{background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px}
+.analysis-bar{background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:1px}
 .analysis-panel{padding:14px 18px}
 .analysis-title{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:600;letter-spacing:1px;margin-bottom:10px}
 .chart-wrap{height:90px;position:relative}
@@ -67,14 +67,29 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .a-stat-val{font-family:var(--mono);font-size:13px;font-weight:600}
 .analysis-text{font-size:12px;color:var(--text);line-height:1.6}
 .analysis-text .insight{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;padding:5px 8px;background:var(--surface);border-radius:4px;border-right:2px solid var(--blue)}
-#dynAnalysisText{font-size:12px;color:var(--text);line-height:1.7;max-height:140px;overflow-y:auto}
-#dynAnalysisText p{margin-bottom:5px;padding:4px 8px;background:var(--surface);border-radius:4px;border-right:2px solid var(--blue)}
-#dynAnalysisText .bull{border-right-color:var(--green)}
-#dynAnalysisText .bear{border-right-color:var(--red)}
-#dynAnalysisText .warn{border-right-color:var(--yellow)}
-.dyn-timer{font-family:var(--mono);font-size:10px;color:var(--muted);display:inline-block;margin-right:8px}
-.dyn-spin{display:inline-block;animation:spin .8s linear infinite;font-size:11px}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+/* Dynamic Analysis Panel */
+#dynPanel{background:var(--surface2);border-bottom:1px solid var(--border);padding:12px 18px;display:none}
+#dynPanel.visible{display:block}
+.dyn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dyn-title{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:600;letter-spacing:1px}
+.dyn-controls{display:flex;align-items:center;gap:8px}
+.dyn-timer-lbl{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.dyn-refresh-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:2px 8px;border-radius:3px;cursor:pointer;font-family:var(--mono);transition:all .2s}
+.dyn-refresh-btn:hover{border-color:var(--blue);color:var(--blue)}
+.dyn-key-btn{background:none;border:1px solid var(--border);color:var(--yellow);font-size:10px;padding:2px 8px;border-radius:3px;cursor:pointer;font-family:var(--mono)}
+#dynBody{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.dyn-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--text);border-right-width:3px}
+.dyn-card.bull{border-right-color:var(--green)}
+.dyn-card.bear{border-right-color:var(--red)}
+.dyn-card.warn{border-right-color:var(--yellow)}
+.dyn-card.info{border-right-color:var(--blue)}
+.dyn-spin{display:inline-block;animation:dspin .7s linear infinite}
+@keyframes dspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.dyn-key-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:center;justify-content:center}
+.dyn-key-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;width:380px;direction:rtl}
+.dyn-key-box input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-family:var(--mono);font-size:12px;margin:10px 0}
+.dyn-key-box button{padding:7px 18px;border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:12px;border:none}
+
 /* Inline stats row inside long/short panel */
 .inline-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
 .i-stat{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:6px 8px;text-align:center}
@@ -308,17 +323,34 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="analysis-title">🧠 ניתוח יומי</div>
       <div class="analysis-text" id="dailyAnalysis"><span style="color:var(--muted)">טוען נתונים...</span></div>
     </div>
-    <div class="analysis-panel" style="border-right:1px solid var(--border)">
-      <div class="analysis-title" style="display:flex;align-items:center;justify-content:space-between">
-        <span>🤖 ניתוח דינמי</span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span class="dyn-timer" id="dynTimer">—</span>
-          <span id="dynSpinner" style="display:none" class="dyn-spin">⟳</span>
-          <button onclick="runDynamicAnalysis(true)" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:10px;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:var(--mono)" title="רענן עכשיו">↺</button>
-        </span>
+  </div>
+
+  <!-- DYNAMIC ANALYSIS PANEL -->
+  <div id="dynPanel">
+    <div class="dyn-header">
+      <span class="dyn-title">🤖 ניתוח דינמי — Claude AI</span>
+      <div class="dyn-controls">
+        <span class="dyn-timer-lbl" id="dynTimer"></span>
+        <span id="dynSpinner" style="display:none" class="dyn-spin">⟳</span>
+        <button class="dyn-refresh-btn" onclick="runDynamicAnalysis(true)">↺ רענן</button>
+        <button class="dyn-key-btn" onclick="showKeyModal()" title="הגדר API Key">🔑</button>
       </div>
-      <div id="dynAnalysisText"><span style="color:var(--muted)">מנתח...</span></div>
     </div>
+    <div id="dynBody"><span style="color:var(--muted);font-size:12px">⟳ מאתחל ניתוח...</span></div>
+  </div>
+
+  <!-- API Key Modal -->
+  <div id="dynKeyModal" class="dyn-key-modal" style="display:none">
+    <div class="dyn-key-box">
+      <div style="font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:8px;color:var(--blue)">🔑 Anthropic API Key</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">המפתח נשמר ב-localStorage בלבד (לא נשלח לשרת)</div>
+      <input type="password" id="dynKeyInput" placeholder="sk-ant-..." />
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button onclick="saveApiKey()" style="background:var(--blue);color:#000">שמור</button>
+        <button onclick="document.getElementById('dynKeyModal').style.display='none'" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">ביטול</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ANALYTICS PANEL -->
   <div id="legendPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
@@ -1118,105 +1150,135 @@ function updateAnalysis(items) {
   document.getElementById('dailyAnalysis').innerHTML=ins.map(function(x){return '<div class="insight"><span>'+x.i+'</span><span>'+x.t+'</span></div>';}).join('');
 }
 
-// ── Dynamic Analysis (Claude API every 5 minutes) ─────────────────────────────
-var DYN_INTERVAL = 5 * 60 * 1000; // 5 min
-var dynNextRun   = 0;
-var dynTimerInterval = null;
+// ── Dynamic Analysis (Claude AI every 5 min) ─────────────────────────────────
+var DYN_INTERVAL   = 5 * 60 * 1000;
+var dynNextRun     = 0;
+var dynTimerTick   = null;
+
+function showKeyModal() {
+  var k = localStorage.getItem('claude_api_key') || '';
+  document.getElementById('dynKeyInput').value = k;
+  document.getElementById('dynKeyModal').style.display = 'flex';
+}
+function saveApiKey() {
+  var k = document.getElementById('dynKeyInput').value.trim();
+  if (k) { localStorage.setItem('claude_api_key', k); }
+  document.getElementById('dynKeyModal').style.display = 'none';
+  runDynamicAnalysis(true);
+}
 
 function updateDynTimer() {
   var el = document.getElementById('dynTimer');
   if (!el) return;
-  var remaining = Math.max(0, Math.round((dynNextRun - Date.now()) / 1000));
-  if (remaining === 0) { el.textContent = ''; return; }
-  var m = Math.floor(remaining / 60);
-  var s = remaining % 60;
-  el.textContent = m + ':' + String(s).padStart(2,'0');
+  var rem = Math.max(0, Math.round((dynNextRun - Date.now()) / 1000));
+  if (!rem) { el.textContent = ''; return; }
+  el.textContent = 'עדכון בעוד ' + Math.floor(rem/60) + ':' + String(rem%60).padStart(2,'0');
 }
 
 async function runDynamicAnalysis(manual) {
-  if (!allSignals || !allSignals.length) return;
-  var spinner = document.getElementById('dynSpinner');
-  var el      = document.getElementById('dynAnalysisText');
-  if (spinner) spinner.style.display = 'inline-block';
-  if (el) el.innerHTML = '<span style="color:var(--muted);font-size:11px">⟳ מנתח...</span>';
+  var apiKey = localStorage.getItem('claude_api_key');
+  var panel  = document.getElementById('dynPanel');
+  var body   = document.getElementById('dynBody');
+  var spin   = document.getElementById('dynSpinner');
 
-  // Build context from last 20 signals
-  var recent = allSignals.slice(0, 20);
-  var wins   = recent.filter(function(s){ return isWin((s.Result||'').toUpperCase()); }).length;
-  var losses = recent.filter(function(s){ return isLoss((s.Result||'').toUpperCase()); }).length;
-  var pending= recent.filter(function(s){ var r=(s.Result||'').toUpperCase(); return !isWin(r)&&!isLoss(r); }).length;
-  var longs  = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='LONG'; }).length;
-  var shorts = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='SHORT'; }).length;
-  var takes  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='TAKE'; }).length;
-  var skips  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='SKIP'; }).length;
-  var scores = recent.map(function(s){ return parseFloat(s.ClaudeScore)||0; }).filter(Boolean);
-  var avgSc  = scores.length ? (scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1) : 'N/A';
-  var lastSig= recent[0] || {};
-  var lastVerdict = lastSig.ClaudeVerdict || 'N/A';
-  var lastDir = lastSig.Direction || 'N/A';
-  var lastScore = lastSig.ClaudeScore || 'N/A';
-  var lastEntry = lastSig.Entry || 'N/A';
-  var lastTP1 = lastSig['OData__x0054_P1'] || 'N/A';
-  var lastTP2 = lastSig['OData__x0054_P2'] || 'N/A';
-  var lastSL  = lastSig.SL || 'N/A';
+  // Show panel
+  if (panel) panel.className = 'visible';
 
-  var prompt = 'You are an expert NQ/MNQ futures trader analyzing live trading signals.\n\n' +
-    'RECENT SIGNALS (last ' + recent.length + '):\n' +
-    '- Direction: ' + longs + ' LONG / ' + shorts + ' SHORT\n' +
-    '- Results: ' + wins + ' wins, ' + losses + ' losses, ' + pending + ' pending\n' +
-    '- Verdicts: ' + takes + ' TAKE, ' + skips + ' SKIP\n' +
-    '- Avg Claude Score: ' + avgSc + '/10\n' +
-    '- Win Rate (resolved): ' + ((wins+losses)>0 ? Math.round(wins/(wins+losses)*100)+'%' : 'N/A') + '\n\n' +
-    'LATEST SIGNAL:\n' +
-    '- Verdict: ' + lastVerdict + ' | Direction: ' + lastDir + ' | Score: ' + lastScore + '\n' +
-    '- Entry: ' + lastEntry + ' | SL: ' + lastSL + ' | TP1: ' + lastTP1 + ' | TP2: ' + lastTP2 + '\n\n' +
-    'Current time (Israel): ' + new Date().toLocaleTimeString('he-IL', {timeZone:'Asia/Jerusalem'}) + '\n\n' +
-    'Provide a SHORT dynamic market analysis in Hebrew (3-5 lines max). Format each line starting with an emoji that matches the sentiment (📈 bullish, 📉 bearish, ⚠️ warning, 🎯 opportunity, ⏸ pause). Be direct and actionable. Focus on: current market bias, signal quality trend, and immediate recommendation. No headers, no lists — just flowing insight lines.';
+  if (!apiKey) {
+    if (body) body.innerHTML = '<div class="dyn-card warn">🔑 הגדר API Key כדי להפעיל ניתוח דינמי (לחץ על 🔑)</div>';
+    return;
+  }
+
+  if (spin) spin.style.display = 'inline-block';
+  if (body) body.innerHTML = '<div class="dyn-card info"><span class="dyn-spin">⟳</span> מנתח נתונים...</div>';
+
+  // Build data summary from last 20 signals
+  var recent  = (allSignals || []).slice(0, 20);
+  var wins    = recent.filter(function(s){ return isWin((s.Result||'').toUpperCase()); }).length;
+  var losses  = recent.filter(function(s){ return isLoss((s.Result||'').toUpperCase()); }).length;
+  var pending = recent.length - wins - losses;
+  var longs   = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='LONG'; }).length;
+  var shorts  = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='SHORT'; }).length;
+  var takes   = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='TAKE'; }).length;
+  var skips   = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='SKIP'; }).length;
+  var scores  = recent.map(function(s){ return parseFloat(s.ClaudeScore)||0; }).filter(Boolean);
+  var avgSc   = scores.length ? (scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1) : 'N/A';
+  var wr      = (wins+losses) > 0 ? Math.round(wins/(wins+losses)*100)+'%' : 'N/A';
+
+  // Last 3 signals detail
+  var sigLines = recent.slice(0,3).map(function(s,i) {
+    return (i+1)+'. '+(s.Direction||'?')+' | '+( s.ClaudeVerdict||'?')+' | Score:'+(s.ClaudeScore||'?')+' | Entry:'+(s.Entry||'?')+' SL:'+(s.SL||'?')+' TP1:'+(s['OData__x0054_P1']||'?');
+  }).join('\n');
+
+  var timeIL  = new Date().toLocaleTimeString('he-IL', {timeZone:'Asia/Jerusalem', hour:'2-digit', minute:'2-digit'});
+
+  var prompt =
+    'You are an expert MNQ/NQ futures trader. Analyze these live trading signals and provide actionable insight.\n\n' +
+    'SIGNAL SUMMARY (last '+recent.length+'):\n' +
+    '- Direction bias: '+longs+' LONG / '+shorts+' SHORT\n' +
+    '- Verdicts: '+takes+' TAKE / '+skips+' SKIP\n' +
+    '- Results: '+wins+'W / '+losses+'L / '+pending+' pending | Win Rate: '+wr+'\n' +
+    '- Avg Score: '+avgSc+'/10\n\n' +
+    'LAST 3 SIGNALS:\n'+sigLines+'\n\n' +
+    'Current time (Israel): '+timeIL+'\n\n' +
+    'Write 4-5 SHORT analysis cards in Hebrew. Each card = ONE sentence starting with relevant emoji:\n' +
+    '📈 for bullish insight\n📉 for bearish insight\n⚠️ for risk/warning\n🎯 for trade opportunity\n⏸ for wait/pause\n\n' +
+    'Format: one insight per line, no headers, no markdown, just the emoji + sentence.\n' +
+    'Be specific, data-driven, and actionable. Max 15 words per line.';
 
   try {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
     });
-    var data = await resp.json();
-    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'שגיאה בניתוח';
 
-    // Parse lines and colorize by leading emoji
-    var lines = text.split('\n').filter(function(l){ return l.trim(); });
+    if (!resp.ok) {
+      var err = await resp.json();
+      throw new Error(err.error && err.error.message ? err.error.message : 'HTTP '+resp.status);
+    }
+
+    var data = await resp.json();
+    var text = data.content && data.content[0] ? data.content[0].text : '';
+
+    var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
     var html = lines.map(function(line) {
       var cls = line.startsWith('📈') ? 'bull' :
                 line.startsWith('📉') ? 'bear' :
-                line.startsWith('⚠') ? 'warn' : '';
-      return '<p class="' + cls + '">' + line + '</p>';
+                (line.startsWith('⚠') || line.startsWith('🔴')) ? 'warn' :
+                line.startsWith('🎯') ? 'bull' : 'info';
+      return '<div class="dyn-card '+cls+'">'+line+'</div>';
     }).join('');
 
-    if (el) el.innerHTML = html;
     var now = new Date();
-    var pad = function(n){ return String(n).padStart(2,'0'); };
-    var timeStr = pad(now.getHours()) + ':' + pad(now.getMinutes());
-    if (el) el.setAttribute('title', 'עודכן: ' + timeStr);
+    var ts = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    if (body) body.innerHTML = html + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;text-align:left">עודכן: '+ts+'</div>';
+
   } catch(e) {
-    if (el) el.innerHTML = '<span style="color:var(--red);font-size:11px">⚠ שגיאת ניתוח: ' + e.message + '</span>';
+    if (body) body.innerHTML = '<div class="dyn-card warn">⚠ שגיאה: '+e.message+' — בדוק API Key</div>';
     console.error('Dynamic analysis error', e);
   }
 
-  if (spinner) spinner.style.display = 'none';
+  if (spin) spin.style.display = 'none';
   dynNextRun = Date.now() + DYN_INTERVAL;
 }
 
 function startDynamicAnalysis() {
   runDynamicAnalysis(false);
-  setInterval(function() {
-    if (Date.now() >= dynNextRun) runDynamicAnalysis(false);
-  }, 10000); // check every 10s
-  if (dynTimerInterval) clearInterval(dynTimerInterval);
-  dynTimerInterval = setInterval(updateDynTimer, 1000);
+  setInterval(function(){ if (Date.now() >= dynNextRun) runDynamicAnalysis(false); }, 15000);
+  dynTimerTick = setInterval(updateDynTimer, 1000);
 }
+
+var tradingStats = null;
 
 async function loadTradingStats() {
   try {
