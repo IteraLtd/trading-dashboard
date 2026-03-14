@@ -57,7 +57,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .filter-count{margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
 
 /* ANALYSIS SECTION */
-.analysis-bar{background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:1px}
+.analysis-bar{background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px}
 .analysis-panel{padding:14px 18px}
 .analysis-title{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:600;letter-spacing:1px;margin-bottom:10px}
 .chart-wrap{height:90px;position:relative}
@@ -67,6 +67,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .a-stat-val{font-family:var(--mono);font-size:13px;font-weight:600}
 .analysis-text{font-size:12px;color:var(--text);line-height:1.6}
 .analysis-text .insight{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;padding:5px 8px;background:var(--surface);border-radius:4px;border-right:2px solid var(--blue)}
+#dynAnalysisText{font-size:12px;color:var(--text);line-height:1.7;max-height:140px;overflow-y:auto}
+#dynAnalysisText p{margin-bottom:5px;padding:4px 8px;background:var(--surface);border-radius:4px;border-right:2px solid var(--blue)}
+#dynAnalysisText .bull{border-right-color:var(--green)}
+#dynAnalysisText .bear{border-right-color:var(--red)}
+#dynAnalysisText .warn{border-right-color:var(--yellow)}
+.dyn-timer{font-family:var(--mono);font-size:10px;color:var(--muted);display:inline-block;margin-right:8px}
+.dyn-spin{display:inline-block;animation:spin .8s linear infinite;font-size:11px}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 /* Inline stats row inside long/short panel */
 .inline-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
 .i-stat{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:6px 8px;text-align:center}
@@ -300,7 +308,17 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="analysis-title">🧠 ניתוח יומי</div>
       <div class="analysis-text" id="dailyAnalysis"><span style="color:var(--muted)">טוען נתונים...</span></div>
     </div>
-  </div>
+    <div class="analysis-panel" style="border-right:1px solid var(--border)">
+      <div class="analysis-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>🤖 ניתוח דינמי</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span class="dyn-timer" id="dynTimer">—</span>
+          <span id="dynSpinner" style="display:none" class="dyn-spin">⟳</span>
+          <button onclick="runDynamicAnalysis(true)" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:10px;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:var(--mono)" title="רענן עכשיו">↺</button>
+        </span>
+      </div>
+      <div id="dynAnalysisText"><span style="color:var(--muted)">מנתח...</span></div>
+    </div>
 
   <!-- ANALYTICS PANEL -->
   <div id="legendPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
@@ -650,6 +668,7 @@ function startDash() {
   loadSystemStatus();
   refresh();
   setInterval(refresh, REFRESH);
+  startDynamicAnalysis();
 }
 
 async function getToken() {
@@ -1099,7 +1118,105 @@ function updateAnalysis(items) {
   document.getElementById('dailyAnalysis').innerHTML=ins.map(function(x){return '<div class="insight"><span>'+x.i+'</span><span>'+x.t+'</span></div>';}).join('');
 }
 
-var tradingStats = null;
+// ── Dynamic Analysis (Claude API every 5 minutes) ─────────────────────────────
+var DYN_INTERVAL = 5 * 60 * 1000; // 5 min
+var dynNextRun   = 0;
+var dynTimerInterval = null;
+
+function updateDynTimer() {
+  var el = document.getElementById('dynTimer');
+  if (!el) return;
+  var remaining = Math.max(0, Math.round((dynNextRun - Date.now()) / 1000));
+  if (remaining === 0) { el.textContent = ''; return; }
+  var m = Math.floor(remaining / 60);
+  var s = remaining % 60;
+  el.textContent = m + ':' + String(s).padStart(2,'0');
+}
+
+async function runDynamicAnalysis(manual) {
+  if (!allSignals || !allSignals.length) return;
+  var spinner = document.getElementById('dynSpinner');
+  var el      = document.getElementById('dynAnalysisText');
+  if (spinner) spinner.style.display = 'inline-block';
+  if (el) el.innerHTML = '<span style="color:var(--muted);font-size:11px">⟳ מנתח...</span>';
+
+  // Build context from last 20 signals
+  var recent = allSignals.slice(0, 20);
+  var wins   = recent.filter(function(s){ return isWin((s.Result||'').toUpperCase()); }).length;
+  var losses = recent.filter(function(s){ return isLoss((s.Result||'').toUpperCase()); }).length;
+  var pending= recent.filter(function(s){ var r=(s.Result||'').toUpperCase(); return !isWin(r)&&!isLoss(r); }).length;
+  var longs  = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='LONG'; }).length;
+  var shorts = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='SHORT'; }).length;
+  var takes  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='TAKE'; }).length;
+  var skips  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='SKIP'; }).length;
+  var scores = recent.map(function(s){ return parseFloat(s.ClaudeScore)||0; }).filter(Boolean);
+  var avgSc  = scores.length ? (scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1) : 'N/A';
+  var lastSig= recent[0] || {};
+  var lastVerdict = lastSig.ClaudeVerdict || 'N/A';
+  var lastDir = lastSig.Direction || 'N/A';
+  var lastScore = lastSig.ClaudeScore || 'N/A';
+  var lastEntry = lastSig.Entry || 'N/A';
+  var lastTP1 = lastSig['OData__x0054_P1'] || 'N/A';
+  var lastTP2 = lastSig['OData__x0054_P2'] || 'N/A';
+  var lastSL  = lastSig.SL || 'N/A';
+
+  var prompt = 'You are an expert NQ/MNQ futures trader analyzing live trading signals.\n\n' +
+    'RECENT SIGNALS (last ' + recent.length + '):\n' +
+    '- Direction: ' + longs + ' LONG / ' + shorts + ' SHORT\n' +
+    '- Results: ' + wins + ' wins, ' + losses + ' losses, ' + pending + ' pending\n' +
+    '- Verdicts: ' + takes + ' TAKE, ' + skips + ' SKIP\n' +
+    '- Avg Claude Score: ' + avgSc + '/10\n' +
+    '- Win Rate (resolved): ' + ((wins+losses)>0 ? Math.round(wins/(wins+losses)*100)+'%' : 'N/A') + '\n\n' +
+    'LATEST SIGNAL:\n' +
+    '- Verdict: ' + lastVerdict + ' | Direction: ' + lastDir + ' | Score: ' + lastScore + '\n' +
+    '- Entry: ' + lastEntry + ' | SL: ' + lastSL + ' | TP1: ' + lastTP1 + ' | TP2: ' + lastTP2 + '\n\n' +
+    'Current time (Israel): ' + new Date().toLocaleTimeString('he-IL', {timeZone:'Asia/Jerusalem'}) + '\n\n' +
+    'Provide a SHORT dynamic market analysis in Hebrew (3-5 lines max). Format each line starting with an emoji that matches the sentiment (📈 bullish, 📉 bearish, ⚠️ warning, 🎯 opportunity, ⏸ pause). Be direct and actionable. Focus on: current market bias, signal quality trend, and immediate recommendation. No headers, no lists — just flowing insight lines.';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'שגיאה בניתוח';
+
+    // Parse lines and colorize by leading emoji
+    var lines = text.split('\n').filter(function(l){ return l.trim(); });
+    var html = lines.map(function(line) {
+      var cls = line.startsWith('📈') ? 'bull' :
+                line.startsWith('📉') ? 'bear' :
+                line.startsWith('⚠') ? 'warn' : '';
+      return '<p class="' + cls + '">' + line + '</p>';
+    }).join('');
+
+    if (el) el.innerHTML = html;
+    var now = new Date();
+    var pad = function(n){ return String(n).padStart(2,'0'); };
+    var timeStr = pad(now.getHours()) + ':' + pad(now.getMinutes());
+    if (el) el.setAttribute('title', 'עודכן: ' + timeStr);
+  } catch(e) {
+    if (el) el.innerHTML = '<span style="color:var(--red);font-size:11px">⚠ שגיאת ניתוח: ' + e.message + '</span>';
+    console.error('Dynamic analysis error', e);
+  }
+
+  if (spinner) spinner.style.display = 'none';
+  dynNextRun = Date.now() + DYN_INTERVAL;
+}
+
+function startDynamicAnalysis() {
+  runDynamicAnalysis(false);
+  setInterval(function() {
+    if (Date.now() >= dynNextRun) runDynamicAnalysis(false);
+  }, 10000); // check every 10s
+  if (dynTimerInterval) clearInterval(dynTimerInterval);
+  dynTimerInterval = setInterval(updateDynTimer, 1000);
+}
 
 async function loadTradingStats() {
   try {
