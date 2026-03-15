@@ -484,7 +484,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">🔧 פרמטרים</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="setting-row">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">⏰ OPEN — ציון מינימום</span><span class="setting-val" id="val-open-min">8</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">⏰ OPEN — ציון מינימום <span style="font-size:9px;color:var(--blue)">(Pine: score≥70)</span></span><span class="setting-val" id="val-open-min">8</span></div>
             <input type="range" min="5" max="10" step="1" id="open-min" oninput="onSlider('open-min')" class="setting-slider">
             <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>5</span><span>10</span></div>
           </div>
@@ -499,9 +499,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
             <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>5</span><span>10</span></div>
           </div>
           <div class="setting-row">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">📊 ATR — סף תנודתיות גבוהה</span><span class="setting-val" id="val-atr-thresh">15</span></div>
-            <input type="range" min="10" max="30" step="1" id="atr-thresh" oninput="onSlider('atr-thresh')" class="setting-slider">
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>10</span><span>30</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">📊 ATR — סף תנודתיות גבוהה <span style="font-size:9px;color:var(--blue)">(Pine: atrMin=8)</span></span><span class="setting-val" id="val-atr-thresh">15</span></div>
+            <input type="range" min="5"  max="20" step="1" id="atr-thresh" oninput="onSlider('atr-thresh')" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>5</span><span>20</span></div>
           </div>
           <div class="setting-row">
             <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="setting-label">🔥 ATR גבוה — ציון מינימום</span><span class="setting-val" id="val-atr-score">9</span></div>
@@ -1640,13 +1640,14 @@ document.getElementById('overlay').onclick = function(e) { if (e.target.id === '
 
 // ===================== SETTINGS =====================
 var PRESETS = {
-  conservative: { openMin:9, middayMin:8, closeMin:7, atrThresh:15, atrScore:9, volMode:'block',  label:'🛡 שמרני' },
-  balanced:     { openMin:8, middayMin:7, closeMin:7, atrThresh:15, atrScore:8, volMode:'block',  label:'⚖️ מאוזן' },
-  aggressive:   { openMin:7, middayMin:6, closeMin:6, atrThresh:20, atrScore:8, volMode:'reduce', label:'⚡ אגרסיבי' },
-  scalping:     { openMin:7, middayMin:7, closeMin:8, atrThresh:25, atrScore:9, volMode:'block',  label:'🎯 סקאלפינג' }
+  // ערכים מבוססים על Pine Script: scoreThreshold=70 → 7, rankA=85 → 9, atrMin=8
+  conservative: { openMin:9, middayMin:8, closeMin:8, atrThresh:8,  atrScore:9, volMode:'block',  label:'🛡 שמרני' },
+  balanced:     { openMin:7, middayMin:7, closeMin:7, atrThresh:8,  atrScore:9, volMode:'block',  label:'⚖️ מאוזן' },
+  aggressive:   { openMin:6, middayMin:6, closeMin:6, atrThresh:12, atrScore:7, volMode:'reduce', label:'⚡ אגרסיבי' },
+  scalping:     { openMin:8, middayMin:7, closeMin:8, atrThresh:8,  atrScore:9, volMode:'block',  label:'🎯 סקאלפינג' }
 };
 
-var currentSettings = { openMin:8, middayMin:7, closeMin:7, atrThresh:15, atrScore:9, volMode:'block' };
+var currentSettings = { openMin:7, middayMin:7, closeMin:7, atrThresh:8, atrScore:9, volMode:'block' };
 var customConfigs = JSON.parse(localStorage.getItem('customConfigs') || '[]');
 
 function initSettingsPanel() {
