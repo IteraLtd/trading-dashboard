@@ -1968,6 +1968,247 @@ function renderTradesDashboard(items) {
   }
   tbody.innerHTML = rows;
 }
+
+// ===================== CLAUDE TRADE ANALYSIS =====================
+async function runTradeAnalysis() {
+  var apiKey = localStorage.getItem('claude_api_key');
+  var body   = document.getElementById('tradeAnalysisBody');
+  var spin   = document.getElementById('tradeAnalysisSpin');
+  var status = document.getElementById('tradeAnalysisStatus');
+  var badge  = document.getElementById('tradeAnalysisBadge');
+  var btn    = document.getElementById('tradeAnalysisBtn');
+
+  if (!apiKey) {
+    body.innerHTML = '<div style="background:var(--surface2);border:1px solid var(--border);border-right:3px solid var(--yellow);border-radius:6px;padding:10px 14px;font-size:12px">🔑 חסר API Key — לחץ על 🔑 בפאנל הדינמי למעלה</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  spin.style.display = 'inline-block';
+  status.textContent = 'מנתח...';
+  badge.style.display = 'none';
+  body.style.display = 'block';
+  body.innerHTML = '<div style="text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px;padding:20px"><span style="animation:dspin .7s linear infinite;display:inline-block;margin-left:8px">⟳</span> Claude מנתח לעומק את כל העסקאות שלך...</div>';
+
+  var all    = allSignals || [];
+  var closed = all.filter(function(it){ var r=(it.Result||'').toUpperCase(); return isWin(r)||isLoss(r); });
+  var wins   = closed.filter(function(it){ return isWin((it.Result||'').toUpperCase()); });
+  var losses = closed.filter(function(it){ return isLoss((it.Result||'').toUpperCase()); });
+  var pending = all.filter(function(it){ var r=(it.Result||'').toUpperCase(); return !isWin(r)&&!isLoss(r); });
+  var winRate = closed.length ? Math.round(wins.length/closed.length*100) : 0;
+
+  // P&L cumulative
+  var cumPnl = 0;
+  var sortedClosed = closed.slice().sort(function(a,b){return new Date(a.SignalTime)-new Date(b.SignalTime);});
+  sortedClosed.forEach(function(it){
+    var rr=parseFloat(it.RiskReward||it.PnLR||1.5);
+    if(isWin((it.Result||'').toUpperCase())) cumPnl+=(rr>0?rr:1.5); else cumPnl-=1;
+  });
+
+  // By hour
+  var byHour={};
+  closed.forEach(function(it){
+    var h=String(new Date(it.SignalTime).getHours()).padStart(2,'0')+':00';
+    if(!byHour[h]) byHour[h]={w:0,l:0};
+    if(isWin((it.Result||'').toUpperCase())) byHour[h].w++; else byHour[h].l++;
+  });
+  var bestHour='—',worstHour='—',bestHourRate=0,worstHourRate=100;
+  Object.keys(byHour).forEach(function(h){
+    var s=byHour[h],tot=s.w+s.l,rate=tot>=2?Math.round(s.w/tot*100):null;
+    if(rate!==null&&rate>bestHourRate){bestHourRate=rate;bestHour=h+' ('+rate+'%, '+tot+' עסקאות)';}
+    if(rate!==null&&rate<worstHourRate){worstHourRate=rate;worstHour=h+' ('+rate+'%, '+tot+' עסקאות)';}
+  });
+  var hourStats=Object.keys(byHour).sort().map(function(h){var s=byHour[h],tot=s.w+s.l;return h+':'+s.w+'W/'+s.l+'L('+(tot?Math.round(s.w/tot*100):0)+'%)';}).join(', ');
+
+  // By session
+  var ny=closed.filter(function(it){var h=new Date(it.SignalTime).getHours();return h>=9&&h<=16;});
+  var nyW=ny.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var lon=closed.filter(function(it){var h=new Date(it.SignalTime).getHours();return h>=3&&h<9;});
+  var lonW=lon.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var overlap=closed.filter(function(it){var h=new Date(it.SignalTime).getHours();return h>=9&&h<11;});
+  var overlapW=overlap.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+
+  // By day of week
+  var dayNames=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  var byDay={};
+  closed.forEach(function(it){
+    var d=dayNames[new Date(it.SignalTime).getDay()];
+    if(!byDay[d]) byDay[d]={w:0,l:0};
+    if(isWin((it.Result||'').toUpperCase())) byDay[d].w++; else byDay[d].l++;
+  });
+  var dayStats=Object.keys(byDay).map(function(d){var s=byDay[d],tot=s.w+s.l;return d+':'+s.w+'W/'+s.l+'L('+(tot?Math.round(s.w/tot*100):0)+'%)';}).join(', ');
+
+  // Verdict
+  var vTake=closed.filter(function(it){return (it.ClaudeVerdict||'').toUpperCase()==='TAKE';});
+  var vTakeW=vTake.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var vWait=closed.filter(function(it){return (it.ClaudeVerdict||'').toUpperCase()==='WAIT';});
+  var vWaitW=vWait.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var vSkip=closed.filter(function(it){return (it.ClaudeVerdict||'').toUpperCase()==='SKIP';});
+  var vSkipW=vSkip.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var missedWins=vSkipW.length+vWaitW.length;
+
+  // Direction
+  var longT=closed.filter(function(it){return (it.Direction||'').toUpperCase()==='LONG';});
+  var longW=longT.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var shortT=closed.filter(function(it){return (it.Direction||'').toUpperCase()==='SHORT';});
+  var shortW=shortT.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var winLongPct=longT.length?Math.round(longW.length/longT.length*100):0;
+  var winShortPct=shortT.length?Math.round(shortW.length/shortT.length*100):0;
+  var betterDir=winLongPct>winShortPct?'LONG ('+winLongPct+'%)':'SHORT ('+winShortPct+'%)';
+  var worseDir=winLongPct>winShortPct?'SHORT ('+winShortPct+'%)':'LONG ('+winLongPct+'%)';
+
+  // Score buckets
+  var winScores=wins.map(function(it){return parseFloat(it.ClaudeScore||0);}).filter(Boolean);
+  var lossScores=losses.map(function(it){return parseFloat(it.ClaudeScore||0);}).filter(Boolean);
+  var avgWinScore=winScores.length?(winScores.reduce(function(a,b){return a+b;},0)/winScores.length).toFixed(1):'—';
+  var avgLossScore=lossScores.length?(lossScores.reduce(function(a,b){return a+b;},0)/lossScores.length).toFixed(1):'—';
+  var score80=closed.filter(function(it){return parseFloat(it.ClaudeScore||0)>=80;});
+  var score80W=score80.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var score70=closed.filter(function(it){var s=parseFloat(it.ClaudeScore||0);return s>=70&&s<80;});
+  var score70W=score70.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var score69=closed.filter(function(it){return parseFloat(it.ClaudeScore||0)<70;});
+  var score69W=score69.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+
+  // Streak
+  var maxW=0,maxL=0,cW=0,cL=0;
+  sortedClosed.forEach(function(it){
+    if(isWin((it.Result||'').toUpperCase())){cW++;cL=0;if(cW>maxW)maxW=cW;}
+    else{cL++;cW=0;if(cL>maxL)maxL=cL;}
+  });
+
+  // Average RR
+  var rrAll=closed.map(function(it){return parseFloat(it.RiskReward||it.PnLR||0);}).filter(Boolean);
+  var avgRR=rrAll.length?(rrAll.reduce(function(a,b){return a+b;},0)/rrAll.length).toFixed(2):'—';
+
+  var prompt =
+    'אתה מנתח מסחר מקצועי ב-MNQ Futures. נתח לעומק את הנתונים ותן תובנות קצרות ומעשיות בעברית.
+
+' +
+    '=== סטטיסטיקה ===
+' +
+    'עסקאות: '+closed.length+' סגורות, '+pending.length+' פתוחות
+' +
+    'Win Rate: '+winRate+'% ('+wins.length+'W/'+losses.length+'L) | P&L: '+cumPnl.toFixed(1)+'R | ממוצע R:R: '+avgRR+'
+' +
+    'רצף WIN מקסימלי: '+maxW+' | רצף LOSS מקסימלי: '+maxL+'
+
+' +
+    '=== כיוון ===
+' +
+    'LONG: '+longT.length+' עסקאות, '+winLongPct+'% Win | SHORT: '+shortT.length+' עסקאות, '+winShortPct+'% Win
+
+' +
+    '=== לפי שעה ===
+'+hourStats+'
+' +
+    'הכי טוב: '+bestHour+' | הכי גרוע: '+worstHour+'
+
+' +
+    '=== Sessions ===
+' +
+    'NY (09-16): '+ny.length+' עסקאות, '+(ny.length?Math.round(nyW.length/ny.length*100):0)+'%
+' +
+    'London (03-09): '+lon.length+' עסקאות, '+(lon.length?Math.round(lonW.length/lon.length*100):0)+'%
+' +
+    'Overlap (09-11): '+overlap.length+' עסקאות, '+(overlap.length?Math.round(overlapW.length/overlap.length*100):0)+'%
+
+' +
+    '=== ימים ===
+'+dayStats+'
+
+' +
+    '=== Verdict ===
+' +
+    'TAKE: '+vTake.length+' עסקאות, '+(vTake.length?Math.round(vTakeW.length/vTake.length*100):0)+'% Win
+' +
+    'WAIT: '+vWait.length+' עסקאות, '+(vWait.length?Math.round(vWaitW.length/vWait.length*100):0)+'% Win
+' +
+    'SKIP: '+vSkip.length+' עסקאות, '+(vSkip.length?Math.round(vSkipW.length/vSkip.length*100):0)+'% Win | עסקאות WIN שהוחמצו: '+missedWins+'
+
+' +
+    '=== ציון ===
+' +
+    'ממוצע ציון WIN: '+avgWinScore+' | LOSS: '+avgLossScore+'
+' +
+    'ציון≥80: '+score80.length+' עסקאות, '+(score80.length?Math.round(score80W.length/score80.length*100):0)+'% Win
+' +
+    'ציון 70-79: '+score70.length+' עסקאות, '+(score70.length?Math.round(score70W.length/score70.length*100):0)+'% Win
+' +
+    'ציון<70: '+score69.length+' עסקאות, '+(score69.length?Math.round(score69W.length/score69.length*100):0)+'% Win
+
+' +
+    'ענה JSON בלבד (ללא backticks):
+' +
+    '{"strengths":["נקודה1","נקודה2","נקודה3"],' +
+    '"weaknesses":["נקודה1","נקודה2","נקודה3"],' +
+    '"best_patterns":["נקודה1","נקודה2","נקודה3"],' +
+    '"verdict_analysis":["נקודה1","נקודה2","נקודה3"],' +
+    '"risk_insights":["נקודה1","נקודה2","נקודה3"],' +
+    '"recommendations":["המלצה1","המלצה2","המלצה3","המלצה4"]}';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1200,
+        system:'ענה תמיד ב-JSON תקין בלבד. ללא backticks. ללא הסברים. רק JSON.',
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(c){return c.text||'';}).join('');
+    var clean = text.replace(/```json|```/g,'').trim();
+    var parsed = JSON.parse(clean);
+
+    var sections = [
+      {key:'strengths',        icon:'💪', title:'חוזקות',              color:'#00d084', bg:'rgba(0,208,132,.07)',   border:'rgba(0,208,132,.25)'},
+      {key:'weaknesses',       icon:'⚠️', title:'חולשות',              color:'#ffa500', bg:'rgba(255,165,0,.07)',  border:'rgba(255,165,0,.25)'},
+      {key:'best_patterns',    icon:'🎯', title:'דפוסי כניסה מנצחים',  color:'#4da6ff', bg:'rgba(77,166,255,.07)', border:'rgba(77,166,255,.25)'},
+      {key:'verdict_analysis', icon:'🤖', title:'דיוק Verdict',        color:'#d2a8ff', bg:'rgba(210,168,255,.07)',border:'rgba(210,168,255,.25)'},
+      {key:'risk_insights',    icon:'⚖️', title:'ניהול סיכון',         color:'#79c0ff', bg:'rgba(121,192,255,.07)',border:'rgba(121,192,255,.25)'},
+      {key:'recommendations',  icon:'📋', title:'המלצות מעשיות',       color:'#fff',    bg:'rgba(255,255,255,.04)',border:'rgba(255,255,255,.15)'}
+    ];
+
+    var html = '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">';
+    sections.forEach(function(s){
+      var items = parsed[s.key]||[];
+      html += '<div style="background:'+s.bg+';border:1px solid '+s.border+';border-radius:6px;padding:12px">';
+      html += '<div style="font-family:var(--mono);font-size:10px;font-weight:600;color:'+s.color+';margin-bottom:8px;letter-spacing:0.5px;text-transform:uppercase">'+s.icon+' '+s.title+'</div>';
+      items.forEach(function(item){
+        html += '<div style="font-size:11px;color:var(--text);line-height:1.65;padding:3px 0 3px 12px;border-bottom:1px solid rgba(255,255,255,0.05);position:relative">' +
+                '<span style="position:absolute;right:0;color:'+s.color+';opacity:0.7">▸</span>'+item+'</div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // Summary footer
+    var pnlColor=cumPnl>=0?'#00d084':'#ff4560';
+    html += '<div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border)">';
+    html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">Claude Haiku · '+new Date().toLocaleTimeString('he-IL')+' · בסיס: '+closed.length+' עסקאות</span>';
+    html += '<div style="display:flex;gap:16px">';
+    html += '<span style="font-family:var(--mono);font-size:11px;color:'+(winRate>=60?'#00d084':winRate>=40?'#ffa500':'#ff4560')+'">Win: '+winRate+'%</span>';
+    html += '<span style="font-family:var(--mono);font-size:11px;color:'+pnlColor+'">P&L: '+(cumPnl>=0?'+':'')+cumPnl.toFixed(1)+'R</span>';
+    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--blue)">הכי טוב: '+bestHour+'</span>';
+    html += '</div></div>';
+
+    body.innerHTML = html;
+    badge.style.display = 'inline';
+    status.textContent = '';
+
+  } catch(e) {
+    body.innerHTML = '<div style="color:var(--red);font-size:12px;padding:12px;background:rgba(255,69,96,.08);border-radius:6px;border:1px solid rgba(255,69,96,.3)">⚠️ שגיאה: '+e.message+'</div>';
+    status.textContent = 'שגיאה';
+  }
+
+  btn.disabled = false;
+  spin.style.display = 'none';
+}
+
+// ===================== END CLAUDE TRADE ANALYSIS =====================
+
 // ===================== END TRADES DASHBOARD =====================
 
 // ===================== END SETTINGS =====================
