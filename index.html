@@ -175,6 +175,33 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{padding:30px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ===== TRADES DASHBOARD ===== */
+.trades-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.trade-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.trade-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.trade-stat-value{font-family:var(--mono);font-size:22px;font-weight:700}
+.trades-charts-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
+.trades-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.trades-table-hdr{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between}
+.trades-table-title{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:1px}
+.trades-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.trades-tbl th{padding:8px 12px;text-align:right;font-size:10px;color:var(--muted);font-weight:400;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+.trades-tbl td{padding:9px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);white-space:nowrap;vertical-align:middle}
+.trades-tbl tr:last-child td{border-bottom:none}
+.trades-tbl tr:hover td{background:var(--surface2)}
+.tr-win{color:var(--green);font-weight:600}
+.tr-loss{color:var(--red);font-weight:600}
+.tr-pending{color:var(--muted)}
+.tr-long{background:rgba(0,208,132,.12);color:var(--green);border:1px solid rgba(0,208,132,.3);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
+.tr-short{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.3);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
+.tr-streak{display:inline-flex;gap:2px;flex-wrap:wrap;max-width:200px}
+.tr-streak-w{width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block}
+.tr-streak-l{width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block}
+.tr-streak-p{width:10px;height:10px;background:var(--border);border-radius:2px;display:inline-block}
+.trades-filter-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+@media(max-width:768px){.trades-stats-grid{grid-template-columns:repeat(2,1fr)}.trades-charts-row{grid-template-columns:1fr}}
+
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 #dashboard{display:none}
 
@@ -288,6 +315,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <button class="quick-btn" id="tabAnalytics" onclick="switchTab('analytics')">📈 אנליטיקס</button>
       <button class="quick-btn" id="tabLegend" onclick="switchTab('legend')">📖 מקרא</button>
       <button class="quick-btn" id="tabSettings" onclick="switchTab('settings')">⚙️ כיוונון</button>
+      <button class="quick-btn" id="tabTrades" onclick="switchTab('trades')">📋 עסקאות</button>
     </div>
   </div>
 
@@ -570,6 +598,80 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div id="scanList"><div class="loading"><div class="spinner"></div>טוען...</div></div>
     </div>
   </div>
+
+  <!-- TRADES PANEL -->
+  <div id="tradesPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
+    <div style="max-width:1300px;margin:0 auto">
+
+      <!-- Stats cards -->
+      <div class="trades-stats-grid" id="tradesStatsGrid">
+        <div class="trade-stat-card"><div class="trade-stat-label">סה"כ עסקאות</div><div class="trade-stat-value c-blue" id="tr-total">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">Win Rate</div><div class="trade-stat-value c-yellow" id="tr-winrate">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">P&L מצטבר (R)</div><div class="trade-stat-value" id="tr-pnl">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">ממוצע R:R</div><div class="trade-stat-value c-blue" id="tr-avgrr">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">✅ Wins</div><div class="trade-stat-value c-green" id="tr-wins">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">❌ Losses</div><div class="trade-stat-value c-red" id="tr-losses">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">⏳ פתוחות</div><div class="trade-stat-value" id="tr-pending" style="color:var(--muted)">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">רצף נוכחי</div><div class="trade-stat-value" id="tr-streak">—</div></div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="trades-charts-row">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div class="analysis-title">📈 Win/Loss לאורך זמן</div>
+          <div style="height:160px;position:relative"><canvas id="tradesTimeChart"></canvas></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div class="analysis-title">🗓 ביצועים לפי יום</div>
+          <div id="tradesByDay" style="margin-top:8px;font-size:12px"></div>
+        </div>
+      </div>
+
+      <!-- Table filters -->
+      <div class="trades-filter-row">
+        <span class="filter-label">סנן:</span>
+        <button class="quick-btn active" id="trAll"   onclick="setTradeFilter(null)">הכל</button>
+        <button class="quick-btn" id="trWin"   onclick="setTradeFilter('win')"   style="color:var(--green)">✅ WIN</button>
+        <button class="quick-btn" id="trLoss"  onclick="setTradeFilter('loss')"  style="color:var(--red)">❌ LOSS</button>
+        <button class="quick-btn" id="trPend"  onclick="setTradeFilter('pending')" style="color:var(--muted)">⏳ פתוח</button>
+        <button class="quick-btn" id="trLong2" onclick="setTradeFilter('long')"  style="color:var(--green)">▲ LONG</button>
+        <button class="quick-btn" id="trShort2" onclick="setTradeFilter('short')" style="color:var(--red)">▼ SHORT</button>
+        <span style="margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)" id="tradesTableCount"></span>
+      </div>
+
+      <!-- Table -->
+      <div class="trades-table-wrap">
+        <div class="trades-table-hdr">
+          <span class="trades-table-title">📋 יומן עסקאות</span>
+          <span style="font-size:11px;color:var(--muted)">נתונים מ-TradingView → Power Automate → SharePoint</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="trades-tbl">
+            <thead>
+              <tr>
+                <th>תאריך/שעה</th>
+                <th>כיוון</th>
+                <th>כניסה</th>
+                <th>SL</th>
+                <th>TP1</th>
+                <th>TP2</th>
+                <th>תוצאה</th>
+                <th>R:R</th>
+                <th>ציון</th>
+                <th>Verdict</th>
+                <th>Ticker</th>
+              </tr>
+            </thead>
+            <tbody id="tradesTableBody">
+              <tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px">טוען עסקאות...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <div class="overlay" id="overlay">
@@ -1417,12 +1519,15 @@ function switchTab(tab) {
   document.getElementById('analyticsPanel').style.display = tab === 'analytics' ? '' : 'none';
   document.getElementById('legendPanel').style.display    = tab === 'legend'    ? '' : 'none';
   document.getElementById('settingsPanel').style.display  = tab === 'settings'  ? '' : 'none';
-  document.getElementById('tabSignals').classList.toggle('active',  tab === 'signals');
+  document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
+  document.getElementById('tabSignals').classList.toggle('active',   tab === 'signals');
   document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
-  document.getElementById('tabLegend').classList.toggle('active',   tab === 'legend');
+  document.getElementById('tabLegend').classList.toggle('active',    tab === 'legend');
   document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
+  document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
   if (tab === 'analytics') updateAnalytics(allSignals);
   if (tab === 'settings')  initSettingsPanel();
+  if (tab === 'trades')    renderTradesDashboard(allSignals);
 }
 
 function updateAnalytics(items) {
@@ -1704,6 +1809,167 @@ async function loadSystemSettings() {
     }
   } catch(e) {}
 }
+
+// ===================== TRADES DASHBOARD =====================
+var tradeFilter = null;
+var tradesTimeChart = null;
+
+function setTradeFilter(f) {
+  tradeFilter = f;
+  ['trAll','trWin','trLoss','trPend','trLong2','trShort2'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.classList.remove('active');
+  });
+  var btnId = !f ? 'trAll' : f==='win'?'trWin':f==='loss'?'trLoss':f==='pending'?'trPend':f==='long'?'trLong2':'trShort2';
+  var btn = document.getElementById(btnId); if(btn) btn.classList.add('active');
+  renderTradesDashboard(allSignals);
+}
+
+function renderTradesDashboard(items) {
+  if (!items || !items.length) return;
+
+  // Filter
+  var filtered = items;
+  if (tradeFilter === 'win')     filtered = items.filter(function(it){ return isWin((it.Result||'').toUpperCase()); });
+  else if (tradeFilter === 'loss')    filtered = items.filter(function(it){ return isLoss((it.Result||'').toUpperCase()); });
+  else if (tradeFilter === 'pending') filtered = items.filter(function(it){ var r=(it.Result||'').toUpperCase(); return !isWin(r)&&!isLoss(r); });
+  else if (tradeFilter === 'long')    filtered = items.filter(function(it){ return (it.Direction||'').toUpperCase()==='LONG'; });
+  else if (tradeFilter === 'short')   filtered = items.filter(function(it){ return (it.Direction||'').toUpperCase()==='SHORT'; });
+
+  var closed  = items.filter(function(it){ var r=(it.Result||'').toUpperCase(); return isWin(r)||isLoss(r); });
+  var wins    = items.filter(function(it){ return isWin((it.Result||'').toUpperCase()); });
+  var losses  = items.filter(function(it){ return isLoss((it.Result||'').toUpperCase()); });
+  var pending = items.filter(function(it){ var r=(it.Result||'').toUpperCase(); return !isWin(r)&&!isLoss(r); });
+  var winRate = closed.length ? Math.round(wins.length/closed.length*100) : 0;
+  var wrColor = winRate>=60?'var(--green)':winRate>=40?'var(--yellow)':'var(--red)';
+
+  // Cumulative P&L
+  var cumPnl = 0;
+  var sortedClosed = closed.slice().sort(function(a,b){ return new Date(a.SignalTime)-new Date(b.SignalTime); });
+  for (var i=0;i<sortedClosed.length;i++) {
+    var rr = parseFloat(sortedClosed[i].RiskReward||sortedClosed[i].PnLR||1.5);
+    if (isWin((sortedClosed[i].Result||'').toUpperCase())) cumPnl += (rr>0?rr:1.5);
+    else cumPnl -= 1;
+  }
+  var avgRR = sortedClosed.length ? (sortedClosed.reduce(function(s,it){ return s+(parseFloat(it.RiskReward||it.PnLR||0)||0); },0)/sortedClosed.length).toFixed(2) : '—';
+
+  // Streak (last 10)
+  var last10 = closed.slice(-10);
+  var streakHtml = '<div class="tr-streak">';
+  for (var i=0;i<last10.length;i++) {
+    var r = (last10[i].Result||'').toUpperCase();
+    streakHtml += '<span class="' + (isWin(r)?'tr-streak-w':'tr-streak-l') + '" title="'+(isWin(r)?'WIN':'LOSS')+'"></span>';
+  }
+  streakHtml += '</div>';
+  // Current streak count
+  var streakCount = 0, streakType = '';
+  for (var i=closed.length-1;i>=0;i--) {
+    var r=(closed[i].Result||'').toUpperCase();
+    var isW = isWin(r), isL = isLoss(r);
+    if (!streakType) streakType = isW?'W':'L';
+    if ((streakType==='W'&&isW)||(streakType==='L'&&isL)) streakCount++;
+    else break;
+  }
+
+  // Update stat cards
+  document.getElementById('tr-total').textContent   = items.length;
+  document.getElementById('tr-winrate').textContent  = winRate + '%';
+  document.getElementById('tr-winrate').style.color  = wrColor;
+  document.getElementById('tr-pnl').textContent      = (cumPnl>=0?'+':'')+cumPnl.toFixed(2)+'R';
+  document.getElementById('tr-pnl').style.color      = cumPnl>=0?'var(--green)':'var(--red)';
+  document.getElementById('tr-avgrr').textContent    = avgRR === '—' ? '—' : '1:'+avgRR;
+  document.getElementById('tr-wins').textContent     = wins.length;
+  document.getElementById('tr-losses').textContent   = losses.length;
+  document.getElementById('tr-pending').textContent  = pending.length;
+  document.getElementById('tr-streak').innerHTML     = streakCount>0 ? streakHtml + '<span style="font-family:var(--mono);font-size:13px;color:'+(streakType==='W'?'var(--green)':'var(--red)')+'">'+streakCount+(streakType==='W'?'W':'L')+'</span>' : streakHtml;
+
+  // ── Win/Loss over time chart ──────────────────────────────────────────────
+  var cumData=[], cumLabels=[], cum=0;
+  for (var i=0;i<sortedClosed.length;i++) {
+    var rr = parseFloat(sortedClosed[i].RiskReward||sortedClosed[i].PnLR||1.5);
+    if (isWin((sortedClosed[i].Result||'').toUpperCase())) cum+=rr>0?rr:1.5; else cum-=1;
+    var dt = new Date(sortedClosed[i].SignalTime);
+    cumLabels.push(dt.getDate()+'/'+(dt.getMonth()+1)+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'));
+    cumData.push(parseFloat(cum.toFixed(2)));
+  }
+  var tCtx = document.getElementById('tradesTimeChart');
+  if (tCtx) {
+    if (tradesTimeChart) tradesTimeChart.destroy();
+    var lineColor = cum>=0?'rgba(0,208,132,0.9)':'rgba(255,69,96,0.9)';
+    tradesTimeChart = new Chart(tCtx.getContext('2d'), {
+      type:'line',
+      data:{ labels:cumLabels, datasets:[{
+        label:'P&L (R)', data:cumData,
+        borderColor:lineColor, backgroundColor:cum>=0?'rgba(0,208,132,0.08)':'rgba(255,69,96,0.08)',
+        fill:true, tension:0.3, pointRadius:3, pointBackgroundColor:lineColor, borderWidth:2
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.raw+'R';}}}},
+        scales:{
+          x:{ticks:{color:'#4a6080',font:{size:9},maxTicksLimit:8,maxRotation:0},grid:{color:'rgba(255,255,255,0.03)'}},
+          y:{ticks:{color:'#4a6080',font:{size:9}},grid:{color:'rgba(255,255,255,0.05)'},
+             borderDash:[3,3],title:{display:true,text:'R',color:'#4a6080',font:{size:9}}}
+        }}
+    });
+  }
+
+  // ── By Day ───────────────────────────────────────────────────────────────
+  var byDay = {};
+  for (var i=0;i<closed.length;i++) {
+    var dt = new Date(closed[i].SignalTime);
+    var dayKey = dt.toLocaleDateString('he-IL',{weekday:'short',month:'numeric',day:'numeric'});
+    if (!byDay[dayKey]) byDay[dayKey]={w:0,l:0};
+    if (isWin((closed[i].Result||'').toUpperCase())) byDay[dayKey].w++; else byDay[dayKey].l++;
+  }
+  var dayKeys = Object.keys(byDay).slice(-7);
+  var dayHtml = dayKeys.map(function(d){
+    var s=byDay[d], tot=s.w+s.l, rate=tot?Math.round(s.w/tot*100):0;
+    var col=rate>=60?'var(--green)':rate>=40?'var(--yellow)':'var(--red)';
+    return '<div class="sym-row" style="padding:5px 0"><span style="font-size:11px;color:var(--muted);flex:1">'+d+'</span>' +
+           '<span style="font-family:var(--mono);font-size:11px;color:var(--green)">'+s.w+'✅</span>' +
+           '<span style="font-family:var(--mono);font-size:11px;color:var(--red);margin:0 6px">'+s.l+'❌</span>' +
+           '<span style="font-family:var(--mono);font-size:12px;font-weight:600;color:'+col+';min-width:36px;text-align:left">'+rate+'%</span></div>';
+  }).join('');
+  document.getElementById('tradesByDay').innerHTML = dayHtml || '<span style="color:var(--muted);font-size:12px">אין נתונים</span>';
+
+  // ── Table ────────────────────────────────────────────────────────────────
+  document.getElementById('tradesTableCount').textContent = filtered.length + ' עסקאות';
+  var tbody = document.getElementById('tradesTableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px">אין עסקאות להציג</td></tr>';
+    return;
+  }
+  var rows = '';
+  for (var i=0;i<filtered.length;i++) {
+    var it = filtered[i];
+    var r  = (it.Result||'PENDING').toUpperCase();
+    var d  = (it.Direction||'').toUpperCase();
+    var v  = (it.ClaudeVerdict||'').toUpperCase();
+    var rr = parseFloat(it.RiskReward||it.PnLR||0);
+    var rClass  = isWin(r) ? 'tr-win' : isLoss(r) ? 'tr-loss' : 'tr-pending';
+    var rTxt    = isWin(r) ? '✅ '+r : isLoss(r) ? '❌ '+r : '⏳ '+r;
+    var dBadge  = d==='LONG' ? '<span class="tr-long">▲ LONG</span>' : '<span class="tr-short">▼ SHORT</span>';
+    var rrTxt   = rr>0 ? (isWin(r)?'<span style="color:var(--green)">+'+rr.toFixed(2)+'R</span>':'<span style="color:var(--red)">-1R</span>') : '—';
+    var vColor  = v==='TAKE'?'var(--green)':v==='SKIP'?'var(--red)':v==='WAIT'?'var(--yellow)':'var(--muted)';
+    var tp1 = it['OData__x0054_P1']||it.TP1||'—';
+    var tp2 = it['OData__x0054_P2']||it.TP2||'—';
+    rows += '<tr>' +
+      '<td style="color:var(--blue)">' + fmtTime(it.SignalTime) + '</td>' +
+      '<td>' + dBadge + '</td>' +
+      '<td style="color:white;font-weight:600">' + (it.Entry||'—') + '</td>' +
+      '<td style="color:var(--red)">' + (it.SL||'—') + '</td>' +
+      '<td style="color:rgba(0,208,132,0.7)">' + tp1 + '</td>' +
+      '<td style="color:var(--green)">' + tp2 + '</td>' +
+      '<td class="' + rClass + '">' + rTxt + '</td>' +
+      '<td>' + rrTxt + '</td>' +
+      '<td style="color:var(--yellow)">' + (it.ClaudeScore||'—') + '</td>' +
+      '<td style="color:'+vColor+';font-weight:600">' + (v||'—') + '</td>' +
+      '<td style="color:var(--muted)">' + (it.Ticker||'MNQ') + '</td>' +
+    '</tr>';
+  }
+  tbody.innerHTML = rows;
+}
+// ===================== END TRADES DASHBOARD =====================
+
 // ===================== END SETTINGS =====================
 </script>
 </body>
