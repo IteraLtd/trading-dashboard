@@ -177,7 +177,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .empty{padding:30px;text-align:center;color:var(--muted);font-size:13px}
 
 /* ===== TRADES DASHBOARD ===== */
-.trades-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.trades-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
 .trade-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
 .trade-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
 .trade-stat-value{font-family:var(--mono);font-size:22px;font-weight:700}
@@ -190,15 +190,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .trades-tbl td{padding:9px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);white-space:nowrap;vertical-align:middle}
 .trades-tbl tr:last-child td{border-bottom:none}
 .trades-tbl tr:hover td{background:var(--surface2)}
-.tr-win{color:var(--green);font-weight:600}
-.tr-loss{color:var(--red);font-weight:600}
-.tr-pending{color:var(--muted)}
+.tr-win{color:var(--green);font-weight:600}.tr-loss{color:var(--red);font-weight:600}.tr-pending{color:var(--muted)}
 .tr-long{background:rgba(0,208,132,.12);color:var(--green);border:1px solid rgba(0,208,132,.3);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
 .tr-short{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.3);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
-.tr-streak{display:inline-flex;gap:2px;flex-wrap:wrap;max-width:200px}
-.tr-streak-w{width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block}
-.tr-streak-l{width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block}
-.tr-streak-p{width:10px;height:10px;background:var(--border);border-radius:2px;display:inline-block}
+.tr-streak-w{width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block;margin:1px}
+.tr-streak-l{width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block;margin:1px}
 .trades-filter-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 @media(max-width:768px){.trades-stats-grid{grid-template-columns:repeat(2,1fr)}.trades-charts-row{grid-template-columns:1fr}}
 
@@ -598,13 +594,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div id="scanList"><div class="loading"><div class="spinner"></div>טוען...</div></div>
     </div>
   </div>
+</div>
 
   <!-- TRADES PANEL -->
   <div id="tradesPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
     <div style="max-width:1300px;margin:0 auto">
 
-      <!-- Stats cards -->
-      <div class="trades-stats-grid" id="tradesStatsGrid">
+      <div class="trades-stats-grid">
         <div class="trade-stat-card"><div class="trade-stat-label">סה"כ עסקאות</div><div class="trade-stat-value c-blue" id="tr-total">—</div></div>
         <div class="trade-stat-card"><div class="trade-stat-label">Win Rate</div><div class="trade-stat-value c-yellow" id="tr-winrate">—</div></div>
         <div class="trade-stat-card"><div class="trade-stat-label">P&L מצטבר (R)</div><div class="trade-stat-value" id="tr-pnl">—</div></div>
@@ -612,13 +608,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div class="trade-stat-card"><div class="trade-stat-label">✅ Wins</div><div class="trade-stat-value c-green" id="tr-wins">—</div></div>
         <div class="trade-stat-card"><div class="trade-stat-label">❌ Losses</div><div class="trade-stat-value c-red" id="tr-losses">—</div></div>
         <div class="trade-stat-card"><div class="trade-stat-label">⏳ פתוחות</div><div class="trade-stat-value" id="tr-pending" style="color:var(--muted)">—</div></div>
-        <div class="trade-stat-card"><div class="trade-stat-label">רצף נוכחי</div><div class="trade-stat-value" id="tr-streak">—</div></div>
+        <div class="trade-stat-card"><div class="trade-stat-label">רצף נוכחי</div><div id="tr-streak" style="margin-top:4px">—</div></div>
       </div>
 
-      <!-- Charts row -->
       <div class="trades-charts-row">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
-          <div class="analysis-title">📈 Win/Loss לאורך זמן</div>
+          <div class="analysis-title">📈 P&L מצטבר לאורך זמן</div>
           <div style="height:160px;position:relative"><canvas id="tradesTimeChart"></canvas></div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
@@ -627,52 +622,52 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
       </div>
 
-      <!-- Table filters -->
       <div class="trades-filter-row">
         <span class="filter-label">סנן:</span>
-        <button class="quick-btn active" id="trAll"   onclick="setTradeFilter(null)">הכל</button>
-        <button class="quick-btn" id="trWin"   onclick="setTradeFilter('win')"   style="color:var(--green)">✅ WIN</button>
-        <button class="quick-btn" id="trLoss"  onclick="setTradeFilter('loss')"  style="color:var(--red)">❌ LOSS</button>
-        <button class="quick-btn" id="trPend"  onclick="setTradeFilter('pending')" style="color:var(--muted)">⏳ פתוח</button>
-        <button class="quick-btn" id="trLong2" onclick="setTradeFilter('long')"  style="color:var(--green)">▲ LONG</button>
-        <button class="quick-btn" id="trShort2" onclick="setTradeFilter('short')" style="color:var(--red)">▼ SHORT</button>
+        <button class="quick-btn active" id="trAll"    onclick="setTradeFilter(null)">הכל</button>
+        <button class="quick-btn" id="trWin"    onclick="setTradeFilter('win')"     style="color:var(--green)">✅ WIN</button>
+        <button class="quick-btn" id="trLoss"   onclick="setTradeFilter('loss')"    style="color:var(--red)">❌ LOSS</button>
+        <button class="quick-btn" id="trPend"   onclick="setTradeFilter('pending')" style="color:var(--muted)">⏳ פתוח</button>
+        <button class="quick-btn" id="trLong2"  onclick="setTradeFilter('long')"    style="color:var(--green)">▲ LONG</button>
+        <button class="quick-btn" id="trShort2" onclick="setTradeFilter('short')"   style="color:var(--red)">▼ SHORT</button>
         <span style="margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)" id="tradesTableCount"></span>
       </div>
 
-      <!-- Table -->
       <div class="trades-table-wrap">
         <div class="trades-table-hdr">
           <span class="trades-table-title">📋 יומן עסקאות</span>
-          <span style="font-size:11px;color:var(--muted)">נתונים מ-TradingView → Power Automate → SharePoint</span>
+          <span style="font-size:11px;color:var(--muted)">TradingView → Power Automate → SharePoint</span>
         </div>
         <div style="overflow-x:auto">
           <table class="trades-tbl">
-            <thead>
-              <tr>
-                <th>תאריך/שעה</th>
-                <th>כיוון</th>
-                <th>כניסה</th>
-                <th>SL</th>
-                <th>TP1</th>
-                <th>TP2</th>
-                <th>תוצאה</th>
-                <th>R:R</th>
-                <th>ציון</th>
-                <th>Verdict</th>
-                <th>Ticker</th>
-              </tr>
-            </thead>
-            <tbody id="tradesTableBody">
-              <tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px">טוען עסקאות...</td></tr>
-            </tbody>
+            <thead><tr>
+              <th>תאריך/שעה</th><th>כיוון</th><th>כניסה</th><th>SL</th><th>TP1</th><th>TP2</th><th>תוצאה</th><th>P&L</th><th>ציון</th><th>Verdict</th><th>Ticker</th>
+            </tr></thead>
+            <tbody id="tradesTableBody"><tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px">טוען עסקאות...</td></tr></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Claude AI Trade Analysis -->
+      <div style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:1px">🤖 ניתוח עסקאות — Claude AI</span>
+            <span id="tradeAnalysisBadge" style="font-family:var(--mono);font-size:10px;background:rgba(0,208,132,.15);color:var(--green);border:1px solid rgba(0,208,132,.3);padding:1px 7px;border-radius:10px;display:none">מעודכן</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="tradeAnalysisStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
+            <span id="tradeAnalysisSpin" style="display:none;animation:dspin .7s linear infinite;font-size:14px">⟳</span>
+            <button onclick="runTradeAnalysis()" id="tradeAnalysisBtn" style="background:var(--blue);color:#000;border:none;font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 14px;border-radius:5px;cursor:pointer">🔍 נתח עסקאות</button>
+          </div>
+        </div>
+        <div id="tradeAnalysisBody" style="padding:14px 16px;min-height:80px;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:12px;color:var(--muted)">לחץ על "נתח עסקאות" לקבלת ניתוח מעמיק ע"י Claude AI</span>
         </div>
       </div>
 
     </div>
   </div>
-
-</div>
 
 <div class="overlay" id="overlay">
   <div class="popup">
@@ -1809,7 +1804,6 @@ async function loadSystemSettings() {
     }
   } catch(e) {}
 }
-
 // ===================== TRADES DASHBOARD =====================
 var tradeFilter = null;
 var tradesTimeChart = null;
@@ -2080,71 +2074,43 @@ async function runTradeAnalysis() {
   var rrAll=closed.map(function(it){return parseFloat(it.RiskReward||it.PnLR||0);}).filter(Boolean);
   var avgRR=rrAll.length?(rrAll.reduce(function(a,b){return a+b;},0)/rrAll.length).toFixed(2):'—';
 
-  var prompt =
-    'אתה מנתח מסחר מקצועי ב-MNQ Futures. נתח לעומק את הנתונים ותן תובנות קצרות ומעשיות בעברית.
-
-' +
-    '=== סטטיסטיקה ===
-' +
-    'עסקאות: '+closed.length+' סגורות, '+pending.length+' פתוחות
-' +
-    'Win Rate: '+winRate+'% ('+wins.length+'W/'+losses.length+'L) | P&L: '+cumPnl.toFixed(1)+'R | ממוצע R:R: '+avgRR+'
-' +
-    'רצף WIN מקסימלי: '+maxW+' | רצף LOSS מקסימלי: '+maxL+'
-
-' +
-    '=== כיוון ===
-' +
-    'LONG: '+longT.length+' עסקאות, '+winLongPct+'% Win | SHORT: '+shortT.length+' עסקאות, '+winShortPct+'% Win
-
-' +
-    '=== לפי שעה ===
-'+hourStats+'
-' +
-    'הכי טוב: '+bestHour+' | הכי גרוע: '+worstHour+'
-
-' +
-    '=== Sessions ===
-' +
-    'NY (09-16): '+ny.length+' עסקאות, '+(ny.length?Math.round(nyW.length/ny.length*100):0)+'%
-' +
-    'London (03-09): '+lon.length+' עסקאות, '+(lon.length?Math.round(lonW.length/lon.length*100):0)+'%
-' +
-    'Overlap (09-11): '+overlap.length+' עסקאות, '+(overlap.length?Math.round(overlapW.length/overlap.length*100):0)+'%
-
-' +
-    '=== ימים ===
-'+dayStats+'
-
-' +
-    '=== Verdict ===
-' +
-    'TAKE: '+vTake.length+' עסקאות, '+(vTake.length?Math.round(vTakeW.length/vTake.length*100):0)+'% Win
-' +
-    'WAIT: '+vWait.length+' עסקאות, '+(vWait.length?Math.round(vWaitW.length/vWait.length*100):0)+'% Win
-' +
-    'SKIP: '+vSkip.length+' עסקאות, '+(vSkip.length?Math.round(vSkipW.length/vSkip.length*100):0)+'% Win | עסקאות WIN שהוחמצו: '+missedWins+'
-
-' +
-    '=== ציון ===
-' +
-    'ממוצע ציון WIN: '+avgWinScore+' | LOSS: '+avgLossScore+'
-' +
-    'ציון≥80: '+score80.length+' עסקאות, '+(score80.length?Math.round(score80W.length/score80.length*100):0)+'% Win
-' +
-    'ציון 70-79: '+score70.length+' עסקאות, '+(score70.length?Math.round(score70W.length/score70.length*100):0)+'% Win
-' +
-    'ציון<70: '+score69.length+' עסקאות, '+(score69.length?Math.round(score69W.length/score69.length*100):0)+'% Win
-
-' +
-    'ענה JSON בלבד (ללא backticks):
-' +
-    '{"strengths":["נקודה1","נקודה2","נקודה3"],' +
-    '"weaknesses":["נקודה1","נקודה2","נקודה3"],' +
-    '"best_patterns":["נקודה1","נקודה2","נקודה3"],' +
-    '"verdict_analysis":["נקודה1","נקודה2","נקודה3"],' +
-    '"risk_insights":["נקודה1","נקודה2","נקודה3"],' +
-    '"recommendations":["המלצה1","המלצה2","המלצה3","המלצה4"]}';
+  var prompt = [
+    'אתה מנתח מסחר מקצועי ב-MNQ Futures. נתח לעומק את הנתונים ותן תובנות קצרות ומעשיות בעברית.',
+    '',
+    '=== סטטיסטיקה ===',
+    'עסקאות: '+closed.length+' סגורות, '+pending.length+' פתוחות',
+    'Win Rate: '+winRate+'% ('+wins.length+'W/'+losses.length+'L) | P&L: '+cumPnl.toFixed(1)+'R | ממוצע R:R: '+avgRR,
+    'רצף WIN מקסימלי: '+maxW+' | רצף LOSS מקסימלי: '+maxL,
+    '',
+    '=== כיוון ===',
+    'LONG: '+longT.length+' עסקאות, '+winLongPct+'% Win | SHORT: '+shortT.length+' עסקאות, '+winShortPct+'% Win',
+    '',
+    '=== לפי שעה ===',
+    hourStats,
+    'הכי טוב: '+bestHour+' | הכי גרוע: '+worstHour,
+    '',
+    '=== Sessions ===',
+    'NY (09-16): '+ny.length+' עסקאות, '+(ny.length?Math.round(nyW.length/ny.length*100):0)+'%',
+    'London (03-09): '+lon.length+' עסקאות, '+(lon.length?Math.round(lonW.length/lon.length*100):0)+'%',
+    'Overlap (09-11): '+overlap.length+' עסקאות, '+(overlap.length?Math.round(overlapW.length/overlap.length*100):0)+'%',
+    '',
+    '=== ימים ===',
+    dayStats,
+    '',
+    '=== Verdict ===',
+    'TAKE: '+vTake.length+' עסקאות, '+(vTake.length?Math.round(vTakeW.length/vTake.length*100):0)+'% Win',
+    'WAIT: '+vWait.length+' עסקאות, '+(vWait.length?Math.round(vWaitW.length/vWait.length*100):0)+'% Win',
+    'SKIP: '+vSkip.length+' עסקאות, '+(vSkip.length?Math.round(vSkipW.length/vSkip.length*100):0)+'% Win | הוחמצו: '+missedWins+' WIN',
+    '',
+    '=== ציון ===',
+    'ממוצע ציון WIN: '+avgWinScore+' | LOSS: '+avgLossScore,
+    'ציון>=80: '+score80.length+' עסקאות, '+(score80.length?Math.round(score80W.length/score80.length*100):0)+'% Win',
+    'ציון 70-79: '+score70.length+' עסקאות, '+(score70.length?Math.round(score70W.length/score70.length*100):0)+'% Win',
+    'ציון<70: '+score69.length+' עסקאות, '+(score69.length?Math.round(score69W.length/score69.length*100):0)+'% Win',
+    '',
+    'ענה JSON בלבד (ללא backticks):',
+    '{"strengths":[],"weaknesses":[],"best_patterns":[],"verdict_analysis":[],"risk_insights":[],"recommendations":[]}'
+  ].join('\n')
 
   try {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -2210,7 +2176,6 @@ async function runTradeAnalysis() {
 // ===================== END CLAUDE TRADE ANALYSIS =====================
 
 // ===================== END TRADES DASHBOARD =====================
-
 // ===================== END SETTINGS =====================
 </script>
 </body>
