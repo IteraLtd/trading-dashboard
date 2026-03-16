@@ -1294,6 +1294,7 @@ async function runDynamicAnalysis(manual) {
   var skips   = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='SKIP'; }).length;
   var scores  = recent.map(function(s){ return parseFloat(s.ClaudeScore)||0; }).filter(Boolean);
   var avgSc   = scores.length ? (scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1) : 'N/A';
+  var avgScore = avgSc; // alias
   var wr      = (wins+losses) > 0 ? Math.round(wins/(wins+losses)*100)+'%' : 'N/A';
 
   // Last 3 signals detail
@@ -1313,7 +1314,7 @@ async function runDynamicAnalysis(manual) {
     '',
     '=== נתוני סיגנלים ===',
     'סיגנלים: '+recent.length+' | LONG: '+longs+' | SHORT: '+shorts+' | TAKE: '+takes+' | SKIP: '+skips,
-    'Win Rate: '+wr+'% | ממוצע ציון: '+avgScore,
+    'Win Rate: '+wr+'% | ממוצע ציון: '+avgSc,
     '5 אחרונים: '+recentStr,
     '',
     'ניתוח יומי ב-4 קטגוריות:',
@@ -1327,9 +1328,11 @@ async function runDynamicAnalysis(manual) {
   ].join('\n');
 
   try {
-    var fetchTimeout = new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout — נסה שוב'));},25000);});
-    var resp = await Promise.race([fetch('https://api.anthropic.com/v1/messages', {
+    var controller = new AbortController();
+    var fetchTimer = setTimeout(function(){ controller.abort(); }, 20000);
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
@@ -1341,7 +1344,8 @@ async function runDynamicAnalysis(manual) {
         max_tokens: 800,
         messages: [{ role: 'user', content: prompt }]
       })
-    }), fetchTimeout]);
+    });
+    clearTimeout(fetchTimer);
     if (!resp.ok) {
       var err = await resp.json().catch(function(){return {};});
       throw new Error(err.error && err.error.message ? err.error.message : 'HTTP '+resp.status);
