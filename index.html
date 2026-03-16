@@ -1351,7 +1351,12 @@ async function runDynamicAnalysis(manual) {
     var text = data.content && data.content[0] ? data.content[0].text : '';
     text = text.replace(/```json|```/g,'').trim();
 
+    var now_ts = new Date();
+    var ts = String(now_ts.getHours()).padStart(2,'0')+':'+String(now_ts.getMinutes()).padStart(2,'0');
     var clean2=text.replace(/```json|```/g,'').trim();
+    // Extract JSON object if there's text before/after it
+    var jsonMatch = clean2.match(/\{[\s\S]*\}/);
+    if (jsonMatch) clean2 = jsonMatch[0];
     var html='';
     try{
       var pj=JSON.parse(clean2);
@@ -2078,7 +2083,12 @@ async function runTradeAnalysis() {
   try {
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',
         max_tokens:1200,
