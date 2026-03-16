@@ -1280,6 +1280,7 @@ async function runDynamicAnalysis(manual) {
     if (body) body.innerHTML = '<div class="dyn-card warn">🔑 הגדר API Key כדי להפעיל ניתוח דינמי (לחץ על 🔑)</div>';
     return;
   }
+  try {
   if (spin) spin.style.display = 'inline-block';
   if (body) body.innerHTML = '<div class="dyn-card info"><span class="dyn-spin">⟳</span> מנתח נתונים...</div>';
 
@@ -1398,8 +1399,14 @@ async function runDynamicAnalysis(manual) {
     if (spin) spin.style.display = 'none';
     dynNextRun = Date.now() + DYN_INTERVAL;
   }
+  } catch(outerErr) {
+    console.error('DYN OUTER ERROR:', outerErr);
+    if (body) body.innerHTML = '<div style="color:var(--red);padding:10px;font-size:12px">⚠ ' + outerErr.message + '</div>';
+  } finally {
+    if (spin) spin.style.display = 'none';
+    dynNextRun = Date.now() + DYN_INTERVAL;
+  }
 }
-
 function startDynamicAnalysis() {
   runDynamicAnalysis(false);
   setInterval(function(){ if (Date.now() >= dynNextRun) runDynamicAnalysis(false); }, 15000);
