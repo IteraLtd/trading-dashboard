@@ -1307,19 +1307,23 @@ async function runDynamicAnalysis(manual) {
   }).join(' / ');
 
   var prompt = [
-    'אתה מנתח שווקים מקצועי ב-MNQ/NQ Futures. ענה בעברית, היה ספציפי וקצר. שעה: '+timeIL,
+    'אתה מנתח שווקים מקצועי ב-MNQ/NQ Futures.',
+    'נתח את מצב השוק הנוכחי ותן המלצות מסחר קונקרטיות. ענה בעברית, היה ספציפי.',
     '',
-    '=== סיגנלים אחרונים ===',
-    'LONG: '+longs+' | SHORT: '+shorts+' | 5 אחרונים: '+recentStr,
+    '=== נתוני סיגנלים ===',
+    'סיגנלים: '+recent.length+' | LONG: '+longs+' | SHORT: '+shorts+' | TAKE: '+takes+' | SKIP: '+skips,
+    'Win Rate: '+wr+'% | ממוצע ציון: '+avgScore,
+    '5 אחרונים: '+recentStr,
     '',
     'ניתוח יומי ב-4 קטגוריות:',
     '1. market_state: מגמה (bull/bear/neutral), trending/ranging, bias, עוצמת תנועה',
     '2. key_levels: 3 רמות תמיכה/התנגדות קריטיות עם מחירים ספציפיים',
     '3. forecast: צפי לשעות הקרובות — כיוון סביר, נקודת כניסה אידיאלית, מה לחכות',
-    '4. patterns: תבניות טכניות פעילות (Double Top, H&S, Wedge, Flag וכו) ומשמעותן',
+    '4. patterns: תבניות טכניות פעילות (Double Top, H&S, Wedge, Flag) ומשמעותן',
     '',
     'ענה JSON בלבד ללא backticks:',
-    '{"market_state":["","",""],"key_levels":["","",""],"forecast":["","",""],"patterns":["","",""]}'  ].join('\n');
+    '{"market_state":["","",""],"key_levels":["","",""],"forecast":["","",""],"patterns":["","",""]}'
+  ].join('\n');
 
   try {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1346,18 +1350,29 @@ async function runDynamicAnalysis(manual) {
     var text = data.content && data.content[0] ? data.content[0].text : '';
     text = text.replace(/```json|```/g,'').trim();
 
-    var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
-    var html = lines.map(function(line) {
-      var cls = line.startsWith('📈') ? 'bull' :
-                line.startsWith('📉') ? 'bear' :
-                (line.startsWith('⚠') || line.startsWith('🔴')) ? 'warn' :
-                line.startsWith('🎯') ? 'bull' : 'info';
-      return '<div class="dyn-card '+cls+'">'+line+'</div>';
-    }).join('');
-
-    var now = new Date();
-    var ts = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    if (body) body.innerHTML = html + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;text-align:left">עודכן: '+ts+'</div>';
+    var clean2=text.replace(/```json|```/g,'').trim();
+    var html='';
+    try{
+      var pj=JSON.parse(clean2);
+      var sd=[
+        {k:'market_state',icon:'📊',t:'מצב שוק',c:'#5b9cf6'},
+        {k:'key_levels',icon:'📏',t:'רמות מפתח',c:'#00d084'},
+        {k:'forecast',icon:'🔭',t:'צפי',c:'#f0b429'},
+        {k:'patterns',icon:'🔍',t:'תבניות',c:'#b794f4'}
+      ];
+      sd.forEach(function(s){
+        var arr=Array.isArray(pj[s.k])?pj[s.k]:(pj[s.k]?[pj[s.k]]:[]);
+        arr=arr.filter(function(x){return x&&String(x).trim();});
+        if(!arr.length)return;
+        html+='<div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid '+s.c+';border-radius:6px;padding:10px 12px;margin-bottom:8px">';
+        html+='<div style="font-weight:700;font-size:11px;color:'+s.c+';margin-bottom:5px">'+s.icon+' '+s.t+'</div>';
+        arr.forEach(function(it){html+='<div style="font-size:12px;line-height:1.6;padding:2px 0;color:var(--text)">'+it+'</div>';});
+        html+='</div>';
+      });
+    }catch(e2){
+      clean2.split('\n').filter(Boolean).forEach(function(l){html+='<div class="dyn-card info" style="font-size:12px;margin-bottom:4px">'+l+'</div>';});
+    }
+    if (body) body.innerHTML = html + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:left">עודכן: '+ts+'</div>';
 
   } catch(e) {
     if (body) body.innerHTML = '<div class="dyn-card warn">⚠ שגיאה: '+e.message+' — בדוק API Key</div>';
@@ -1519,12 +1534,10 @@ function switchTab(tab) {
   document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
   document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
-  // dynPanel only on signals tab
-  var dp = document.getElementById('dynPanel');
-  if (dp) dp.style.display = tab === 'signals' ? '' : 'none';
   if (tab === 'analytics') updateAnalytics(allSignals);
   if (tab === 'settings')  initSettingsPanel();
   if (tab === 'trades')    renderTradesDashboard(allSignals);
+  var dp=document.getElementById('dynPanel'); if(dp) dp.style.display=(tab==='signals')?'':'none';
 }
 
 function updateAnalytics(items) {
@@ -2056,19 +2069,10 @@ async function runTradeAnalysis() {
     'ציון<70: '+(score69.length?Math.round(score69W.length/score69.length*100):0)+'% Win ('+score69.length+')',
     'ממוצע ציון WIN: '+avgWinScore+' | LOSS: '+avgLossScore,
     '',
-    'תן ניתוח עסקאות ב-6 קטגוריות:',
-    '1. strengths: מה עובד טוב — דפוסי כניסה מוצלחים, שעות חזקות, סגנון שמתאים',
-    '2. weaknesses: מה לשפר — טעויות חוזרות, שעות גרועות, דפוסי כניסה בעייתיים',
-    '3. best_patterns: 3 תרחישי הכניסה הטובים ביותר לפי הנתונים',
-    '4. verdict_accuracy: האם הVERDICT מדויק? TAKE/SKIP נכונים?',
-    '5. risk_management: ניהול סיכון — האם SL/TP הגיוניים? RR מתאים?',
-    '6. recommendations: 3-4 המלצות ספציפיות לשיפור מיידי',
-    '',
-    'אם Win Rate > 55% — תן פידבק חיובי וציין מה לשמר.',
-    'אם Win Rate < 40% — היה ישיר ואמור מה הבעיה העיקרית.',
-    '',
+    'אם Win Rate > 55% — תן פידבק חיובי. אם < 40% — ציין את הבעיה העיקרית.',
     'ענה JSON בלבד ללא backticks:',
-    '{"strengths":["","",""],"weaknesses":["","",""],"best_patterns":["","",""],"verdict_accuracy":["","",""],"risk_management":["","",""],"recommendations":["","","",""]}'  ].join('\n');
+    '{"strengths":["","",""],"weaknesses":["","",""],"best_patterns":["","",""],"verdict_accuracy":["","",""],"risk_management":["","",""],"recommendations":["","","",""]}'
+  ].join('\n');
 
   try {
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -2083,14 +2087,17 @@ async function runTradeAnalysis() {
     });
     var data=await resp.json();
     var text=(data.content||[]).map(function(c){return c.text||'';}).join('');
+    text=text.replace(/```json|```/g,'').trim();
     var clean=text.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(clean);
 
     var sections=[
-      {key:'market_state', icon:'📊', title:'מצב שוק',   color:'#5b9cf6', bg:'rgba(91,156,246,.07)',  border:'rgba(91,156,246,.25)'},
-      {key:'key_levels',   icon:'📏', title:'רמות מפתח', color:'#00d084', bg:'rgba(0,208,132,.07)',   border:'rgba(0,208,132,.25)'},
-      {key:'forecast',     icon:'🔭', title:'צפי',        color:'#f0b429', bg:'rgba(240,180,41,.07)',  border:'rgba(240,180,41,.25)'},
-      {key:'patterns',     icon:'🔍', title:'תבניות',     color:'#b794f4', bg:'rgba(183,148,244,.07)', border:'rgba(183,148,244,.25)'}
+      {key:'strengths',        icon:'💪', title:'חוזקות',              color:'#00d084', bg:'rgba(0,208,132,.07)',   border:'rgba(0,208,132,.25)'},
+      {key:'weaknesses',       icon:'⚠️', title:'חולשות',              color:'#ffa500', bg:'rgba(255,165,0,.07)',  border:'rgba(255,165,0,.25)'},
+      {key:'best_patterns',    icon:'🎯', title:'דפוסי כניסה מנצחים',  color:'#4da6ff', bg:'rgba(77,166,255,.07)', border:'rgba(77,166,255,.25)'},
+      {key:'verdict_accuracy', icon:'🤖', title:'דיוק Verdict',        color:'#d2a8ff', bg:'rgba(210,168,255,.07)',border:'rgba(210,168,255,.25)'},
+      {key:'risk_management',    icon:'⚖️', title:'ניהול סיכון',         color:'#79c0ff', bg:'rgba(121,192,255,.07)',border:'rgba(121,192,255,.25)'},
+      {key:'recommendations',  icon:'📋', title:'המלצות לשיפור',       color:'#fff',    bg:'rgba(255,255,255,.04)',border:'rgba(255,255,255,.15)'}
     ];
     var html='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">';
     sections.forEach(function(s){
