@@ -5,41 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MNQ Trading Dashboard</title>
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js">
-
-// ===== WEIGHTS & SCENARIOS =====
-var WEIGHT_KEYS = ['wBias','wSetup','wDynEMA','wBOS','wCHOCH','wSweep','wEqSweep',
-                   'wInstSweep','wInstReclaim','wSD','wOB','wOBStruct','wFVG','wVWAP','wVolume','wReject'];
-
-function onWeight(key, sliderId, valId) {
-  var val = parseInt(document.getElementById(sliderId).value);
-  document.getElementById(valId).textContent = val;
-  updateMaxScore();
-}
-
-function updateMaxScore() {
-  var total = 0;
-  var sliders = ['w-Bias','w-Setup','w-DynEMA','w-BOS','w-CHOCH','w-Sweep','w-EqSweep',
-                 'w-InstSweep','w-InstReclaim','w-SD','w-OB','w-OBStruct','w-FVG','w-VWAP','w-Volume','w-Reject'];
-  sliders.forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) total += parseInt(el.value);
-  });
-  total += 30; // fixed bonuses
-  var el = document.getElementById('maxScoreVal');
-  if (el) el.textContent = total;
-}
-
-function onScenario() {
-  var active = [];
-  for (var i = 1; i <= 8; i++) {
-    var cb = document.getElementById('sc-t' + i);
-    if (cb && cb.checked) active.push(i);
-  }
-  console.log('Active scenarios:', active);
-}
-
-// ===== END WEIGHTS =====
-
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Hebrew:wght@300;400;600&display=swap" rel="stylesheet">
@@ -560,114 +525,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="saveCustomConfig()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;white-space:nowrap">💾 שמור תצורה</button>
         </div>
       </div>
-
-      <!-- ===== 8 תרחישי סיגנל ===== -->
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">
-          📊 תרחישי כניסה — הפעל/כבה
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t1" checked onchange="onScenario()" style="accent-color:var(--green)"> 1 BOS / CHoCH
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t2" checked onchange="onScenario()" style="accent-color:var(--green)"> 2 S/R Break
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t3" checked onchange="onScenario()" style="accent-color:var(--green)"> 3 Sweep Reversal
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t4" checked onchange="onScenario()" style="accent-color:var(--green)"> 4 Inst. Sweep
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t5" checked onchange="onScenario()" style="accent-color:var(--green)"> 5 OB + מבנה
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t6" checked onchange="onScenario()" style="accent-color:var(--green)"> 6 FVG Retest
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t7" checked onchange="onScenario()" style="accent-color:var(--green)"> 7 False Breakout
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
-            <input type="checkbox" id="sc-t8" checked onchange="onScenario()" style="accent-color:var(--green)"> 8 Supply/Demand
-          </label>
-        </div>
-        <div style="font-size:11px;color:var(--muted)">
-          * הפעל/כבה תרחישים לסינון תוויות בדשבורד
-        </div>
-      </div>
-
-      <!-- ===== משקלי Score Engine ===== -->
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-          <span>🧠 משקלי Score Engine</span>
-          <span style="font-size:11px;color:var(--muted)">מקסימום: <span id="maxScoreVal" style="color:var(--blue);font-family:var(--mono)">265</span></span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Trend ──</div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Bias (15m)</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Bias">25</span></div>
-            <input type="range" min="0" max="50" value="25" id="w-Bias" oninput="onWeight('wBias','w-Bias','vw-Bias')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Setup (5m)</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Setup">20</span></div>
-            <input type="range" min="0" max="50" value="20" id="w-Setup" oninput="onWeight('wSetup','w-Setup','vw-Setup')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Trigger EMA</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-DynEMA">15</span></div>
-            <input type="range" min="0" max="50" value="15" id="w-DynEMA" oninput="onWeight('wDynEMA','w-DynEMA','vw-DynEMA')" style="width:100%;accent-color:var(--blue)">
-          </div>
-
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Structure ──</div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">BOS</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-BOS">20</span></div>
-            <input type="range" min="0" max="50" value="20" id="w-BOS" oninput="onWeight('wBOS','w-BOS','vw-BOS')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">CHoCH</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-CHOCH">25</span></div>
-            <input type="range" min="0" max="50" value="25" id="w-CHOCH" oninput="onWeight('wCHOCH','w-CHOCH','vw-CHOCH')" style="width:100%;accent-color:var(--blue)">
-          </div>
-
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Liquidity ──</div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Sweep</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Sweep">25</span></div>
-            <input type="range" min="0" max="50" value="25" id="w-Sweep" oninput="onWeight('wSweep','w-Sweep','vw-Sweep')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Equal Sweep</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-EqSweep">20</span></div>
-            <input type="range" min="0" max="50" value="20" id="w-EqSweep" oninput="onWeight('wEqSweep','w-EqSweep','vw-EqSweep')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Inst. Sweep</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-InstSweep">18</span></div>
-            <input type="range" min="0" max="50" value="18" id="w-InstSweep" oninput="onWeight('wInstSweep','w-InstSweep','vw-InstSweep')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Inst. Reclaim</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-InstReclaim">10</span></div>
-            <input type="range" min="0" max="50" value="10" id="w-InstReclaim" oninput="onWeight('wInstReclaim','w-InstReclaim','vw-InstReclaim')" style="width:100%;accent-color:var(--blue)">
-          </div>
-
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Zones ──</div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Supply/Demand</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-SD">15</span></div>
-            <input type="range" min="0" max="50" value="15" id="w-SD" oninput="onWeight('wSD','w-SD','vw-SD')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Order Block</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-OB">15</span></div>
-            <input type="range" min="0" max="50" value="15" id="w-OB" oninput="onWeight('wOB','w-OB','vw-OB')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">OB + Structure</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-OBStruct">10</span></div>
-            <input type="range" min="0" max="50" value="10" id="w-OBStruct" oninput="onWeight('wOBStruct','w-OBStruct','vw-OBStruct')" style="width:100%;accent-color:var(--blue)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">FVG</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-FVG">10</span></div>
-            <input type="range" min="0" max="50" value="10" id="w-FVG" oninput="onWeight('wFVG','w-FVG','vw-FVG')" style="width:100%;accent-color:var(--blue)">
-          </div>
-
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;grid-column:span 2">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Filters ──</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-              <div>
-                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">VWAP</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-VWAP">5</span></div>
-                <input type="range" min="0" max="50" value="5" id="w-VWAP" oninput="onWeight('wVWAP','w-VWAP','vw-VWAP')" style="width:100%;accent-color:var(--blue)">
-              </div>
-              <div>
-                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Volume Spike</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Volume">10</span></div>
-                <input type="range" min="0" max="50" value="10" id="w-Volume" oninput="onWeight('wVolume','w-Volume','vw-Volume')" style="width:100%;accent-color:var(--blue)">
-              </div>
-              <div>
-                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Rejection Candle</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Reject">3</span></div>
-                <input type="range" min="0" max="50" value="3" id="w-Reject" oninput="onWeight('wReject','w-Reject','vw-Reject')" style="width:100%;accent-color:var(--blue)">
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       <div style="display:flex;gap:10px;align-items:center">
         <button onclick="saveSettingsToSP()" id="saveSettingsBtn" style="background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">✅ שמור והפעל</button>
         <span id="saveSettingsStatus" style="font-size:12px;color:var(--muted)"></span>
@@ -1450,23 +1307,19 @@ async function runDynamicAnalysis(manual) {
   }).join(' / ');
 
   var prompt = [
-    'אתה מנתח שווקים מקצועי ב-MNQ/NQ Futures.',
-    'נתח את מצב השוק הנוכחי ותן המלצות מסחר קונקרטיות. ענה בעברית, היה ספציפי.',
+    'אתה מנתח שווקים מקצועי ב-MNQ/NQ Futures. ענה בעברית, היה ספציפי וקצר. שעה: '+timeIL,
     '',
-    '=== נתוני סיגנלים ===',
-    'סיגנלים: '+recent.length+' | LONG: '+longs+' | SHORT: '+shorts+' | TAKE: '+takes+' | SKIP: '+skips,
-    'Win Rate: '+wr+'% | ממוצע ציון: '+avgScore,
-    '5 אחרונים: '+recentStr,
+    '=== סיגנלים אחרונים ===',
+    'LONG: '+longs+' | SHORT: '+shorts+' | 5 אחרונים: '+recentStr,
     '',
-    'נתח את מצב השוק ב-4 קטגוריות:',
-    '1. market_state: מה השוק עושה עכשיו — trending/ranging, bias (bull/bear/neutral), עוצמת תנועה',
-    '2. key_levels: אזורי תמיכה/התנגדות קריטיים עם מחירים ספציפיים (לדוגמה: תמיכה ב-21450)',
-    '3. trade_setup: האם כדאי להיכנס? איזה כיוון? SL היכן? TP היכן? מה לחכות לפני כניסה?',
-    '4. risk_warning: מתי לא להיכנס, גורמי סיכון שיכולים לשבש, מה לצפות',
+    'ניתוח יומי ב-4 קטגוריות:',
+    '1. market_state: מגמה (bull/bear/neutral), trending/ranging, bias, עוצמת תנועה',
+    '2. key_levels: 3 רמות תמיכה/התנגדות קריטיות עם מחירים ספציפיים',
+    '3. forecast: צפי לשעות הקרובות — כיוון סביר, נקודת כניסה אידיאלית, מה לחכות',
+    '4. patterns: תבניות טכניות פעילות (Double Top, H&S, Wedge, Flag וכו) ומשמעותן',
     '',
     'ענה JSON בלבד ללא backticks:',
-    '{"market_state":["","",""],"key_levels":["","",""],"trade_setup":["","",""],"risk_warning":["","",""]}'
-  ].join('\n');
+    '{"market_state":["","",""],"key_levels":["","",""],"forecast":["","",""],"patterns":["","",""]}'  ].join('\n');
 
   try {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1491,6 +1344,7 @@ async function runDynamicAnalysis(manual) {
 
     var data = await resp.json();
     var text = data.content && data.content[0] ? data.content[0].text : '';
+    text = text.replace(/```json|```/g,'').trim();
 
     var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
     var html = lines.map(function(line) {
@@ -1665,6 +1519,9 @@ function switchTab(tab) {
   document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
   document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
+  // dynPanel only on signals tab
+  var dp = document.getElementById('dynPanel');
+  if (dp) dp.style.display = tab === 'signals' ? '' : 'none';
   if (tab === 'analytics') updateAnalytics(allSignals);
   if (tab === 'settings')  initSettingsPanel();
   if (tab === 'trades')    renderTradesDashboard(allSignals);
@@ -2198,9 +2055,20 @@ async function runTradeAnalysis() {
     'ציון 70-79: '+(score70.length?Math.round(score70W.length/score70.length*100):0)+'% Win ('+score70.length+')',
     'ציון<70: '+(score69.length?Math.round(score69W.length/score69.length*100):0)+'% Win ('+score69.length+')',
     'ממוצע ציון WIN: '+avgWinScore+' | LOSS: '+avgLossScore,
+    '',
+    'תן ניתוח עסקאות ב-6 קטגוריות:',
+    '1. strengths: מה עובד טוב — דפוסי כניסה מוצלחים, שעות חזקות, סגנון שמתאים',
+    '2. weaknesses: מה לשפר — טעויות חוזרות, שעות גרועות, דפוסי כניסה בעייתיים',
+    '3. best_patterns: 3 תרחישי הכניסה הטובים ביותר לפי הנתונים',
+    '4. verdict_accuracy: האם הVERDICT מדויק? TAKE/SKIP נכונים?',
+    '5. risk_management: ניהול סיכון — האם SL/TP הגיוניים? RR מתאים?',
+    '6. recommendations: 3-4 המלצות ספציפיות לשיפור מיידי',
+    '',
+    'אם Win Rate > 55% — תן פידבק חיובי וציין מה לשמר.',
+    'אם Win Rate < 40% — היה ישיר ואמור מה הבעיה העיקרית.',
+    '',
     'ענה JSON בלבד ללא backticks:',
-    '{"strengths":["","",""],"weaknesses":["","",""],"best_patterns":["","",""],"verdict_analysis":["","",""],"risk_insights":["","",""],"recommendations":["","","",""]}'
-  ].join('\n');
+    '{"strengths":["","",""],"weaknesses":["","",""],"best_patterns":["","",""],"verdict_accuracy":["","",""],"risk_management":["","",""],"recommendations":["","","",""]}'  ].join('\n');
 
   try {
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -2219,12 +2087,10 @@ async function runTradeAnalysis() {
     var parsed=JSON.parse(clean);
 
     var sections=[
-      {key:'strengths',        icon:'💪', title:'חוזקות',              color:'#00d084', bg:'rgba(0,208,132,.07)',   border:'rgba(0,208,132,.25)'},
-      {key:'weaknesses',       icon:'⚠️', title:'חולשות',              color:'#ffa500', bg:'rgba(255,165,0,.07)',  border:'rgba(255,165,0,.25)'},
-      {key:'best_patterns',    icon:'🎯', title:'דפוסי כניסה מנצחים',  color:'#4da6ff', bg:'rgba(77,166,255,.07)', border:'rgba(77,166,255,.25)'},
-      {key:'verdict_analysis', icon:'🤖', title:'דיוק Verdict',        color:'#d2a8ff', bg:'rgba(210,168,255,.07)',border:'rgba(210,168,255,.25)'},
-      {key:'risk_insights',    icon:'⚖️', title:'ניהול סיכון',         color:'#79c0ff', bg:'rgba(121,192,255,.07)',border:'rgba(121,192,255,.25)'},
-      {key:'recommendations',  icon:'📋', title:'המלצות לשיפור',       color:'#fff',    bg:'rgba(255,255,255,.04)',border:'rgba(255,255,255,.15)'}
+      {key:'market_state', icon:'📊', title:'מצב שוק',   color:'#5b9cf6', bg:'rgba(91,156,246,.07)',  border:'rgba(91,156,246,.25)'},
+      {key:'key_levels',   icon:'📏', title:'רמות מפתח', color:'#00d084', bg:'rgba(0,208,132,.07)',   border:'rgba(0,208,132,.25)'},
+      {key:'forecast',     icon:'🔭', title:'צפי',        color:'#f0b429', bg:'rgba(240,180,41,.07)',  border:'rgba(240,180,41,.25)'},
+      {key:'patterns',     icon:'🔍', title:'תבניות',     color:'#b794f4', bg:'rgba(183,148,244,.07)', border:'rgba(183,148,244,.25)'}
     ];
     var html='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">';
     sections.forEach(function(s){
