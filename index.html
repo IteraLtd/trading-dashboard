@@ -1327,7 +1327,8 @@ async function runDynamicAnalysis(manual) {
   ].join('\n');
 
   try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+    var fetchTimeout = new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout — נסה שוב'));},25000);});
+    var resp = await Promise.race([fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1337,13 +1338,12 @@ async function runDynamicAnalysis(manual) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
+        max_tokens: 800,
         messages: [{ role: 'user', content: prompt }]
       })
-    });
-
+    }), fetchTimeout]);
     if (!resp.ok) {
-      var err = await resp.json();
+      var err = await resp.json().catch(function(){return {};});
       throw new Error(err.error && err.error.message ? err.error.message : 'HTTP '+resp.status);
     }
 
