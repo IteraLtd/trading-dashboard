@@ -5,6 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MNQ Trading Dashboard</title>
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js">
+
+// ===== WEIGHTS & SCENARIOS =====
+var WEIGHT_KEYS = ['wBias','wSetup','wDynEMA','wBOS','wCHOCH','wSweep','wEqSweep',
+                   'wInstSweep','wInstReclaim','wSD','wOB','wOBStruct','wFVG','wVWAP','wVolume','wReject'];
+
+function onWeight(key, sliderId, valId) {
+  var val = parseInt(document.getElementById(sliderId).value);
+  document.getElementById(valId).textContent = val;
+  updateMaxScore();
+}
+
+function updateMaxScore() {
+  var total = 0;
+  var sliders = ['w-Bias','w-Setup','w-DynEMA','w-BOS','w-CHOCH','w-Sweep','w-EqSweep',
+                 'w-InstSweep','w-InstReclaim','w-SD','w-OB','w-OBStruct','w-FVG','w-VWAP','w-Volume','w-Reject'];
+  sliders.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) total += parseInt(el.value);
+  });
+  total += 30; // fixed bonuses
+  var el = document.getElementById('maxScoreVal');
+  if (el) el.textContent = total;
+}
+
+function onScenario() {
+  var active = [];
+  for (var i = 1; i <= 8; i++) {
+    var cb = document.getElementById('sc-t' + i);
+    if (cb && cb.checked) active.push(i);
+  }
+  console.log('Active scenarios:', active);
+}
+
+// ===== END WEIGHTS =====
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Hebrew:wght@300;400;600&display=swap" rel="stylesheet">
@@ -525,6 +560,114 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="saveCustomConfig()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;white-space:nowrap">💾 שמור תצורה</button>
         </div>
       </div>
+
+      <!-- ===== 8 תרחישי סיגנל ===== -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">
+          📊 תרחישי כניסה — הפעל/כבה
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t1" checked onchange="onScenario()" style="accent-color:var(--green)"> 1 BOS / CHoCH
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t2" checked onchange="onScenario()" style="accent-color:var(--green)"> 2 S/R Break
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t3" checked onchange="onScenario()" style="accent-color:var(--green)"> 3 Sweep Reversal
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t4" checked onchange="onScenario()" style="accent-color:var(--green)"> 4 Inst. Sweep
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t5" checked onchange="onScenario()" style="accent-color:var(--green)"> 5 OB + מבנה
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t6" checked onchange="onScenario()" style="accent-color:var(--green)"> 6 FVG Retest
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t7" checked onchange="onScenario()" style="accent-color:var(--green)"> 7 False Breakout
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--fg)">
+            <input type="checkbox" id="sc-t8" checked onchange="onScenario()" style="accent-color:var(--green)"> 8 Supply/Demand
+          </label>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">
+          * הפעל/כבה תרחישים לסינון תוויות בדשבורד
+        </div>
+      </div>
+
+      <!-- ===== משקלי Score Engine ===== -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+          <span>🧠 משקלי Score Engine</span>
+          <span style="font-size:11px;color:var(--muted)">מקסימום: <span id="maxScoreVal" style="color:var(--blue);font-family:var(--mono)">265</span></span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Trend ──</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Bias (15m)</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Bias">25</span></div>
+            <input type="range" min="0" max="50" value="25" id="w-Bias" oninput="onWeight('wBias','w-Bias','vw-Bias')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Setup (5m)</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Setup">20</span></div>
+            <input type="range" min="0" max="50" value="20" id="w-Setup" oninput="onWeight('wSetup','w-Setup','vw-Setup')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Trigger EMA</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-DynEMA">15</span></div>
+            <input type="range" min="0" max="50" value="15" id="w-DynEMA" oninput="onWeight('wDynEMA','w-DynEMA','vw-DynEMA')" style="width:100%;accent-color:var(--blue)">
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Structure ──</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">BOS</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-BOS">20</span></div>
+            <input type="range" min="0" max="50" value="20" id="w-BOS" oninput="onWeight('wBOS','w-BOS','vw-BOS')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">CHoCH</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-CHOCH">25</span></div>
+            <input type="range" min="0" max="50" value="25" id="w-CHOCH" oninput="onWeight('wCHOCH','w-CHOCH','vw-CHOCH')" style="width:100%;accent-color:var(--blue)">
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Liquidity ──</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Sweep</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Sweep">25</span></div>
+            <input type="range" min="0" max="50" value="25" id="w-Sweep" oninput="onWeight('wSweep','w-Sweep','vw-Sweep')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Equal Sweep</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-EqSweep">20</span></div>
+            <input type="range" min="0" max="50" value="20" id="w-EqSweep" oninput="onWeight('wEqSweep','w-EqSweep','vw-EqSweep')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Inst. Sweep</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-InstSweep">18</span></div>
+            <input type="range" min="0" max="50" value="18" id="w-InstSweep" oninput="onWeight('wInstSweep','w-InstSweep','vw-InstSweep')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Inst. Reclaim</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-InstReclaim">10</span></div>
+            <input type="range" min="0" max="50" value="10" id="w-InstReclaim" oninput="onWeight('wInstReclaim','w-InstReclaim','vw-InstReclaim')" style="width:100%;accent-color:var(--blue)">
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Zones ──</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Supply/Demand</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-SD">15</span></div>
+            <input type="range" min="0" max="50" value="15" id="w-SD" oninput="onWeight('wSD','w-SD','vw-SD')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">Order Block</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-OB">15</span></div>
+            <input type="range" min="0" max="50" value="15" id="w-OB" oninput="onWeight('wOB','w-OB','vw-OB')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">OB + Structure</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-OBStruct">10</span></div>
+            <input type="range" min="0" max="50" value="10" id="w-OBStruct" oninput="onWeight('wOBStruct','w-OBStruct','vw-OBStruct')" style="width:100%;accent-color:var(--blue)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;margin-top:6px"><span style="font-size:11px">FVG</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-FVG">10</span></div>
+            <input type="range" min="0" max="50" value="10" id="w-FVG" oninput="onWeight('wFVG','w-FVG','vw-FVG')" style="width:100%;accent-color:var(--blue)">
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;grid-column:span 2">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:2px">── Filters ──</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">VWAP</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-VWAP">5</span></div>
+                <input type="range" min="0" max="50" value="5" id="w-VWAP" oninput="onWeight('wVWAP','w-VWAP','vw-VWAP')" style="width:100%;accent-color:var(--blue)">
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Volume Spike</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Volume">10</span></div>
+                <input type="range" min="0" max="50" value="10" id="w-Volume" oninput="onWeight('wVolume','w-Volume','vw-Volume')" style="width:100%;accent-color:var(--blue)">
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Rejection Candle</span><span style="font-family:var(--mono);color:var(--blue)" id="vw-Reject">3</span></div>
+                <input type="range" min="0" max="50" value="3" id="w-Reject" oninput="onWeight('wReject','w-Reject','vw-Reject')" style="width:100%;accent-color:var(--blue)">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;align-items:center">
         <button onclick="saveSettingsToSP()" id="saveSettingsBtn" style="background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">✅ שמור והפעל</button>
         <span id="saveSettingsStatus" style="font-size:12px;color:var(--muted)"></span>
