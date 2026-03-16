@@ -1387,12 +1387,12 @@ async function runDynamicAnalysis(manual) {
     if (body) body.innerHTMLrHTML = html + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:left">עודכן: '+ts+'</div>';
 
   } catch(e) {
-    if (body) body.innerHTML = '<div class="dyn-card warn">⚠ שגיאה: '+e.message+' — בדוק API Key</div>';
+    if (body) body.innerHTML = '<div class="dyn-card warn">⚠ שגיאה: '+e.message+'</div>';
     console.error('Dynamic analysis error', e);
+  } finally {
+    if (spin) spin.style.display = 'none';
+    dynNextRun = Date.now() + DYN_INTERVAL;
   }
-
-  if (spin) spin.style.display = 'none';
-  dynNextRun = Date.now() + DYN_INTERVAL;
 }
 
 function startDynamicAnalysis() {
