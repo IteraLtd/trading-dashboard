@@ -1354,9 +1354,10 @@ async function runDynamicAnalysis(manual) {
     var now_ts = new Date();
     var ts = String(now_ts.getHours()).padStart(2,'0')+':'+String(now_ts.getMinutes()).padStart(2,'0');
     var clean2=text.replace(/```json|```/g,'').trim();
-    // Extract JSON object if there's text before/after it
-    var jsonMatch = clean2.match(/\{[\s\S]*\}/);
-    if (jsonMatch) clean2 = jsonMatch[0];
+    // Extract JSON object - greedy match from first { to last }
+    var jStart=clean2.indexOf('{');
+    var jEnd=clean2.lastIndexOf('}');
+    if(jStart!==-1 && jEnd>jStart) clean2=clean2.substring(jStart,jEnd+1);
     var html='';
     try{
       var pj=JSON.parse(clean2);
@@ -1376,9 +1377,14 @@ async function runDynamicAnalysis(manual) {
         html+='</div>';
       });
     }catch(e2){
-      clean2.split('\n').filter(Boolean).forEach(function(l){html+='<div class="dyn-card info" style="font-size:12px;margin-bottom:4px">'+l+'</div>';});
+      clean2.split('\n')
+        .map(function(l){return l.trim().replace(/^[",\[\]{}]+|[",\[\]{}]+$/g,'').trim();})
+        .filter(function(l){return l&&l.length>8&&l.indexOf('":')===-1;})
+        .forEach(function(l){
+          html+='<div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid #5b9cf6;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px;line-height:1.6;color:var(--text)">'+l+'</div>';
+        });
     }
-    if (body) body.innerHTML = html + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:left">עודכן: '+ts+'</div>';
+    if (body) body.innerHTMLrHTML = html + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:left">עודכן: '+ts+'</div>';
 
   } catch(e) {
     if (body) body.innerHTML = '<div class="dyn-card warn">⚠ שגיאה: '+e.message+' — בדוק API Key</div>';
