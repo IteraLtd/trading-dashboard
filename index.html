@@ -1308,13 +1308,14 @@ async function runDynamicAnalysis(manual) {
     return (s.Direction||'?')+'|'+(s.ClaudeVerdict||'?')+'|'+(s.Result||'OPEN');
   }).join(' / ');
 
+  var avgScore = (typeof avgSc !== 'undefined') ? avgSc : (typeof avgScore !== 'undefined') ? avgScore : 'N/A';
   var prompt = [
     'אתה מנתח שווקים מקצועי ב-MNQ/NQ Futures.',
     'נתח את מצב השוק הנוכחי ותן המלצות מסחר קונקרטיות. ענה בעברית, היה ספציפי.',
     '',
     '=== נתוני סיגנלים ===',
     'סיגנלים: '+recent.length+' | LONG: '+longs+' | SHORT: '+shorts+' | TAKE: '+takes+' | SKIP: '+skips,
-    'Win Rate: '+wr+'% | ממוצע ציון: '+avgSc,
+    'Win Rate: '+wr+'% | ממוצע ציון: '+avgScore,
     '5 אחרונים: '+recentStr,
     '',
     'ניתוח יומי ב-4 קטגוריות:',
