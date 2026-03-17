@@ -273,7 +273,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <div id="dashboard">
   <header>
-    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/03 07:23</span></div>
+    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/03 07:30</span></div>
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
         <span class="dot" id="statusDot"></span>
@@ -1339,11 +1339,9 @@ async function runDynamicAnalysis(manual) {
         var arr = Array.isArray(pj[d.k]) ? pj[d.k] : (pj[d.k] ? [pj[d.k]] : []);
         arr = arr.filter(function(x){ return x && String(x).trim().length > 2; });
         if (!arr.length) return;
-        html += '<div style="background:var(--surface);border-right:3px solid '+d.c+';border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px">';
-        html += '<div style="font-weight:700;font-size:11px;color:'+d.c+';margin-bottom:5px">'+d.icon+' '+d.t+'</div>';
-        arr.forEach(function(item) {
-          html += '<div style="font-size:12px;line-height:1.6;color:var(--text);padding:2px 0">'+item+'</div>';
-        });
+        html += '<div style="background:'+d.c+'12;border-right:3px solid '+d.c+';border-radius:5px;padding:6px 10px;margin-bottom:6px;display:flex;gap:8px;align-items:baseline">';
+        html += '<span style="font-weight:700;font-size:11px;color:'+d.c+';white-space:nowrap;min-width:70px">'+d.icon+' '+d.t+'</span>';
+        html += '<span style="font-size:11px;line-height:1.5;color:var(--text)">'+arr.join(' · ')+'</span>';
         html += '</div>';
       });
     } catch(pe) {
