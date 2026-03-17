@@ -273,7 +273,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <div id="dashboard">
   <header>
-    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/03 07:30</span></div>
+    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/03 07:39</span></div>
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
         <span class="dot" id="statusDot"></span>
@@ -317,6 +317,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 
 
+  <!-- STATS RIGHT COLUMN -->
+  <div style="flex:1;min-width:0">
   <!-- ANALYSIS BAR -->
   <div class="analysis-bar">
     <div class="analysis-panel">
@@ -348,9 +350,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="analysis-text" id="dailyAnalysis"><span style="color:var(--muted)">טוען נתונים...</span></div>
     </div>
   </div>
+  </div><!-- end stats right column -->
 
   <!-- DYNAMIC ANALYSIS PANEL -->
-  <div id="dynPanel">
+  <div id="dynPanel" style="width:33%;min-width:250px;border-left:1px solid var(--border);order:-1">
     <div class="dyn-header">
       <span class="dyn-title">🤖 ניתוח דינמי — Claude AI</span>
       <div class="dyn-controls">
@@ -360,7 +363,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button class="dyn-key-btn" onclick="showKeyModal()" title="הגדר API Key">🔑</button>
       </div>
     </div>
-    <div id="dynBody"><span style="color:var(--muted);font-size:12px">⟳ מאתחל ניתוח...</span></div>
+    <div id="dynBody" style="padding:8px;overflow-y:auto;max-height:200px"><span style="color:var(--muted);font-size:12px">⟳ מאתחל...</span></div>
   </div>
 
   <!-- API Key Modal -->
