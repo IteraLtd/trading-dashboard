@@ -273,7 +273,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <div id="dashboard">
   <header>
-    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/03 06:38</span></div>
+    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/03 07:23</span></div>
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
         <span class="dot" id="statusDot"></span>
@@ -1295,15 +1295,13 @@ async function runDynamicAnalysis(manual) {
     var now = new Date();
     var timeIL = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
 
-    var prompt = 'אתה מנתח שווקים ב-MNQ Futures. ענה בעברית, קצר וספציפי. שעה: ' + timeIL + '\n\n' +
-      'סיגנלים: LONG ' + longs + ' | SHORT ' + shorts + ' | Win Rate: ' + wr + '%\n' +
-      '5 אחרונים: ' + recentStr + '\n\n' +
-      'נתח ב-4 קטגוריות:\n' +
-      '1. market_state: מגמה, trending/ranging, bias\n' +
-      '2. key_levels: 3 רמות מפתח עם מחירים\n' +
-      '3. forecast: צפי לשעות הקרובות\n' +
-      '4. patterns: תבניות טכניות פעילות\n\n' +
-      'ענה JSON בלבד: {"market_state":["","",""],"key_levels":["","",""],"forecast":["","",""],"patterns":["","",""]}';
+    var prompt = 'אתה מנתח שווקים ב-MNQ/NQ Futures. חובה לענות JSON בלבד ללא שאלות. שעה: ' + timeIL + '\n' +
+      'LONG: ' + longs + ' | SHORT: ' + shorts + ' | Win Rate: ' + wr + '%\n' +
+      '5 אחרונים: ' + (recentStr || 'אין נתונים') + '\n\n' +
+      'הוראה: נתח את מצב השוק לפי הנתונים הקיימים. אם אין מספיק נתונים — נתח לפי מה שיש ותן הערכה כללית.\n' +
+      'חובה להחזיר JSON תקין עם 3 פריטים בכל קטגוריה. אל תשאל שאלות. אל תבקש מידע נוסף.\n\n' +
+      'FORMAT: {"market_state":["מגמה כללית","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"]}\n' +
+      'ענה JSON בלבד:';
 
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
