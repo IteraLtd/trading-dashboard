@@ -37,6 +37,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-left:6px;animation:pulse 2s infinite}
 .dot.err{background:var(--red);animation:none}
 .mkt-open{background:rgba(0,208,132,0.15);color:var(--green);border:1px solid rgba(0,208,132,0.3)}
+.accent-btn{border:2px solid transparent;border-radius:5px;padding:5px 12px;font-size:11px;font-family:var(--mono);cursor:pointer;color:#000;font-weight:600;transition:all .15s}
+.accent-btn:hover{transform:scale(1.08)}
+.accent-btn.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,0.3)}
 .mkt-closed{background:rgba(74,96,128,0.15);color:var(--muted);border:1px solid var(--border)}
 .mkt-pre{background:rgba(77,166,255,0.12);color:var(--blue);border:1px solid rgba(77,166,255,0.3)}
 .mkt-stale{background:rgba(255,165,0,0.12);color:var(--yellow);border:1px solid rgba(255,165,0,0.3)}
@@ -547,6 +550,61 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="saveCustomConfig()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;white-space:nowrap">💾 שמור תצורה</button>
         </div>
       </div>
+      <!-- APPEARANCE SECTION -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">🎨 מראה ועיצוב</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+          <!-- Font Size -->
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span class="setting-label">🔠 גודל פונט</span>
+              <span class="setting-val" id="val-font-size">14px</span>
+            </div>
+            <input type="range" min="11" max="18" step="1" value="14" id="app-font-size"
+              oninput="applyFontSize(this.value)"
+              class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>קטן</span><span>גדול</span></div>
+          </div>
+
+          <!-- Signal label font size -->
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span class="setting-label">📡 גודל שורת סיגנל</span>
+              <span class="setting-val" id="val-sig-size">normal</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button onclick="setSigSize('compact',this)"  class="vol-btn vol-active" id="sig-compact">קומפקטי</button>
+              <button onclick="setSigSize('normal',this)"   class="vol-btn" id="sig-normal">רגיל</button>
+              <button onclick="setSigSize('spacious',this)" class="vol-btn" id="sig-spacious">מרווח</button>
+            </div>
+          </div>
+
+          <!-- Accent color -->
+          <div class="setting-row">
+            <div style="margin-bottom:8px"><span class="setting-label">🎨 צבע הדגשה</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap" id="accentBtns">
+              <button onclick="setAccent('#4da6ff','כחול',this)"  class="accent-btn" style="background:#4da6ff" title="כחול">כחול</button>
+              <button onclick="setAccent('#00d084','ירוק',this)"  class="accent-btn" style="background:#00d084" title="ירוק">ירוק</button>
+              <button onclick="setAccent('#ffa500','כתום',this)"  class="accent-btn" style="background:#ffa500" title="כתום">כתום</button>
+              <button onclick="setAccent('#c084fc','סגול',this)"  class="accent-btn" style="background:#c084fc" title="סגול">סגול</button>
+              <button onclick="setAccent('#f472b6','ורוד',this)"  class="accent-btn" style="background:#f472b6" title="ורוד">ורוד</button>
+              <button onclick="setAccent('#34d399','טורקיז',this)" class="accent-btn" style="background:#34d399" title="טורקיז">טורקיז</button>
+            </div>
+          </div>
+
+          <!-- Density -->
+          <div class="setting-row">
+            <div style="margin-bottom:8px"><span class="setting-label">📐 צפיפות תצוגה</span></div>
+            <div style="display:flex;gap:8px">
+              <button onclick="setDensity('dense',this)"   class="vol-btn vol-active" id="den-dense">צפוף</button>
+              <button onclick="setDensity('normal',this)"  class="vol-btn" id="den-normal">רגיל</button>
+              <button onclick="setDensity('relaxed',this)" class="vol-btn" id="den-relaxed">מרווח</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;align-items:center">
         <button onclick="saveSettingsToSP()" id="saveSettingsBtn" style="background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">✅ שמור והפעל</button>
         <span id="saveSettingsStatus" style="font-size:12px;color:var(--muted)"></span>
@@ -569,17 +627,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <!-- Info bar -->
     <div id="btInfoBar" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;font-family:var(--mono);font-size:11px">
       <span style="color:var(--muted)">📅 טווח:</span>
-      <span style="color:var(--text)">דצמבר 2025 — מרץ 2026</span>
-      <span style="color:var(--border)">|</span>
-      <span style="color:var(--muted)">⏱ 5 דקות</span>
-      <span style="color:var(--border)">|</span>
-      <span style="color:var(--muted)">LONG שעות:</span>
-      <span id="btLongHoursInfo" style="color:var(--green)"></span>
-      <span style="color:var(--border)">|</span>
-      <span style="color:var(--muted)">SHORT שעות:</span>
-      <span id="btShortHoursInfo" style="color:var(--blue)"></span>
-      <span style="color:var(--border)">|</span>
-      <span style="color:var(--muted)">SL: 1.2×ATR | TP1: 1×SL | TP2: 1.5×SL</span>
+      <span style="color:var(--text);font-weight:600">דצמבר 2025 — מרץ 2026</span>
+      <span style="color:var(--muted)">|</span>
+      <span style="color:var(--muted)">⏱</span><span style="color:var(--text);font-weight:600">5 דקות</span>
+      <span style="color:var(--muted)">|</span>
+      <span style="color:var(--muted)">LONG:</span>
+      <span id="btLongHoursInfo" style="color:var(--text);font-weight:600"></span>
+      <span style="color:var(--muted)">|</span>
+      <span style="color:var(--muted)">SHORT:</span>
+      <span id="btShortHoursInfo" style="color:var(--text);font-weight:600"></span>
+      <span style="color:var(--muted)">|</span>
+      <span style="color:var(--muted)">SL: 1.2×ATR</span>
+      <span style="color:var(--muted)">TP1: 1×SL</span>
+      <span style="color:var(--muted)">TP2: 1.5×SL</span>
     </div>
 
     <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
@@ -903,6 +963,7 @@ function startDash() {
   if (Notification && Notification.permission === 'default') Notification.requestPermission();
   initSoundBtn();
   loadSystemStatus();
+  loadAppearanceSettings();
   refresh();
   setInterval(refresh, REFRESH);
   startDynamicAnalysis();
@@ -2231,6 +2292,66 @@ async function runTradeAnalysis() {
 
 // ===================== END SETTINGS =====================
 
+
+
+// == APPEARANCE CONTROLS ==
+function applyFontSize(val) {
+  document.body.style.fontSize = val + 'px';
+  var el = document.getElementById('val-font-size');
+  if(el) el.textContent = val + 'px';
+  localStorage.setItem('appFontSize', val);
+}
+
+function setSigSize(mode, btn) {
+  document.querySelectorAll('#sig-compact,#sig-normal,#sig-spacious').forEach(b=>b.classList.remove('vol-active'));
+  if(btn) btn.classList.add('vol-active');
+  var el = document.getElementById('val-sig-size');
+  if(el) el.textContent = mode;
+  var rows = document.querySelectorAll('.sig-row, .signal-row, [class*="sig"]');
+  var pad = mode==='compact'?'4px 10px':mode==='spacious'?'14px 16px':'8px 12px';
+  rows.forEach(r=>{ if(r.style!==undefined) r.style.padding=pad; });
+  localStorage.setItem('sigSize', mode);
+}
+
+function setAccent(hex, name, btn) {
+  document.querySelectorAll('.accent-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.documentElement.style.setProperty('--blue', hex);
+  localStorage.setItem('accentColor', hex);
+  localStorage.setItem('accentName', name);
+}
+
+function setDensity(mode, btn) {
+  document.querySelectorAll('#den-dense,#den-normal,#den-relaxed').forEach(b=>b.classList.remove('vol-active'));
+  if(btn) btn.classList.add('vol-active');
+  var gap = mode==='dense'?'6px':mode==='relaxed'?'18px':'12px';
+  document.querySelectorAll('.panel, [id$="Panel"] > div').forEach(el=>{ el.style.gap=gap; });
+  localStorage.setItem('density', mode);
+}
+
+function loadAppearanceSettings() {
+  var fs = localStorage.getItem('appFontSize');
+  if(fs) {
+    document.body.style.fontSize = fs + 'px';
+    var slider = document.getElementById('app-font-size');
+    if(slider) { slider.value = fs; }
+    var lbl = document.getElementById('val-font-size');
+    if(lbl) lbl.textContent = fs + 'px';
+  }
+  var ac = localStorage.getItem('accentColor');
+  if(ac) {
+    document.documentElement.style.setProperty('--blue', ac);
+    document.querySelectorAll('.accent-btn').forEach(b=>{
+      if(b.style.background===ac) b.classList.add('active');
+    });
+  }
+  var density = localStorage.getItem('density');
+  if(density) {
+    var btn = document.getElementById('den-'+density);
+    if(btn) setDensity(density, btn);
+  }
+}
+// == END APPEARANCE ==
 
 // == MARKET STATUS MODULE ==
 function getMarketStatus() {
