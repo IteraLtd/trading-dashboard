@@ -558,12 +558,28 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <!-- BACKTEST PANEL -->
   <div id="backtestPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
 
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">פרסט:</span>
       <button class="bt-preset tab-active" onclick="btPreset('base',this)">Baseline</button>
       <button class="bt-preset" onclick="btPreset('f1',this)">F1: אין SHORT&gt;14</button>
       <button class="bt-preset" onclick="btPreset('f3',this)">F3: שעות 9,10,21</button>
       <button class="bt-preset" onclick="btPreset('fe',this)">★ מנצח</button>
+    </div>
+
+    <!-- Info bar -->
+    <div id="btInfoBar" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;font-family:var(--mono);font-size:11px">
+      <span style="color:var(--muted)">📅 טווח:</span>
+      <span style="color:var(--text)">דצמבר 2025 — מרץ 2026</span>
+      <span style="color:var(--border)">|</span>
+      <span style="color:var(--muted)">⏱ 5 דקות</span>
+      <span style="color:var(--border)">|</span>
+      <span style="color:var(--muted)">LONG שעות:</span>
+      <span id="btLongHoursInfo" style="color:var(--green)"></span>
+      <span style="color:var(--border)">|</span>
+      <span style="color:var(--muted)">SHORT שעות:</span>
+      <span id="btShortHoursInfo" style="color:var(--blue)"></span>
+      <span style="color:var(--border)">|</span>
+      <span style="color:var(--muted)">SL: 1.2×ATR | TP1: 1×SL | TP2: 1.5×SL</span>
     </div>
 
     <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
@@ -2363,6 +2379,17 @@ function btInit(){
 
 function btUpdate(){
   const data = btGetData();
+  // Update info bar
+  const lhEl = document.getElementById('btLongHoursInfo');
+  const shEl = document.getElementById('btShortHoursInfo');
+  if(lhEl) {
+    const lh = BT_HOURS.filter(h=>btLong.has(h));
+    lhEl.textContent = lh.length === BT_HOURS.length ? 'כל השעות' : lh.map(h=>h+':00').join(', ');
+  }
+  if(shEl) {
+    const sh = BT_HOURS.filter(h=>btShort.has(h));
+    shEl.textContent = sh.length === BT_HOURS.length ? 'כל השעות' : sh.map(h=>h+':00').join(', ');
+  }
   if(!data.length) return;
   const wins = data.filter(btIsWin).length;
   const losses= data.filter(t=>t.outcome==='loss').length;
