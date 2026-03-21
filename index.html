@@ -624,6 +624,61 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
               <span id="textColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#c8d4e8</span>
             </div>
           </div>
+
+          <!-- Muted text color -->
+          <div class="setting-row">
+            <div style="margin-bottom:8px"><span class="setting-label">🔅 צבע טקסט משני (labels)</span></div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="color" id="mutedColorPicker" value="#4a6080"
+                oninput="setCssVar('--muted',this.value,'mutedColorHex')"
+                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
+              <span id="mutedColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#4a6080</span>
+              <button onclick="setCssVar('--muted','#4a6080','mutedColorHex');document.getElementById('mutedColorPicker').value='#4a6080'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
+            </div>
+          </div>
+
+          <!-- Green (WIN/LONG) -->
+          <div class="setting-row">
+            <div style="margin-bottom:8px"><span class="setting-label">🟢 צבע WIN / LONG</span></div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="color" id="greenColorPicker" value="#00d084"
+                oninput="setCssVar('--green',this.value,'greenColorHex')"
+                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
+              <span id="greenColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#00d084</span>
+              <button onclick="setCssVar('--green','#00d084','greenColorHex');document.getElementById('greenColorPicker').value='#00d084'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
+            </div>
+          </div>
+
+          <!-- Red (LOSS/SHORT) -->
+          <div class="setting-row">
+            <div style="margin-bottom:8px"><span class="setting-label">🔴 צבע LOSS / SHORT</span></div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="color" id="redColorPicker" value="#ff4560"
+                oninput="setCssVar('--red',this.value,'redColorHex')"
+                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
+              <span id="redColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#ff4560</span>
+              <button onclick="setCssVar('--red','#ff4560','redColorHex');document.getElementById('redColorPicker').value='#ff4560'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
+            </div>
+          </div>
+
+          <!-- Surface/card bg -->
+          <div class="setting-row">
+            <div style="margin-bottom:8px"><span class="setting-label">🗃 צבע רקע כרטיסים</span></div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="color" id="surfaceColorPicker" value="#0f1520"
+                oninput="setCssVar('--surface',this.value,'surfaceColorHex')"
+                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
+              <span id="surfaceColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#0f1520</span>
+              <button onclick="setCssVar('--surface','#0f1520','surfaceColorHex');document.getElementById('surfaceColorPicker').value='#0f1520'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
+            </div>
+          </div>
+
+          <!-- Reset all -->
+          <div class="setting-row" style="grid-column:1/-1">
+            <button onclick="resetAllColors()" style="background:rgba(255,69,96,0.15);border:1px solid rgba(255,69,96,0.4);color:var(--red);border-radius:6px;padding:7px 16px;font-size:12px;font-family:var(--mono);cursor:pointer">
+              ↺ איפוס כל הצבעים לברירת מחדל
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2343,6 +2398,53 @@ function setAccent(hex, name, btn) {
   localStorage.setItem('accentName', name);
 }
 
+const COLOR_DEFAULTS = {
+  '--text':    '#c8d4e8',
+  '--muted':   '#4a6080',
+  '--green':   '#00d084',
+  '--red':     '#ff4560',
+  '--surface': '#0f1520',
+};
+
+function setCssVar(varName, hex, hexElId) {
+  document.documentElement.style.setProperty(varName, hex);
+  var el = document.getElementById(hexElId);
+  if(el) el.textContent = hex;
+  localStorage.setItem('cssvar_' + varName, hex);
+}
+
+function resetAllColors() {
+  Object.entries(COLOR_DEFAULTS).forEach(([k,v]) => {
+    document.documentElement.style.setProperty(k, v);
+    localStorage.removeItem('cssvar_' + k);
+  });
+  // Reset pickers
+  var pickers = {
+    '--text':    'textColorPicker',
+    '--muted':   'mutedColorPicker',
+    '--green':   'greenColorPicker',
+    '--red':     'redColorPicker',
+    '--surface': 'surfaceColorPicker',
+  };
+  Object.entries(pickers).forEach(([k,id]) => {
+    var el = document.getElementById(id);
+    if(el) el.value = COLOR_DEFAULTS[k];
+  });
+  var hexEls = {
+    '--text':'textColorHex','--muted':'mutedColorHex',
+    '--green':'greenColorHex','--red':'redColorHex','--surface':'surfaceColorHex'
+  };
+  Object.entries(hexEls).forEach(([k,id]) => {
+    var el = document.getElementById(id);
+    if(el) el.textContent = COLOR_DEFAULTS[k];
+  });
+  document.querySelectorAll('.txt-color-btn').forEach(b=>b.classList.remove('active'));
+  var def = document.getElementById('tc-default');
+  if(def) def.classList.add('active');
+  localStorage.removeItem('textColor');
+  localStorage.removeItem('accentColor');
+}
+
 function setTextColor(hex, name, btn) {
   document.documentElement.style.setProperty('--text', hex);
   if(btn) {
@@ -2397,6 +2499,24 @@ function loadAppearanceSettings() {
       else b.classList.remove('active');
     });
   }
+  // Load all other css vars
+  var varMap = {
+    'cssvar_--muted':   ['mutedColorPicker','mutedColorHex'],
+    'cssvar_--green':   ['greenColorPicker','greenColorHex'],
+    'cssvar_--red':     ['redColorPicker','redColorHex'],
+    'cssvar_--surface': ['surfaceColorPicker','surfaceColorHex'],
+  };
+  Object.entries(varMap).forEach(([key,[pickId,hexId]])=>{
+    var val = localStorage.getItem(key);
+    if(val) {
+      var cssVar = key.replace('cssvar_','');
+      document.documentElement.style.setProperty(cssVar, val);
+      var p = document.getElementById(pickId);
+      if(p) p.value = val;
+      var h = document.getElementById(hexId);
+      if(h) h.textContent = val;
+    }
+  });
 }
 // == END APPEARANCE ==
 
