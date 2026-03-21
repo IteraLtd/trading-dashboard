@@ -774,9 +774,19 @@ var systemEnabled = null;
 async function loadSystemStatus() {
   try {
     var items = await fetchList('TradingSettings', "$filter=Title eq 'SystemEnabled'&$top=1");
-    systemEnabled = items.length > 0 && items[0].SystemEnabled === 'true';
-    updateSysBtn();
-  } catch(e) { console.error('System status error', e); }
+    if (items.length > 0) {
+      // Try multiple possible field names
+      var val = items[0].SystemEnabled || items[0].Value || items[0].Status || '';
+      systemEnabled = (val === 'true' || val === '1' || val === 'True');
+    } else {
+      // Row doesn't exist yet — default to enabled
+      systemEnabled = true;
+    }
+  } catch(e) {
+    console.warn('System status error, defaulting to enabled:', e.message);
+    systemEnabled = true;
+  }
+  updateSysBtn();
 }
 
 function updateSysBtn() {
