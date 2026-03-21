@@ -36,6 +36,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .logo span{color:var(--muted)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-left:6px;animation:pulse 2s infinite}
 .dot.err{background:var(--red);animation:none}
+.mkt-open{background:rgba(0,208,132,0.15);color:var(--green);border:1px solid rgba(0,208,132,0.3)}
+.mkt-closed{background:rgba(74,96,128,0.15);color:var(--muted);border:1px solid var(--border)}
+.mkt-pre{background:rgba(77,166,255,0.12);color:var(--blue);border:1px solid rgba(77,166,255,0.3)}
+.mkt-stale{background:rgba(255,165,0,0.12);color:var(--yellow);border:1px solid rgba(255,165,0,0.3)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer}
 .sys-btn{border:none;font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 14px;border-radius:5px;cursor:pointer;transition:all .2s}
@@ -163,6 +167,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .pr-val{font-family:var(--mono);font-size:12px;font-weight:600;text-align:left;max-width:200px}
 
 .tab-active{background:var(--blue)!important;border-color:var(--blue)!important;color:#000!important;font-weight:600!important}
+.bt-preset{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:4px;cursor:pointer;transition:all .15s}
+.bt-preset:hover{border-color:var(--blue);color:var(--text)}
+.bt-preset.tab-active{background:var(--blue);border-color:var(--blue);color:#000;font-weight:600}
+.bt-hour{background:var(--surface2);border:1px solid var(--border);color:var(--green);font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:3px;cursor:pointer}
+.bt-hour.off{color:var(--red);border-color:rgba(255,69,96,0.4);background:rgba(255,69,96,0.07)}
 .sym-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
 .sym-row:last-child{border:none}
 .sym-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);min-width:60px}
@@ -278,6 +287,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <span class="dot" id="statusDot"></span>
         <span id="statusText">טוען...</span>
         <span id="lastUpdate" style="margin-right:8px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--blue)"></span>
+        <span id="marketStatusBadge" style="padding:2px 10px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:600"></span>
+        <span id="lastSeenBadge" style="font-size:10px;color:var(--muted)"></span>
       </span>
       <button class="sys-btn" id="sysBtn" onclick="toggleSystem()">⏳ טוען...</button>
       <button class="theme-btn" id="soundBtn" onclick="toggleSound()" title="התראות קוליות">🔇</button>
@@ -306,8 +317,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <button class="quick-btn" id="dfShort" onclick="setDirFilter('short')" style="color:#ff4560">▼ SHORT</button>
     <span class="filter-count" id="filterCount"></span>
     <div style="margin-right:auto;display:flex;gap:4px">
+  <!-- OFFLINE/CLOSED BANNER -->
+  <div id="offlineBanner" style="display:none;padding:8px 20px;background:rgba(74,96,128,0.12);border-bottom:1px solid var(--border);align-items:center;gap:10px">
+    <span style="font-size:16px">💤</span>
+    <div>
+      <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--muted)">שוק סגור — </span>
+      <span id="offlineMsg" style="font-family:var(--mono);font-size:12px;color:var(--muted)"></span>
+    </div>
+    <span style="margin-right:auto;font-size:11px;color:var(--muted)">הנתונים האחרונים מוצגים | רענון אוטומטי עם פתיחת השוק</span>
+  </div>
+
       <button class="quick-btn active" id="tabSignals" onclick="switchTab('signals')">📡 סיגנלים</button>
       <button class="quick-btn" id="tabAnalytics" onclick="switchTab('analytics')">📈 אנליטיקס</button>
+      <button class="quick-btn" id="tabBacktest" onclick="switchTab('backtest')">🔬 Backtest</button>
       <button class="quick-btn" id="tabLegend" onclick="switchTab('legend')">📖 מקרא</button>
       <button class="quick-btn" id="tabSettings" onclick="switchTab('settings')">⚙️ כיוונון</button>
       <button class="quick-btn" id="tabTrades" onclick="switchTab('trades')">📋 עסקאות</button>
@@ -528,6 +550,72 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div style="display:flex;gap:10px;align-items:center">
         <button onclick="saveSettingsToSP()" id="saveSettingsBtn" style="background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">✅ שמור והפעל</button>
         <span id="saveSettingsStatus" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- BACKTEST PANEL -->
+  <div id="backtestPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">פרסט:</span>
+      <button class="bt-preset tab-active" onclick="btPreset('base',this)">Baseline</button>
+      <button class="bt-preset" onclick="btPreset('f1',this)">F1: אין SHORT&gt;14</button>
+      <button class="bt-preset" onclick="btPreset('f3',this)">F3: שעות 9,10,21</button>
+      <button class="bt-preset" onclick="btPreset('fe',this)">★ מנצח</button>
+    </div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px">שעות LONG</div>
+        <div id="btLongHours" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px">שעות SHORT</div>
+        <div id="btShortHours" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px" id="btMetrics"></div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px">
+      <div class="analysis-title">📈 עקומת הון מצטברת</div>
+      <div style="height:130px;position:relative"><canvas id="btEquity"></canvas></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div class="analysis-title">Win Rate לפי שעה</div>
+        <div style="height:180px;position:relative"><canvas id="btHourWR"></canvas></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div class="analysis-title">PnL לפי שעה</div>
+        <div style="height:180px;position:relative"><canvas id="btHourPnL"></canvas></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div class="analysis-title">LONG vs SHORT</div>
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px">
+          <thead><tr style="color:var(--muted);font-size:10px"><th style="text-align:right;padding:4px 6px">כיוון</th><th style="padding:4px 6px">#</th><th style="padding:4px 6px">WR%</th><th style="padding:4px 6px">PnL</th></tr></thead>
+          <tbody id="btDirTable"></tbody>
+        </table>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div class="analysis-title">לפי יום שבוע</div>
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px">
+          <thead><tr style="color:var(--muted);font-size:10px"><th style="text-align:right;padding:4px 6px">יום</th><th style="padding:4px 6px">#</th><th style="padding:4px 6px">WR%</th><th style="padding:4px 6px">PnL</th></tr></thead>
+          <tbody id="btDayTable"></tbody>
+        </table>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div class="analysis-title">פירוט תוצאות</div>
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px">
+          <thead><tr style="color:var(--muted);font-size:10px"><th style="text-align:right;padding:4px 6px">תוצאה</th><th style="padding:4px 6px">#</th><th style="padding:4px 6px">%</th><th style="padding:4px 6px">PnL</th></tr></thead>
+          <tbody id="btOutcomeTable"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -1438,6 +1526,8 @@ async function refresh() {
     document.getElementById('statusText').textContent = 'מחובר';
     var now = new Date();
     document.getElementById('lastUpdate').textContent = 'עדכון: ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    window._lastDataTime = now.toISOString();
+    updateMarketStatus();
     isFirst = false;
   } catch(e) {
     dot.className = 'dot err';
@@ -1447,6 +1537,7 @@ async function refresh() {
 }
 
 var pnlChart = null;
+setTimeout(updateMarketStatus, 500);
 var currentTab = 'signals';
 
 // === SOUND ALERTS ===
@@ -1502,15 +1593,18 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('mainPanel').style.display      = tab === 'signals'   ? '' : 'none';
   document.getElementById('analyticsPanel').style.display = tab === 'analytics' ? '' : 'none';
+  document.getElementById('backtestPanel').style.display  = tab === 'backtest'  ? '' : 'none';
   document.getElementById('legendPanel').style.display    = tab === 'legend'    ? '' : 'none';
   document.getElementById('settingsPanel').style.display  = tab === 'settings'  ? '' : 'none';
   document.getElementById('tabSignals').classList.toggle('active',  tab === 'signals');
   document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
+  document.getElementById('tabBacktest').classList.toggle('active',  tab === 'backtest');
   document.getElementById('tabLegend').classList.toggle('active',   tab === 'legend');
   document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
   document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
   if (tab === 'analytics') updateAnalytics(allSignals);
+  if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
   if (tab === 'trades')    renderTradesDashboard(allSignals);
 }
@@ -2110,6 +2204,238 @@ async function runTradeAnalysis() {
 // ===================== END TRADES DASHBOARD =====================
 
 // ===================== END SETTINGS =====================
+
+
+// == MARKET STATUS MODULE ==
+function getMarketStatus() {
+  var now = new Date();
+  var utcH = now.getUTCHours();
+  var utcM = now.getUTCMinutes();
+  var utcDay = now.getUTCDay();
+  var utcMins = utcH * 60 + utcM;
+  // CT = UTC-5 approx
+  var ctMins = ((utcMins - 300) + 2880) % 1440;
+  var ctH = Math.floor(ctMins/60);
+  var ctMin = ctMins % 60;
+  var ctDay = utcDay;
+  if (utcH < 5) ctDay = (utcDay + 6) % 7;
+  var timeStr = String(ctH).padStart(2,'0') + ':' + String(ctMin).padStart(2,'0') + ' CT';
+
+  if (ctDay === 6)
+    return { status:'closed', label:'\u{1F534} \u05E9\u05D5\u05E7 \u05E1\u05D2\u05D5\u05E8', cls:'mkt-closed', detail:'\u05E9\u05D1\u05EA \u2014 CME \u05E1\u05D2\u05D5\u05E8' };
+  if (ctDay === 0 && ctH < 17)
+    return { status:'closed', label:'\u{1F534} \u05E9\u05D5\u05E7 \u05E1\u05D2\u05D5\u05E8', cls:'mkt-closed', detail:'\u05E8\u05D0\u05E9\u05D5\u05DF \u2014 \u05E4\u05EA\u05D9\u05D7\u05D4 17:00 CT' };
+  if (ctH === 15)
+    return { status:'break', label:'\u{1F7E1} \u05D4\u05E4\u05E1\u05E7\u05D4', cls:'mkt-pre', detail:'\u05D4\u05E4\u05E1\u05E7\u05EA \u05EA\u05D7\u05D6\u05D5\u05E7\u05D4 15:00-16:00 CT' };
+  if (ctDay === 5 && ctH >= 16)
+    return { status:'closed', label:'\u{1F534} \u05E9\u05D5\u05E7 \u05E1\u05D2\u05D5\u05E8', cls:'mkt-closed', detail:'\u05E9\u05D9\u05E9\u05D9 \u2014 \u05E0\u05E1\u05D2\u05E8 \u05E2\u05D3 \u05E8\u05D0\u05E9\u05D5\u05DF 17:00 CT' };
+  if (ctH >= 9 && !(ctH===9 && ctMin<30) && ctH < 15)
+    return { status:'open-ny', label:'\u{1F7E2} NY Session', cls:'mkt-open', detail:'NYSE \u05E4\u05EA\u05D5\u05D7 | ' + timeStr };
+  if (ctH === 8 || (ctH===9 && ctMin<30))
+    return { status:'pre', label:'\u{1F535} Pre-Market', cls:'mkt-pre', detail:'Pre-Market | ' + timeStr };
+  return { status:'overnight', label:'\u{1F7E1} Overnight', cls:'mkt-pre', detail:'Globex \u05E4\u05EA\u05D5\u05D7 | ' + timeStr };
+}
+
+function formatLastSeen(isoStr) {
+  if (!isoStr) return '';
+  var t = new Date(isoStr);
+  var diffMin = Math.floor((new Date() - t)/60000);
+  if (diffMin < 1)  return '\u05E2\u05DB\u05E9\u05D9\u05D5';
+  if (diffMin < 60) return '\u05DC\u05E4\u05E0\u05D9 ' + diffMin + ' \u05D3\u05E7\'';
+  var diffH = Math.floor(diffMin/60);
+  if (diffH < 24)   return '\u05DC\u05E4\u05E0\u05D9 ' + diffH + ' \u05E9\u05E2\u05D5\u05EA';
+  return '\u05DC\u05E4\u05E0\u05D9 ' + Math.floor(diffH/24) + ' \u05D9\u05DE\u05D9\u05DD';
+}
+
+function updateMarketStatus() {
+  var ms = getMarketStatus();
+  var badge = document.getElementById('marketStatusBadge');
+  if (badge) { badge.textContent = ms.label; badge.className = ms.cls; badge.title = ms.detail; }
+  var lastSeenEl = document.getElementById('lastSeenBadge');
+  var statusTextEl = document.getElementById('statusText');
+  var statusDotEl = document.getElementById('statusDot');
+  if (lastSeenEl && window._lastDataTime) {
+    var diffMin = Math.floor((new Date() - new Date(window._lastDataTime))/60000);
+    lastSeenEl.textContent = '| \u05E0\u05EA\u05D5\u05E0\u05D9\u05DD: ' + formatLastSeen(window._lastDataTime);
+    if (ms.status === 'open-ny' && diffMin > 15) {
+      if (statusDotEl) statusDotEl.className = 'dot err';
+      if (statusTextEl) statusTextEl.textContent = '\u05E0\u05EA\u05D5\u05E0\u05D9\u05DD \u05D9\u05E9\u05E0\u05D9\u05DD';
+      lastSeenEl.style.color = 'var(--yellow)';
+    }
+  }
+  var ob = document.getElementById('offlineBanner');
+  if (ob) {
+    if (ms.status === 'closed') {
+      ob.style.display = 'flex';
+      var om = document.getElementById('offlineMsg');
+      if (om) om.textContent = ms.detail;
+    } else {
+      ob.style.display = 'none';
+    }
+  }
+}
+setInterval(updateMarketStatus, 30000);
+// == END MARKET STATUS ==
+
+// ══ BACKTEST MODULE ══════════════════════════════════════════════
+const BT_RAW = [{"dir":"LONG","outcome":"tp1","pnl":22.11,"hour":21,"weekday":0},{"dir":"LONG","outcome":"loss","pnl":-42.43,"hour":15,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-30.06,"hour":16,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-17.42,"hour":9,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-14.19,"hour":10,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":31.14,"hour":9,"weekday":3},{"dir":"LONG","outcome":"tp2","pnl":36.45,"hour":21,"weekday":3},{"dir":"LONG","outcome":"tp1","pnl":19.99,"hour":9,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":22.99,"hour":9,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":21.19,"hour":9,"weekday":3},{"dir":"LONG","outcome":"tp1","pnl":16.61,"hour":10,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-76.86,"hour":15,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-22.52,"hour":9,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":48.94,"hour":16,"weekday":4},{"dir":"LONG","outcome":"tp2","pnl":29.86,"hour":21,"weekday":4},{"dir":"LONG","outcome":"tp2","pnl":19.41,"hour":9,"weekday":0},{"dir":"LONG","outcome":"loss","pnl":-9.15,"hour":10,"weekday":0},{"dir":"LONG","outcome":"tp2","pnl":16.88,"hour":9,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":46.46,"hour":15,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":25.61,"hour":16,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":15.84,"hour":16,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-25.78,"hour":16,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":29.94,"hour":16,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":19.84,"hour":9,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":13.71,"hour":10,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":17.72,"hour":9,"weekday":0},{"dir":"LONG","outcome":"loss","pnl":-60.71,"hour":15,"weekday":0},{"dir":"LONG","outcome":"loss","pnl":-35.53,"hour":16,"weekday":0},{"dir":"LONG","outcome":"loss","pnl":-41.49,"hour":15,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":15.54,"hour":21,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-42.11,"hour":15,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-16.78,"hour":9,"weekday":3},{"dir":"LONG","outcome":"tp1","pnl":19.26,"hour":21,"weekday":3},{"dir":"LONG","outcome":"tp1","pnl":16.56,"hour":9,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":69.47,"hour":16,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":38.94,"hour":16,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":42.51,"hour":15,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":25.69,"hour":16,"weekday":0},{"dir":"LONG","outcome":"tp2","pnl":35.61,"hour":9,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-18.02,"hour":9,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":14.96,"hour":10,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-30.26,"hour":15,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":27.54,"hour":16,"weekday":0},{"dir":"LONG","outcome":"loss","pnl":-81.88,"hour":15,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-57.39,"hour":16,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-19.76,"hour":9,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":46.97,"hour":21,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-19.5,"hour":9,"weekday":0},{"dir":"LONG","outcome":"tp2","pnl":17.84,"hour":10,"weekday":1},{"dir":"LONG","outcome":"timeout","pnl":9.0,"hour":15,"weekday":1},{"dir":"LONG","outcome":"tp2","pnl":27.58,"hour":21,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":60.69,"hour":21,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-82.84,"hour":15,"weekday":4},{"dir":"LONG","outcome":"tp2","pnl":35.52,"hour":10,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":24.86,"hour":10,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-87.19,"hour":21,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":46.63,"hour":9,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":28.16,"hour":10,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":94.67,"hour":15,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":73.48,"hour":15,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":39.71,"hour":16,"weekday":0},{"dir":"LONG","outcome":"tp2","pnl":40.4,"hour":9,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-70.26,"hour":15,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":16.61,"hour":9,"weekday":3},{"dir":"LONG","outcome":"tp1","pnl":14.34,"hour":10,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-42.0,"hour":9,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-28.59,"hour":10,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-114.34,"hour":15,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":89.7,"hour":16,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-32.01,"hour":9,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-75.43,"hour":16,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-81.43,"hour":15,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-59.79,"hour":16,"weekday":3},{"dir":"LONG","outcome":"tp1","pnl":21.56,"hour":9,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-19.54,"hour":10,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":122.38,"hour":15,"weekday":4},{"dir":"LONG","outcome":"tp1","pnl":77.16,"hour":16,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-30.79,"hour":21,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-21.71,"hour":9,"weekday":1},{"dir":"LONG","outcome":"timeout","pnl":-6.75,"hour":9,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":13.59,"hour":10,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":37.33,"hour":15,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-16.03,"hour":9,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-22.33,"hour":9,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-78.06,"hour":15,"weekday":4},{"dir":"LONG","outcome":"loss","pnl":-36.64,"hour":21,"weekday":4},{"dir":"LONG","outcome":"tp2","pnl":53.39,"hour":10,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":96.79,"hour":15,"weekday":0},{"dir":"LONG","outcome":"tp2","pnl":95.08,"hour":16,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":81.13,"hour":16,"weekday":1},{"dir":"LONG","outcome":"tp1","pnl":48.69,"hour":9,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":45.32,"hour":10,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-53.59,"hour":16,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-49.41,"hour":9,"weekday":3},{"dir":"LONG","outcome":"timeout","pnl":-21.0,"hour":9,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-32.61,"hour":10,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-50.19,"hour":8,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":103.56,"hour":14,"weekday":0},{"dir":"LONG","outcome":"tp1","pnl":75.26,"hour":14,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-43.59,"hour":15,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-78.73,"hour":14,"weekday":2},{"dir":"LONG","outcome":"tp1","pnl":26.42,"hour":9,"weekday":3},{"dir":"LONG","outcome":"tp2","pnl":44.07,"hour":9,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-42.11,"hour":15,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-21.43,"hour":20,"weekday":1},{"dir":"LONG","outcome":"loss","pnl":-17.23,"hour":9,"weekday":2},{"dir":"LONG","outcome":"loss","pnl":-70.26,"hour":15,"weekday":3},{"dir":"LONG","outcome":"tp1","pnl":64.54,"hour":20,"weekday":3},{"dir":"LONG","outcome":"loss","pnl":-26.87,"hour":8,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":12.64,"hour":9,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-20.04,"hour":10,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":16.89,"hour":21,"weekday":1},{"dir":"SHORT","outcome":"tp2","pnl":22.4,"hour":10,"weekday":2},{"dir":"SHORT","outcome":"tp1","pnl":48.09,"hour":15,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-58.41,"hour":16,"weekday":3},{"dir":"SHORT","outcome":"tp2","pnl":26.52,"hour":9,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":35.42,"hour":21,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":68.55,"hour":16,"weekday":0},{"dir":"SHORT","outcome":"tp1","pnl":72.41,"hour":15,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-48.49,"hour":15,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-27.17,"hour":16,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-25.44,"hour":16,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":10.84,"hour":21,"weekday":4},{"dir":"SHORT","outcome":"tp2","pnl":63.48,"hour":15,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-36.3,"hour":15,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-16.48,"hour":21,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-12.6,"hour":21,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-15.54,"hour":9,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-10.63,"hour":10,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-32.12,"hour":15,"weekday":2},{"dir":"SHORT","outcome":"timeout","pnl":51.0,"hour":15,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-25.44,"hour":9,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":64.39,"hour":15,"weekday":3},{"dir":"SHORT","outcome":"loss","pnl":-18.39,"hour":9,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-12.39,"hour":21,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-24.54,"hour":9,"weekday":0},{"dir":"SHORT","outcome":"tp2","pnl":23.14,"hour":21,"weekday":0},{"dir":"SHORT","outcome":"tp2","pnl":22.4,"hour":10,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":14.19,"hour":10,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-76.35,"hour":15,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-50.19,"hour":16,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-61.99,"hour":15,"weekday":3},{"dir":"SHORT","outcome":"tp2","pnl":39.5,"hour":9,"weekday":0},{"dir":"SHORT","outcome":"tp2","pnl":52.65,"hour":9,"weekday":1},{"dir":"SHORT","outcome":"tp2","pnl":32.95,"hour":9,"weekday":2},{"dir":"SHORT","outcome":"tp1","pnl":23.49,"hour":10,"weekday":2},{"dir":"SHORT","outcome":"tp2","pnl":45.06,"hour":21,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":27.06,"hour":9,"weekday":4},{"dir":"SHORT","outcome":"tp2","pnl":38.47,"hour":21,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-23.16,"hour":9,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-24.66,"hour":10,"weekday":0},{"dir":"SHORT","outcome":"tp1","pnl":47.96,"hour":15,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-48.96,"hour":21,"weekday":2},{"dir":"SHORT","outcome":"tp1","pnl":20.01,"hour":9,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":18.62,"hour":10,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":46.52,"hour":9,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-61.59,"hour":16,"weekday":4},{"dir":"SHORT","outcome":"tp2","pnl":84.6,"hour":21,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-20.04,"hour":9,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":18.75,"hour":10,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":14.76,"hour":10,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-34.65,"hour":9,"weekday":2},{"dir":"SHORT","outcome":"tp1","pnl":104.66,"hour":16,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-41.4,"hour":9,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":33.24,"hour":10,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":68.51,"hour":21,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":24.86,"hour":9,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-47.4,"hour":16,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":22.71,"hour":9,"weekday":2},{"dir":"SHORT","outcome":"tp2","pnl":34.17,"hour":9,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-84.66,"hour":15,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-68.68,"hour":16,"weekday":2},{"dir":"SHORT","outcome":"tp1","pnl":34.16,"hour":21,"weekday":3},{"dir":"SHORT","outcome":"loss","pnl":-36.45,"hour":15,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-37.37,"hour":16,"weekday":0},{"dir":"SHORT","outcome":"tp1","pnl":20.55,"hour":10,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-114.47,"hour":15,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-21.94,"hour":21,"weekday":2},{"dir":"SHORT","outcome":"tp2","pnl":41.11,"hour":9,"weekday":3},{"dir":"SHORT","outcome":"loss","pnl":-35.85,"hour":10,"weekday":3},{"dir":"SHORT","outcome":"loss","pnl":-60.39,"hour":16,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":63.88,"hour":15,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-25.5,"hour":9,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":78.04,"hour":16,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":25.5,"hour":10,"weekday":4},{"dir":"SHORT","outcome":"tp2","pnl":40.89,"hour":10,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":50.53,"hour":9,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-35.01,"hour":21,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-32.85,"hour":21,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-72.49,"hour":16,"weekday":3},{"dir":"SHORT","outcome":"tp2","pnl":56.22,"hour":9,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":32.46,"hour":8,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-38.21,"hour":9,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-71.79,"hour":15,"weekday":2},{"dir":"SHORT","outcome":"loss","pnl":-39.94,"hour":20,"weekday":3},{"dir":"SHORT","outcome":"loss","pnl":-31.37,"hour":8,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":70.99,"hour":14,"weekday":4},{"dir":"SHORT","outcome":"tp1","pnl":31.8,"hour":20,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-21.09,"hour":20,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-31.03,"hour":8,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-29.34,"hour":9,"weekday":0},{"dir":"SHORT","outcome":"loss","pnl":-31.99,"hour":20,"weekday":0},{"dir":"SHORT","outcome":"tp1","pnl":24.24,"hour":8,"weekday":1},{"dir":"SHORT","outcome":"loss","pnl":-29.64,"hour":8,"weekday":1},{"dir":"SHORT","outcome":"tp1","pnl":38.79,"hour":8,"weekday":3},{"dir":"SHORT","outcome":"loss","pnl":-45.0,"hour":9,"weekday":3},{"dir":"SHORT","outcome":"loss","pnl":-84.6,"hour":14,"weekday":3},{"dir":"SHORT","outcome":"tp1","pnl":33.02,"hour":9,"weekday":4},{"dir":"SHORT","outcome":"loss","pnl":-66.39,"hour":14,"weekday":4}];
+
+const BT_HOURS = [8,9,10,14,15,16,20,21];
+const BT_DAYS  = ['שני','שלישי','רביעי','חמישי','שישי'];
+const BT_PRESETS = {
+  base: {long:null, short:null},
+  f1:   {long:null, short:[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
+  f3:   {long:[9,10,21], short:[9,10,21]},
+  fe:   {long:null, short:[9,10,21]},
+};
+
+let btLong  = new Set(BT_HOURS);
+let btShort = new Set(BT_HOURS);
+let btEquityChart, btHourWRChart, btHourPnLChart;
+let btInited = false;
+
+function btIsWin(t){ return t.outcome==='tp1'||t.outcome==='tp2'; }
+
+function btGetData(){
+  return BT_RAW.filter(t=>{
+    if(!BT_HOURS.includes(t.hour)) return false;
+    if(t.dir==='LONG'  && !btLong.has(t.hour))  return false;
+    if(t.dir==='SHORT' && !btShort.has(t.hour)) return false;
+    return true;
+  });
+}
+
+function btPreset(name, el){
+  document.querySelectorAll('.bt-preset').forEach(b=>b.classList.remove('tab-active'));
+  el.classList.add('tab-active');
+  const p = BT_PRESETS[name];
+  btLong  = new Set(p.long  ? BT_HOURS.filter(h=>p.long.includes(h))  : BT_HOURS);
+  btShort = new Set(p.short ? BT_HOURS.filter(h=>p.short.includes(h)) : BT_HOURS);
+  btSyncToggles();
+  btUpdate();
+}
+
+function btSyncToggles(){
+  ['btLong','btShort'].forEach(id=>{
+    const dir = id==='btLong'?'long':'short';
+    const set = dir==='long'?btLong:btShort;
+    document.querySelectorAll('#'+id+' .bt-hour').forEach(btn=>{
+      const h=parseInt(btn.dataset.h);
+      btn.classList.toggle('off', !set.has(h));
+    });
+  });
+}
+
+function btInit(){
+  if(btInited) return;
+  btInited = true;
+  ['btLong','btShort'].forEach(id=>{
+    const dir=id==='btLong'?'long':'short';
+    const set=dir==='long'?btLong:btShort;
+    const el=document.getElementById(id);
+    BT_HOURS.forEach(h=>{
+      const btn=document.createElement('button');
+      btn.className='bt-hour'+(set.has(h)?'':' off');
+      btn.textContent=h+':00';
+      btn.dataset.h=h;
+      btn.onclick=()=>{
+        const s=dir==='long'?btLong:btShort;
+        if(s.has(h)){s.delete(h);btn.classList.add('off');}
+        else{s.add(h);btn.classList.remove('off');}
+        btUpdate();
+      };
+      el.appendChild(btn);
+    });
+  });
+  btUpdate();
+}
+
+function btUpdate(){
+  const data = btGetData();
+  if(!data.length) return;
+  const wins = data.filter(btIsWin).length;
+  const losses= data.filter(t=>t.outcome==='loss').length;
+  const pnl  = data.reduce((s,t)=>s+t.pnl,0);
+  const wr   = wins/data.length*100;
+  const G='var(--green)', R='var(--red)', B='var(--blue)', M='var(--muted)';
+
+  // Metrics
+  document.getElementById('btMetrics').innerHTML = [
+    ['עסקאות', data.length, 'מתוך 209', M],
+    ['Win Rate', wr.toFixed(1)+'%', wins+'W / '+losses+'L', wr>=55?G:wr>=50?'var(--yellow)':R],
+    ['PnL כולל', (pnl>=0?'+':'')+pnl.toFixed(0)+' נק\u0027', 'avg '+(pnl/data.length).toFixed(1), pnl>=0?G:R],
+    ['LONG', data.filter(t=>t.dir==='LONG').length, 'WR '+(data.filter(t=>t.dir==='LONG'&&btIsWin(t)).length/Math.max(1,data.filter(t=>t.dir==='LONG').length)*100).toFixed(1)+'%', G],
+    ['SHORT', data.filter(t=>t.dir==='SHORT').length, 'WR '+(data.filter(t=>t.dir==='SHORT'&&btIsWin(t)).length/Math.max(1,data.filter(t=>t.dir==='SHORT').length)*100).toFixed(1)+'%', B],
+  ].map(([l,v,s,c])=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:4px">${l}</div><div style="font-size:20px;font-weight:600;color:${c};font-family:var(--mono)">${v}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${s}</div></div>`).join('');
+
+  // Equity
+  let cum=0;
+  const eq=data.map(t=>{cum+=t.pnl;return+cum.toFixed(2);});
+  if(btEquityChart) btEquityChart.destroy();
+  btEquityChart=new Chart(document.getElementById('btEquity'),{
+    type:'line',
+    data:{labels:data.map((_,i)=>i),datasets:[{data:eq,borderColor:pnl>=0?'#00d084':'#ff4560',borderWidth:1.5,pointRadius:0,fill:{target:'origin',above:'rgba(0,208,132,0.07)',below:'rgba(255,69,96,0.07)'}}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{ticks:{color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+  });
+
+  // Hour stats
+  const hs={};
+  data.forEach(t=>{
+    if(!hs[t.hour])hs[t.hour]={w:0,t:0,pnl:0};
+    hs[t.hour].t++;
+    if(btIsWin(t))hs[t.hour].w++;
+    hs[t.hour].pnl+=t.pnl;
+  });
+  const hL=Object.keys(hs).sort((a,b)=>a-b).map(h=>h+':00');
+  const hWR=hL.map(h=>{const s=hs[parseInt(h)];return s?+(s.w/s.t*100).toFixed(1):0;});
+  const hPnL=hL.map(h=>{const s=hs[parseInt(h)];return s?+s.pnl.toFixed(0):0;});
+
+  if(btHourWRChart) btHourWRChart.destroy();
+  btHourWRChart=new Chart(document.getElementById('btHourWR'),{
+    type:'bar',
+    data:{labels:hL,datasets:[{data:hWR,backgroundColor:hWR.map(v=>v>=60?'#00d084':v>=50?'#4da6ff':'#ff4560'),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},x:{ticks:{color:'#4a6080',font:{size:10}},grid:{display:false}}}}
+  });
+
+  if(btHourPnLChart) btHourPnLChart.destroy();
+  btHourPnLChart=new Chart(document.getElementById('btHourPnL'),{
+    type:'bar',
+    data:{labels:hL,datasets:[{data:hPnL,backgroundColor:hPnL.map(v=>v>=0?'#00d084':'#ff4560'),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},x:{ticks:{color:'#4a6080',font:{size:10}},grid:{display:false}}}}
+  });
+
+  // Dir table
+  const dt=document.getElementById('btDirTable'); dt.innerHTML='';
+  ['LONG','SHORT'].forEach(d=>{
+    const s=data.filter(t=>t.dir===d);
+    const dw=s.filter(btIsWin).length;
+    const dp=s.reduce((a,t)=>a+t.pnl,0);
+    const dwr=s.length?dw/s.length*100:0;
+    dt.innerHTML+=`<tr><td style="padding:4px 6px">${d}</td><td style="padding:4px 6px;text-align:center">${s.length}</td><td style="padding:4px 6px;text-align:center;color:${dwr>=55?'var(--green)':dwr>=50?'var(--yellow)':'var(--red)'}">${dwr.toFixed(1)}%</td><td style="padding:4px 6px;text-align:center;color:${dp>=0?'var(--green)':'var(--red)'}">${dp>=0?'+':''}${dp.toFixed(0)}</td></tr>`;
+  });
+
+  // Day table
+  const dayt=document.getElementById('btDayTable'); dayt.innerHTML='';
+  for(let d=0;d<5;d++){
+    const s=data.filter(t=>t.weekday===d);
+    if(!s.length) continue;
+    const dw=s.filter(btIsWin).length;
+    const dp=s.reduce((a,t)=>a+t.pnl,0);
+    const dwr=dw/s.length*100;
+    dayt.innerHTML+=`<tr><td style="padding:4px 6px">${BT_DAYS[d]}</td><td style="padding:4px 6px;text-align:center">${s.length}</td><td style="padding:4px 6px;text-align:center;color:${dwr>=55?'var(--green)':dwr>=50?'var(--yellow)':'var(--red)'}">${dwr.toFixed(1)}%</td><td style="padding:4px 6px;text-align:center;color:${dp>=0?'var(--green)':'var(--red)'}">${dp>=0?'+':''}${dp.toFixed(0)}</td></tr>`;
+  }
+
+  // Outcome table
+  const ot=document.getElementById('btOutcomeTable'); ot.innerHTML='';
+  [['tp2','TP2','var(--green)'],['tp1','TP1','var(--green)'],['loss','Loss','var(--red)'],['timeout','Timeout','var(--muted)']].forEach(([k,l,c])=>{
+    const s=data.filter(t=>t.outcome===k);
+    if(!s.length) return;
+    const sp=s.reduce((a,t)=>a+t.pnl,0);
+    ot.innerHTML+=`<tr><td style="padding:4px 6px;color:${c}">${l}</td><td style="padding:4px 6px;text-align:center">${s.length}</td><td style="padding:4px 6px;text-align:center">${(s.length/data.length*100).toFixed(1)}%</td><td style="padding:4px 6px;text-align:center;color:${sp>=0?'var(--green)':'var(--red)'}">${sp>=0?'+':''}${sp.toFixed(0)}</td></tr>`;
+  });
+}
+// ═══════════════════════════════════════════════════════════════════
+
 </script>
 </body>
 </html>
