@@ -484,11 +484,44 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <div style="display:flex;gap:8px"><span style="color:#3fb950;font-weight:700;min-width:52px">4hS</span><span style="color:var(--muted)">4h Support — תמיכה 4 שעות</span></div>
           <div style="display:flex;gap:8px"><span style="color:#f85149;font-weight:700;min-width:52px">1hR</span><span style="color:var(--muted)">1h Resistance — התנגדות שעתית</span></div>
           <div style="display:flex;gap:8px"><span style="color:#3fb950;font-weight:700;min-width:52px">1hS</span><span style="color:var(--muted)">1h Support — תמיכה שעתית</span></div>
-          <div style="display:flex;gap:8px"><span style="color:#f85149;font-weight:700;min-width:52px">PDH</span><span style="color:var(--muted)">Previous Day High — שיא יום קודם</span></div>
-          <div style="display:flex;gap:8px"><span style="color:#3fb950;font-weight:700;min-width:52px">PDL</span><span style="color:var(--muted)">Previous Day Low — שפל יום קודם</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">רמות DWM (Daily/Weekly/Monthly) חדשות:</div>
+          <div style="display:flex;gap:8px"><span style="color:#ffa500;font-weight:700;min-width:52px">CDH/CDL</span><span style="color:var(--muted)">Current Day High/Low — שיא/שפל יום נוכחי</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#ffa500;font-weight:700;min-width:52px;opacity:0.6">PDH/PDL</span><span style="color:var(--muted)">Previous Day High/Low — שיא/שפל יום קודם</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#ff4560;font-weight:700;min-width:52px">CWH/CWL</span><span style="color:var(--muted)">Current Week High/Low — שיא/שפל שבוע נוכחי</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#ff4560;font-weight:700;min-width:52px;opacity:0.6">PWH/PWL</span><span style="color:var(--muted)">Previous Week High/Low — שיא/שפל שבוע קודם</span></div>
+          <div style="display:flex;gap:8px"><span style="color:#c084fc;font-weight:700;min-width:52px">CMH/CML</span><span style="color:var(--muted)">Current Month High/Low — שיא/שפל חודש נוכחי</span></div>
           <div style="display:flex;gap:8px"><span style="color:#ffd700;font-weight:700;min-width:52px">RN</span><span style="color:var(--muted)">Round Number — מחיר עגול (×100)</span></div>
-          <div style="display:flex;gap:8px"><span style="color:#d2a8ff;font-weight:700;min-width:52px">SO</span><span style="color:var(--muted)">Session Open — פתיחת מסחר</span></div>
-          <div style="display:flex;gap:8px"><span style="color:#79c0ff;font-weight:700;min-width:52px">WS</span><span style="color:var(--muted)">Weekly Support — תמיכה שבועית</span></div>
+        </div>
+      </div>
+
+      <!-- Session Filter -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">🕐 פילטר שעות מסחר</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+          <div style="color:var(--muted);margin-bottom:4px">מבוסס על ניתוח backtest (דצמבר 2025 — מרץ 2026):</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);font-weight:700;min-width:80px">09:00-10:59</span><span style="color:var(--muted)">NY Open — WR 60%+ ✓ מותר LONG + SHORT</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);font-weight:700;min-width:80px">21:00-21:59</span><span style="color:var(--muted)">Pre-London — WR 56% ✓ מותר LONG + SHORT</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--text);font-weight:700;min-width:80px">כל שעה</span><span style="color:var(--muted)">LONG — אין הגבלה (WR יציב)</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--red);font-weight:700;min-width:80px">14:00-20:59</span><span style="color:var(--muted)">SHORT אסור — WR 23-37% ✗ (-547 נק')</span></div>
+          <div style="margin-top:8px;padding:8px;background:rgba(0,208,132,0.08);border-radius:4px;border:1px solid rgba(0,208,132,0.2)">
+            <div style="font-size:11px;color:var(--green);font-weight:600">★ פילטר מנצח: LONG כל שעות / SHORT רק 9,10,21</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">WR: 56.3% | PnL: +878 נק' | 167 עסקאות</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8 Scenarios -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">🎯 8 תרחישי כניסה</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T1</span><span style="color:var(--muted)">BOS / CHoCH — שבירת מבנה</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T2</span><span style="color:var(--muted)">S/R Break — שבירת תמיכה/התנגדות</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T3</span><span style="color:var(--muted)">Sweep Reversal — שטיפה והיפוך</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T4</span><span style="color:var(--muted)">Institutional Sweep — שטיפה מוסדית</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T5</span><span style="color:var(--muted)">OB + Structure — Order Block + מבנה</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T6</span><span style="color:var(--muted)">FVG Retest — חזרה לפער ערך הוגן</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T7</span><span style="color:var(--muted)">False Breakout — פריצה מזויפת</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T8</span><span style="color:var(--muted)">Supply / Demand Zone — כניסה לאזור</span></div>
         </div>
       </div>
 
@@ -702,11 +735,16 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
 
     <!-- Info bar -->
-    <div id="btInfoBar" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;font-family:var(--mono);font-size:11px">
-      <span style="color:var(--muted)">📅 טווח:</span>
-      <span style="color:var(--text);font-weight:600">דצמבר 2025 — מרץ 2026</span>
+    <div id="btInfoBar" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;font-family:var(--mono);font-size:11px">
+      <span style="color:var(--muted)">📅</span>
+      <input id="btDateRange" value="דצמ׳ 2025 — מרץ 2026"
+        style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--text);font-family:var(--mono);font-size:11px;font-weight:600;width:160px;outline:none;text-align:center"
+        title="טווח תאריכים — לתצוגה בלבד">
       <span style="color:var(--muted)">|</span>
-      <span style="color:var(--muted)">⏱</span><span style="color:var(--text);font-weight:600">5 דקות</span>
+      <span style="color:var(--muted)">⏱</span>
+      <input id="btTimeframe" value="5m"
+        style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--text);font-family:var(--mono);font-size:11px;font-weight:600;width:32px;outline:none;text-align:center"
+        title="טווח זמן">
       <span style="color:var(--muted)">|</span>
       <span style="color:var(--muted)">LONG:</span>
       <span id="btLongHoursInfo" style="color:var(--text);font-weight:600"></span>
@@ -714,9 +752,20 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <span style="color:var(--muted)">SHORT:</span>
       <span id="btShortHoursInfo" style="color:var(--text);font-weight:600"></span>
       <span style="color:var(--muted)">|</span>
-      <span style="color:var(--muted)">SL: 1.2×ATR</span>
-      <span style="color:var(--muted)">TP1: 1×SL</span>
-      <span style="color:var(--muted)">TP2: 1.5×SL</span>
+      <span style="color:var(--muted)">SL:</span>
+      <input id="btSLmult" value="1.2" type="number" step="0.1" min="0.5" max="3"
+        style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--text);font-family:var(--mono);font-size:11px;font-weight:600;width:36px;outline:none;text-align:center"
+        title="SL multiplier × ATR" oninput="btSaveInfoBar()">
+      <span style="color:var(--muted)">×ATR</span>
+      <span style="color:var(--muted)">| TP1:</span>
+      <input id="btTP1mult" value="1.0" type="number" step="0.1" min="0.5" max="5"
+        style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--text);font-family:var(--mono);font-size:11px;font-weight:600;width:36px;outline:none;text-align:center"
+        title="TP1 multiplier × SL" oninput="btSaveInfoBar()">
+      <span style="color:var(--muted)">×SL | TP2:</span>
+      <input id="btTP2mult" value="1.5" type="number" step="0.1" min="0.5" max="5"
+        style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--text);font-family:var(--mono);font-size:11px;font-weight:600;width:36px;outline:none;text-align:center"
+        title="TP2 multiplier × SL" oninput="btSaveInfoBar()">
+      <span style="color:var(--muted)">×SL</span>
     </div>
 
     <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
@@ -2662,6 +2711,16 @@ function btInit(){
       el.appendChild(btn);
     });
   });
+  btUpdate();
+}
+
+function btSaveInfoBar() {
+  var sl  = parseFloat(document.getElementById('btSLmult')?.value  || 1.2);
+  var tp1 = parseFloat(document.getElementById('btTP1mult')?.value || 1.0);
+  var tp2 = parseFloat(document.getElementById('btTP2mult')?.value || 1.5);
+  localStorage.setItem('btSL',  sl);
+  localStorage.setItem('btTP1', tp1);
+  localStorage.setItem('btTP2', tp2);
   btUpdate();
 }
 
