@@ -38,6 +38,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .dot.err{background:var(--red);animation:none}
 .mkt-open{background:rgba(0,208,132,0.15);color:var(--green);border:1px solid rgba(0,208,132,0.3)}
 .accent-btn{border:2px solid transparent;border-radius:5px;padding:5px 12px;font-size:11px;font-family:var(--mono);cursor:pointer;color:#000;font-weight:600;transition:all .15s}
+.txt-color-btn{border-radius:5px;padding:4px 12px;font-size:11px;font-family:var(--mono);cursor:pointer;background:transparent;font-weight:500;transition:all .15s}
+.txt-color-btn:hover{opacity:0.8}
+.txt-color-btn.active{outline:2px solid var(--blue);outline-offset:2px}
 .accent-btn:hover{transform:scale(1.08)}
 .accent-btn.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,0.3)}
 .mkt-closed{background:rgba(74,96,128,0.15);color:var(--muted);border:1px solid var(--border)}
@@ -600,6 +603,25 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
               <button onclick="setDensity('dense',this)"   class="vol-btn vol-active" id="den-dense">צפוף</button>
               <button onclick="setDensity('normal',this)"  class="vol-btn" id="den-normal">רגיל</button>
               <button onclick="setDensity('relaxed',this)" class="vol-btn" id="den-relaxed">מרווח</button>
+            </div>
+          </div>
+
+          <!-- Text Color -->
+          <div class="setting-row">
+            <div style="margin-bottom:8px"><span class="setting-label">✏️ צבע טקסט ראשי</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap" id="textColorBtns">
+              <button onclick="setTextColor('#c8d4e8','ברירת מחדל',this)" class="txt-color-btn active" id="tc-default" style="background:rgba(200,212,232,0.15);border:1px solid #c8d4e8;color:#c8d4e8">ברירת מחדל</button>
+              <button onclick="setTextColor('#ffffff','לבן',this)"          class="txt-color-btn" id="tc-white"   style="background:rgba(255,255,255,0.1);border:1px solid #fff;color:#fff">לבן</button>
+              <button onclick="setTextColor('#e2e8f0','בהיר',this)"         class="txt-color-btn" id="tc-light"   style="background:rgba(226,232,240,0.1);border:1px solid #e2e8f0;color:#e2e8f0">בהיר</button>
+              <button onclick="setTextColor('#94a3b8','עמום',this)"          class="txt-color-btn" id="tc-muted"   style="background:rgba(148,163,184,0.1);border:1px solid #94a3b8;color:#94a3b8">עמום</button>
+              <button onclick="setTextColor('#fbbf24','זהב',this)"           class="txt-color-btn" id="tc-amber"   style="background:rgba(251,191,36,0.1);border:1px solid #fbbf24;color:#fbbf24">זהב</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+              <span class="setting-label" style="font-size:11px">מותאם אישית:</span>
+              <input type="color" id="textColorPicker" value="#c8d4e8"
+                oninput="setTextColor(this.value,'מותאם',null)"
+                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
+              <span id="textColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#c8d4e8</span>
             </div>
           </div>
         </div>
@@ -2321,6 +2343,19 @@ function setAccent(hex, name, btn) {
   localStorage.setItem('accentName', name);
 }
 
+function setTextColor(hex, name, btn) {
+  document.documentElement.style.setProperty('--text', hex);
+  if(btn) {
+    document.querySelectorAll('.txt-color-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  var picker = document.getElementById('textColorPicker');
+  if(picker) picker.value = hex;
+  var hexEl = document.getElementById('textColorHex');
+  if(hexEl) hexEl.textContent = hex;
+  localStorage.setItem('textColor', hex);
+}
+
 function setDensity(mode, btn) {
   document.querySelectorAll('#den-dense,#den-normal,#den-relaxed').forEach(b=>b.classList.remove('vol-active'));
   if(btn) btn.classList.add('vol-active');
@@ -2349,6 +2384,18 @@ function loadAppearanceSettings() {
   if(density) {
     var btn = document.getElementById('den-'+density);
     if(btn) setDensity(density, btn);
+  }
+  var tc = localStorage.getItem('textColor');
+  if(tc) {
+    document.documentElement.style.setProperty('--text', tc);
+    var picker = document.getElementById('textColorPicker');
+    if(picker) picker.value = tc;
+    var hexEl = document.getElementById('textColorHex');
+    if(hexEl) hexEl.textContent = tc;
+    document.querySelectorAll('.txt-color-btn').forEach(b=>{
+      if(b.style.color===tc) b.classList.add('active');
+      else b.classList.remove('active');
+    });
   }
 }
 // == END APPEARANCE ==
