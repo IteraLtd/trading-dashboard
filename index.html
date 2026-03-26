@@ -1590,18 +1590,45 @@ async function runDynamicAnalysis(manual) {
     var wins   = recent.filter(function(s){ return isWin((s.Result||'').toUpperCase()); }).length;
     var losses = recent.filter(function(s){ return isLoss((s.Result||'').toUpperCase()); }).length;
     var wr     = (wins+losses) > 0 ? Math.round(wins/(wins+losses)*100) : 0;
-    var recentStr = recent.slice(0,5).map(function(s){
-      return (s.Direction||'?')+'|'+(s.Result||'OPEN');
+
+    // Enhanced context: include Verdict + Score in recent signals
+    var last5 = recent.slice(0,5).map(function(s){
+      return (s.Direction||'?')+'|'+(s.ClaudeVerdict||'?')+'|'+(s.Result||'OPEN');
     }).join(', ');
+
+    // Average ClaudeScore
+    var scores = recent.map(function(s){ return parseFloat(s.ClaudeScore)||0; }).filter(Boolean);
+    var avgScore = scores.length ? (scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1) : '—';
+
+    // Skip streak detection
+    var skipStreak = 0;
+    for (var _si = 0; _si < recent.length; _si++) {
+      if ((recent[_si].ClaudeVerdict||'').toUpperCase() === 'SKIP') skipStreak++;
+      else break;
+    }
+
+    // Signal type distribution (last 10)
+    var typeMap = {};
+    recent.slice(0,10).forEach(function(s){
+      var a = {};
+      try { a = JSON.parse(s.ClaudeAnalysis||'{}'); } catch(e){}
+      var t = a.signal_type || 'UNKNOWN';
+      typeMap[t] = (typeMap[t]||0)+1;
+    });
+    var topTypes = Object.keys(typeMap).sort(function(a,b){return typeMap[b]-typeMap[a];}).slice(0,3).join(', ');
+
     var now = new Date();
     var timeIL = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
 
-    var prompt = 'אתה מנתח שווקים ב-MNQ/NQ Futures. חובה לענות JSON בלבד ללא שאלות. שעה: ' + timeIL + '\n' +
-      'LONG: ' + longs + ' | SHORT: ' + shorts + ' | Win Rate: ' + wr + '%\n' +
-      '5 אחרונים: ' + (recentStr || 'אין נתונים') + '\n\n' +
-      'הוראה: נתח את מצב השוק לפי הנתונים הקיימים. אם אין מספיק נתונים — נתח לפי מה שיש ותן הערכה כללית.\n' +
-      'חובה להחזיר JSON תקין עם 3 פריטים בכל קטגוריה. אל תשאל שאלות. אל תבקש מידע נוסף.\n\n' +
-      'FORMAT: {"market_state":["מגמה כללית","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"]}\n' +
+    var prompt = 'אתה מנתח MNQ Futures. ענה JSON בלבד — אל תשאל שאלות. שעה: ' + timeIL + '\n' +
+      'LONG: ' + longs + ' | SHORT: ' + shorts + ' | WR: ' + wr + '% | AvgScore: ' + avgScore + '/10\n' +
+      'SKIP_STREAK: ' + skipStreak + '\n' +
+      '5 אחרונים (Dir|Verdict|Result): ' + (last5 || 'אין נתונים') + '\n' +
+      'Signal types (10 אחרונים): ' + (topTypes || 'אין') + '\n\n' +
+      'נתח את מצב השוק. אם SKIP_STREAK >= 3 — ציין סיבה ב-skip_alert.\n' +
+      'אם אין נתונים — ספק הערכה כללית של שוק MNQ.\n\n' +
+      'FORMAT: {"market_state":["מגמה","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"],"skip_alert":""}\n' +
+      'skip_alert: אם SKIP_STREAK >= 3 — סיבה קצרה בעברית, אחרת ריק.\n' +
       'ענה JSON בלבד:';
 
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1630,6 +1657,12 @@ async function runDynamicAnalysis(manual) {
     var html = '';
     try {
       var pj = JSON.parse(text);
+
+      // skip_alert — מוצג ראשון אם קיים
+      if (pj.skip_alert && pj.skip_alert.trim().length > 3) {
+        html += '<div style="background:rgba(255,69,96,0.08);border-right:3px solid #ff4560;border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:#ff4560">⛔ ' + pj.skip_alert + '</div>';
+      }
+
       var defs = [
         {k:'market_state', icon:'📊', t:'מצב שוק',   c:'#5b9cf6'},
         {k:'key_levels',   icon:'📏', t:'רמות מפתח', c:'#00d084'},
