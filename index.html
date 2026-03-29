@@ -412,19 +412,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
   </div>
 
-  <!-- Price API Key Modal -->
-  <div id="priceKeyModal" class="dyn-key-modal" style="display:none">
-    <div class="dyn-key-box">
-      <div style="font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:8px;color:var(--yellow)">📈 Twelve Data API Key</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">מפתח חינמי מ-<a href="https://twelvedata.com" target="_blank" style="color:var(--blue)">twelvedata.com</a> — לעדכון אוטומטי של תוצאות</div>
-      <input type="password" id="priceKeyInput" placeholder="your-api-key..." />
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-        <button onclick="savePriceApiKey()" style="background:var(--yellow);color:#000">שמור</button>
-        <button onclick="document.getElementById('priceKeyModal').style.display='none'" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">ביטול</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ANALYTICS PANEL -->
   <div id="legendPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
 
@@ -786,12 +773,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">📈 עדכון תוצאות אוטומטי</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
-          הדשבורד ימשוך מחיר NQ בזמן אמת ויעדכן TP1/TP2/SL אוטומטית.<br>
-          נדרש מפתח API חינמי מ-<a href="https://twelvedata.com" target="_blank" style="color:var(--blue)">Twelve Data</a>.
+          הדשבורד מושך נרות NQ=F מ-Yahoo Finance כל 5 דקות ובודק אם TP1/TP2/SL הושגו.<br>
+          ללא צורך במפתח API — עובד אוטומטית. ניתן גם לעדכן ידנית מהפופאפ של כל סיגנל.
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="showPriceKeyModal()" class="vol-btn" style="font-size:11px">🔑 הגדר מפתח API</button>
-          <span id="priceKeyStatus" style="font-family:var(--mono);font-size:11px"></span>
           <button onclick="resolveResults(true)" class="vol-btn" style="font-size:11px">▶ הרץ עכשיו</button>
           <span id="resolverLastRun" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
         </div>
@@ -1499,7 +1484,7 @@ function showPopup(item) {
     body += '<button class="result-btn rsl"  onclick="updateResult(' + item.ID + ',\'SL_HIT\')">❌ SL</button>';
     body += '<button class="result-btn rbe"  onclick="updateResult(' + item.ID + ',\'BE\')">↔ BE</button>';
     body += '</div>';
-    body += '<div class="resolver-status">או — יעודכן אוטומטית עם מפתח Twelve Data</div>';
+    body += '<div class="resolver-status">או — יעודכן אוטומטית כל 5 דקות (Yahoo Finance NQ=F)</div>';
   }
   document.getElementById('popupBody').innerHTML = body;
   document.getElementById('overlay').classList.add('show');
@@ -1666,29 +1651,11 @@ function saveApiKey() {
 
 // ═══════════════════════════════════════════════════
 // RESULT RESOLVER — auto-update TP1/TP2/SL from price
+// Uses Yahoo Finance (NQ=F) — no API key needed
 // ═══════════════════════════════════════════════════
 var RESOLVE_INTERVAL = 5 * 60 * 1000; // 5 minutes
 var resolveNextRun = 0;
-
-function showPriceKeyModal() {
-  var k = localStorage.getItem('price_api_key') || '';
-  document.getElementById('priceKeyInput').value = k;
-  document.getElementById('priceKeyModal').style.display = 'flex';
-}
-function savePriceApiKey() {
-  var k = document.getElementById('priceKeyInput').value.trim();
-  if (k) { localStorage.setItem('price_api_key', k); }
-  document.getElementById('priceKeyModal').style.display = 'none';
-  updatePriceKeyStatus();
-  resolveResults(true);
-}
-function updatePriceKeyStatus() {
-  var el = document.getElementById('priceKeyStatus');
-  if (!el) return;
-  var k = localStorage.getItem('price_api_key');
-  if (k) { el.textContent = '✅ מפתח מוגדר'; el.style.color = 'var(--green)'; }
-  else   { el.textContent = '⚠️ לא מוגדר';   el.style.color = 'var(--yellow)'; }
-}
+var resolverEnabled = true;
 
 // Manual result update from popup buttons
 async function updateResult(itemId, result) {
@@ -1724,13 +1691,53 @@ async function updateResult(itemId, result) {
   }
 }
 
+// Fetch NQ=F candles from Yahoo Finance (with CORS proxy fallback)
+async function fetchNQCandles() {
+  var yahooUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/NQ%3DF?interval=5m&range=2d&includePrePost=true';
+  var proxies = [
+    '',  // try direct first
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(yahooUrl),
+    'https://corsproxy.io/?' + encodeURIComponent(yahooUrl)
+  ];
+
+  for (var i = 0; i < proxies.length; i++) {
+    try {
+      var url = i === 0 ? yahooUrl : proxies[i];
+      var resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!resp.ok) continue;
+      var data = await resp.json();
+      var result = data.chart && data.chart.result && data.chart.result[0];
+      if (result && result.timestamp && result.timestamp.length > 0) {
+        console.log('[Resolver] Yahoo Finance OK via ' + (i === 0 ? 'direct' : 'proxy ' + i));
+        return result;
+      }
+    } catch(e) {
+      console.warn('[Resolver] Fetch attempt ' + i + ' failed:', e.message);
+    }
+  }
+  return null;
+}
+
+// Build candle array from Yahoo Finance response
+function yahooToCandles(result) {
+  var ts = result.timestamp;
+  var q = result.indicators.quote[0];
+  var candles = [];
+  for (var i = 0; i < ts.length; i++) {
+    if (q.high[i] == null || q.low[i] == null) continue;
+    candles.push({
+      time: new Date(ts[i] * 1000),
+      open: q.open[i],
+      high: q.high[i],
+      low: q.low[i],
+      close: q.close[i]
+    });
+  }
+  return candles;
+}
+
 // Auto-resolver: fetch NQ candles and compare against PENDING signals
 async function resolveResults(manual) {
-  var apiKey = localStorage.getItem('price_api_key');
-  if (!apiKey) {
-    if (manual) alert('נדרש מפתח Twelve Data API — הגדר בהגדרות');
-    return;
-  }
   if (!allSignals || !allSignals.length) return;
 
   // Find PENDING signals with valid price levels
@@ -1744,46 +1751,27 @@ async function resolveResults(manual) {
   });
 
   if (!pending.length) {
-    if (manual) console.log('[Resolver] No PENDING signals with price levels');
+    if (manual) { var el=document.getElementById('resolverLastRun'); if(el) el.textContent='אין סיגנלים PENDING עם מחירים'; }
     resolveNextRun = Date.now() + RESOLVE_INTERVAL;
     return;
   }
 
+  var statusEl = document.getElementById('resolverLastRun');
+  if (statusEl) { statusEl.textContent = '⟳ מושך נתוני NQ...'; statusEl.style.color = 'var(--blue)'; }
+
   try {
-    // Fetch 5-min candles from Twelve Data (NQ continuous futures)
-    // Try symbols in order: NDX (Nasdaq 100 index) tracks NQ futures 1:1
-    var symbols = ['NDX', 'IXIC', 'QQQ'];
-    var data = null;
-    var usedSymbol = '';
-    for (var si = 0; si < symbols.length; si++) {
-      var url = 'https://api.twelvedata.com/time_series?symbol=' + symbols[si] + '&interval=5min&outputsize=288&apikey=' + apiKey;
-      var resp = await fetch(url);
-      data = await resp.json();
-      if (data.status !== 'error' && data.values && data.values.length > 0) {
-        usedSymbol = symbols[si];
-        console.log('[Resolver] Using symbol: ' + usedSymbol);
-        break;
-      }
-    }
-
-    if (!data || data.status === 'error' || !data.values) {
-      console.warn('[Resolver] API error:', data ? data.message : 'no data');
-      if (manual) alert('API שגיאה: ' + (data ? data.message : 'אין נתונים') + '\nודא שהמפתח תקין');
+    var yahooData = await fetchNQCandles();
+    if (!yahooData) {
+      console.warn('[Resolver] Could not fetch NQ data from any source');
+      if (statusEl) { statusEl.textContent = '❌ לא ניתן למשוך מחיר NQ'; statusEl.style.color = 'var(--red)'; }
+      if (manual) alert('לא ניתן למשוך נתוני NQ=F.\nנסה שוב מאוחר יותר או עדכן ידנית.');
       resolveNextRun = Date.now() + RESOLVE_INTERVAL;
       return;
     }
 
-    // QQQ prices are ~1/40 of NQ — cannot compare directly, skip if QQQ was the only match
-    if (usedSymbol === 'QQQ') {
-      console.warn('[Resolver] Only QQQ available — price levels incompatible with NQ. Need NDX or IXIC.');
-      if (manual) alert('רק QQQ זמין (מחירים שונים מ-NQ). נדרשת גישה ל-NDX. שדרג חשבון Twelve Data או נסה מפתח אחר.');
-      resolveNextRun = Date.now() + RESOLVE_INTERVAL;
-      return;
-    }
-
-    var candles = (data.values || []).reverse(); // oldest first
+    var candles = yahooToCandles(yahooData);
     if (!candles.length) {
-      console.warn('[Resolver] No candle data returned');
+      if (statusEl) { statusEl.textContent = '❌ אין נרות'; statusEl.style.color = 'var(--red)'; }
       resolveNextRun = Date.now() + RESOLVE_INTERVAL;
       return;
     }
@@ -1804,20 +1792,17 @@ async function resolveResults(manual) {
 
       // Scan candles after signal time
       for (var c = 0; c < candles.length; c++) {
-        var cTime = new Date(candles[c].datetime.replace(' ', 'T') + ':00');
-        if (cTime <= sigTime) continue; // skip candles before signal
+        if (candles[c].time <= sigTime) continue;
 
-        var high = parseFloat(candles[c].high);
-        var low = parseFloat(candles[c].low);
-        var cOpen = parseFloat(candles[c].open);
-        var cClose = parseFloat(candles[c].close);
+        var high = candles[c].high;
+        var low = candles[c].low;
+        var cOpen = candles[c].open;
+        var cClose = candles[c].close;
 
         if (dir === 'LONG') {
-          // Check SL first if TP1 not yet hit
           if (!tp1Hit && low <= sl) {
-            // If both SL and TP1 hit in same candle, use candle direction
             if (high >= tp1) {
-              result = (cOpen < cClose) ? 'TP1_HIT' : 'SL_HIT'; // bullish candle = TP1 first
+              result = (cOpen < cClose) ? 'TP1_HIT' : 'SL_HIT';
             } else {
               result = 'SL_HIT';
             }
@@ -1829,12 +1814,12 @@ async function resolveResults(manual) {
           }
           if (tp1Hit) {
             if (tp2 > 0 && high >= tp2) { result = 'TP2_HIT'; break; }
-            if (low <= entry) { result = 'TP1_HIT'; break; } // trailing stop at entry after TP1
+            if (low <= entry) { result = 'TP1_HIT'; break; }
           }
         } else { // SHORT
           if (!tp1Hit && high >= sl) {
             if (low <= tp1) {
-              result = (cOpen > cClose) ? 'TP1_HIT' : 'SL_HIT'; // bearish candle = TP1 first
+              result = (cOpen > cClose) ? 'TP1_HIT' : 'SL_HIT';
             } else {
               result = 'SL_HIT';
             }
@@ -1846,15 +1831,13 @@ async function resolveResults(manual) {
           }
           if (tp1Hit) {
             if (tp2 > 0 && low <= tp2) { result = 'TP2_HIT'; break; }
-            if (high >= entry) { result = 'TP1_HIT'; break; } // trailing stop at entry
+            if (high >= entry) { result = 'TP1_HIT'; break; }
           }
         }
       }
 
-      // If TP1 was hit but no further result, mark as TP1_HIT
       if (!result && tp1Hit) result = 'TP1_HIT';
 
-      // Update if we have a result
       if (result) {
         await updateResult(sig.ID, result);
         updates++;
@@ -1864,12 +1847,15 @@ async function resolveResults(manual) {
     // Update UI status
     var now = new Date();
     var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-    var el = document.getElementById('resolverLastRun');
-    if (el) el.textContent = '🕐 ' + timeStr + ' | ' + updates + ' עודכנו מתוך ' + pending.length + ' pending';
-    console.log('[Resolver] Done. Updated ' + updates + ' of ' + pending.length + ' pending signals.');
+    if (statusEl) {
+      statusEl.textContent = '✅ ' + timeStr + ' | ' + updates + ' עודכנו מתוך ' + pending.length + ' pending | ' + candles.length + ' נרות';
+      statusEl.style.color = updates > 0 ? 'var(--green)' : 'var(--muted)';
+    }
+    console.log('[Resolver] Done. Updated ' + updates + ' of ' + pending.length + ' pending. Candles: ' + candles.length);
 
   } catch(e) {
     console.error('[Resolver] Error:', e);
+    if (statusEl) { statusEl.textContent = '❌ שגיאה: ' + e.message; statusEl.style.color = 'var(--red)'; }
     if (manual) alert('שגיאה: ' + e.message);
   }
 
@@ -1877,14 +1863,12 @@ async function resolveResults(manual) {
 }
 
 function startResolver() {
-  updatePriceKeyStatus();
-  var k = localStorage.getItem('price_api_key');
-  if (k) resolveResults(false);
+  resolveResults(false);
   setInterval(function() {
-    if (Date.now() >= resolveNextRun && localStorage.getItem('price_api_key')) {
+    if (Date.now() >= resolveNextRun && resolverEnabled) {
       resolveResults(false);
     }
-  }, 30000); // check every 30s if time to resolve
+  }, 30000);
 }
 
 function updateDynTimer() {
