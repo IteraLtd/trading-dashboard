@@ -1290,6 +1290,12 @@ function renderSignals(items) {
     var rClass = isWin(r) ? 'r-win' : isLoss(r) ? 'r-loss' : 'r-pending';
     var dClass = d === 'long' ? 'dir-long' : 'dir-short';
 
+    // Extract signal type and reason from ClaudeAnalysis JSON
+    var _ca = {};
+    try { _ca = JSON.parse(it.ClaudeAnalysis||'{}'); } catch(e){}
+    var sigType = _ca.signal_type || '';
+    var sigReason = _ca.reason || '';
+
     html += '<div class="sig-row" onclick="showPopupById(' + i + ')">';
 
     // === SINGLE HEADER ROW — time left, badges center ===
@@ -1297,6 +1303,7 @@ function renderSignals(items) {
     html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">' + fmtTime(it.SignalTime) + '</span>';
     if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
     html += '<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">';
+    if (sigType) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);padding:1px 6px;border-radius:3px" title="' + sigReason + '">' + sigType + '</span>';
     html += '<span class="score-txt" style="font-size:12px">⭐' + (it.ClaudeScore||'—') + '</span>';
     html += '<span class="res-badge ' + rClass + '">' + resultLabel(r) + '</span>';
     html += '<span class="verdict-badge ' + vClass + '">' + (it.ClaudeVerdict||'NEUTRAL') + '</span>';
@@ -1363,7 +1370,7 @@ function updateStats(items) {
   document.getElementById('statSL').textContent = sl;
 
   // === SKIP STREAK CHECK ===
-  var STREAK_THRESHOLD = 5;
+  var STREAK_THRESHOLD = 3;
   var streak = 0;
   // items sorted desc by time — count consecutive SKIPs from newest
   for (var j = 0; j < items.length; j++) {
@@ -1620,15 +1627,36 @@ async function runDynamicAnalysis(manual) {
     var now = new Date();
     var timeIL = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
 
-    var prompt = 'אתה מנתח MNQ Futures. ענה JSON בלבד — אל תשאל שאלות. שעה: ' + timeIL + '\n' +
-      'LONG: ' + longs + ' | SHORT: ' + shorts + ' | WR: ' + wr + '% | AvgScore: ' + avgScore + '/10\n' +
-      'SKIP_STREAK: ' + skipStreak + '\n' +
+    // Build TAKE vs SKIP win rate comparison
+    var takeWins = 0, takeLosses = 0, skipWins = 0, skipLosses = 0;
+    recent.forEach(function(s) {
+      var sv = (s.ClaudeVerdict||'').toUpperCase();
+      var sr = (s.Result||'').toUpperCase();
+      var w = isWin(sr), lo = isLoss(sr);
+      if (sv === 'TAKE') { if (w) takeWins++; if (lo) takeLosses++; }
+      if (sv === 'SKIP') { if (w) skipWins++; if (lo) skipLosses++; }
+    });
+    var takeWR = (takeWins+takeLosses) > 0 ? Math.round(takeWins/(takeWins+takeLosses)*100) : '—';
+    var skipWR = (skipWins+skipLosses) > 0 ? Math.round(skipWins/(skipWins+skipLosses)*100) : '—';
+
+    var prompt = 'אתה מנתח MNQ Futures מקצועי. החזר JSON בלבד — אל תשאל שאלות.\n' +
+      'שעה: ' + timeIL + '\n\n' +
+      'SIGNALS (20 אחרונים):\n' +
+      '  LONG: ' + longs + ' | SHORT: ' + shorts + '\n' +
+      '  WR כללי: ' + wr + '% | AvgScore: ' + avgScore + '/10\n' +
+      '  TAKE WR: ' + takeWR + '% | SKIP WR: ' + skipWR + '%\n' +
+      '  SKIP_STREAK: ' + skipStreak + '\n\n' +
       '5 אחרונים (Dir|Verdict|Result): ' + (last5 || 'אין נתונים') + '\n' +
-      'Signal types (10 אחרונים): ' + (topTypes || 'אין') + '\n\n' +
-      'נתח את מצב השוק. אם SKIP_STREAK >= 3 — ציין סיבה ב-skip_alert.\n' +
-      'אם אין נתונים — ספק הערכה כללית של שוק MNQ.\n\n' +
-      'FORMAT: {"market_state":["מגמה","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"],"skip_alert":""}\n' +
-      'skip_alert: אם SKIP_STREAK >= 3 — סיבה קצרה בעברית, אחרת ריק.\n' +
+      'סוגי סיגנלים תכופים: ' + (topTypes || 'אין') + '\n\n' +
+      'כללי ניתוח:\n' +
+      '- אם SKIP_STREAK >= 3 — ציין סיבה אפשרית ב-skip_alert\n' +
+      '- אם TAKE WR < 40% — ציין ב-market_state שאיכות הסיגנלים ירודה\n' +
+      '- אם SKIP WR > 60% — ציין שה-SKIP filter אגרסיבי מדי (דוחה סיגנלים שהיו מרוויחים)\n' +
+      '- התמקד בניתוח bias (LONG vs SHORT) ורמות מפתח\n\n' +
+      'FORMAT (JSON בלבד):\n' +
+      '{"market_state":["מגמה","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"],"skip_alert":"","quality_note":""}\n' +
+      'skip_alert: סיבה בעברית אם SKIP>=3, אחרת ריק.\n' +
+      'quality_note: הערה קצרה על איכות הסיגנלים (עברית), אחרת ריק.\n' +
       'ענה JSON בלבד:';
 
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1661,6 +1689,10 @@ async function runDynamicAnalysis(manual) {
       // skip_alert — מוצג ראשון אם קיים
       if (pj.skip_alert && pj.skip_alert.trim().length > 3) {
         html += '<div style="background:rgba(255,69,96,0.08);border-right:3px solid #ff4560;border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:#ff4560">⛔ ' + pj.skip_alert + '</div>';
+      }
+      // quality_note — הערה על איכות הסיגנלים
+      if (pj.quality_note && pj.quality_note.trim().length > 3) {
+        html += '<div style="background:rgba(255,165,0,0.08);border-right:3px solid #ffa500;border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:#ffa500">📋 ' + pj.quality_note + '</div>';
       }
 
       var defs = [
