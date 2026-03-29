@@ -94,6 +94,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .dyn-card.info{border-right-color:var(--blue)}
 .dyn-spin{display:inline-block;animation:dspin .7s linear infinite}
 @keyframes dspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.result-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;justify-content:center}
+.result-btn{border:none;font-family:var(--mono);font-size:11px;font-weight:600;padding:6px 14px;border-radius:5px;cursor:pointer;transition:all .2s}
+.result-btn:hover{transform:scale(1.05);filter:brightness(1.2)}
+.result-btn.rtp1{background:rgba(0,208,132,.2);color:var(--green);border:1px solid rgba(0,208,132,.4)}
+.result-btn.rtp2{background:rgba(0,208,132,.35);color:var(--green);border:1px solid rgba(0,208,132,.6)}
+.result-btn.rsl{background:rgba(255,69,96,.2);color:var(--red);border:1px solid rgba(255,69,96,.4)}
+.result-btn.rbe{background:rgba(74,96,128,.2);color:var(--muted);border:1px solid var(--border)}
+.resolver-status{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:center}
 .dyn-key-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:center;justify-content:center}
 .dyn-key-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;width:380px;direction:rtl}
 .dyn-key-box input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-family:var(--mono);font-size:12px;margin:10px 0}
@@ -404,6 +412,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
   </div>
 
+  <!-- Price API Key Modal -->
+  <div id="priceKeyModal" class="dyn-key-modal" style="display:none">
+    <div class="dyn-key-box">
+      <div style="font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:8px;color:var(--yellow)">📈 Twelve Data API Key</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">מפתח חינמי מ-<a href="https://twelvedata.com" target="_blank" style="color:var(--blue)">twelvedata.com</a> — לעדכון אוטומטי של תוצאות</div>
+      <input type="password" id="priceKeyInput" placeholder="your-api-key..." />
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button onclick="savePriceApiKey()" style="background:var(--yellow);color:#000">שמור</button>
+        <button onclick="document.getElementById('priceKeyModal').style.display='none'" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">ביטול</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ANALYTICS PANEL -->
   <div id="legendPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
 
@@ -510,18 +531,64 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
       </div>
 
-      <!-- 8 Scenarios -->
+      <!-- Chart Markers (TradingView) -->
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
-        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">🎯 8 תרחישי כניסה</div>
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">🔷 סמני גרף (TradingView Markers)</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+          <div style="font-size:11px;color:var(--blue);font-weight:600;margin-bottom:2px">איתותי כניסה</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#00ff00;font-size:16px">&#9650;</span><span style="font-weight:700;color:#00ff00;min-width:90px">משולש ירוק</span><span style="color:var(--muted)">כניסת LONG — מתחת לנר</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#ff0000;font-size:16px">&#9660;</span><span style="font-weight:700;color:#ff0000;min-width:90px">משולש אדום</span><span style="color:var(--muted)">כניסת SHORT — מעל לנר</span></div>
+
+          <div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:8px;margin-bottom:2px;padding-top:8px;border-top:1px solid var(--border)">שטיפות נזילות (Sweeps)</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:aqua;width:10px;height:10px;border-radius:50%;display:inline-block"></span><span style="font-weight:700;color:aqua;min-width:90px">נקודה תכלת</span><span style="color:var(--muted)">Bull Sweep — שטיפת שפל (Normal)</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:orange;width:10px;height:10px;border-radius:50%;display:inline-block"></span><span style="font-weight:700;color:orange;min-width:90px">נקודה כתומה</span><span style="color:var(--muted)">Bear Sweep — שטיפת שיא (Normal)</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:aqua;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">SW</span><span style="font-weight:700;color:aqua;min-width:90px">תווית SW תכלת</span><span style="color:var(--muted)">Bull Sweep — שטיפת שפל (Full)</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:orange;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">SW</span><span style="font-weight:700;color:orange;min-width:90px">תווית SW כתומה</span><span style="color:var(--muted)">Bear Sweep — שטיפת שיא (Full)</span></div>
+
+          <div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:8px;margin-bottom:2px;padding-top:8px;border-top:1px solid var(--border)">שטיפות מוסדיות</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:aqua;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">ISL</span><span style="font-weight:700;color:aqua;min-width:90px">ISL תכלת</span><span style="color:var(--muted)">Institutional Sweep Long — שטיפה מוסדית + חזרה בולית</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:orange;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">ISS</span><span style="font-weight:700;color:orange;min-width:90px">ISS כתומה</span><span style="color:var(--muted)">Institutional Sweep Short — שטיפה מוסדית + חזרה דובית</span></div>
+
+          <div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:8px;margin-bottom:2px;padding-top:8px;border-top:1px solid var(--border)">תוויות נוספות (Full mode בלבד)</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:aqua;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">FB</span><span style="font-weight:700;color:aqua;min-width:90px">FB תכלת</span><span style="color:var(--muted)">Fake Break Down — פריצה מזויפת למטה (בולי)</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:orange;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">FB</span><span style="font-weight:700;color:orange;min-width:90px">FB כתומה</span><span style="color:var(--muted)">Fake Break Up — פריצה מזויפת למעלה (דובי)</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:lime;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">SS</span><span style="font-weight:700;color:lime;min-width:90px">SS ירוק</span><span style="color:var(--muted)">Smart Sweep Up — שטיפה חכמה בולית</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:red;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">SS</span><span style="font-weight:700;color:red;min-width:90px">SS אדום</span><span style="color:var(--muted)">Smart Sweep Down — שטיפה חכמה דובית</span></div>
+
+          <div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:8px;margin-bottom:2px;padding-top:8px;border-top:1px solid var(--border)">MTF (Multi-Timeframe)</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="background:yellow;color:#000;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px">MTF</span><span style="font-weight:700;color:yellow;min-width:90px">MTF צהוב</span><span style="color:var(--muted)">כניסה מרובת טיימפריימים — אישור מ-15m/1h</span></div>
+
+          <div style="margin-top:10px;padding:8px;background:rgba(77,166,255,0.08);border-radius:4px;border:1px solid rgba(77,166,255,0.2)">
+            <div style="font-size:11px;color:var(--blue);font-weight:600">💡 טיפ: מצב התצוגה</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Clean — איתותי כניסה בלבד | Normal — + נקודות שטיפה | Full — כל התוויות</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13 Scenarios by Tier -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">🎯 13 תרחישי כניסה (לפי Tier)</div>
         <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T1</span><span style="color:var(--muted)">BOS / CHoCH — שבירת מבנה</span></div>
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T2</span><span style="color:var(--muted)">S/R Break — שבירת תמיכה/התנגדות</span></div>
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T3</span><span style="color:var(--muted)">Sweep Reversal — שטיפה והיפוך</span></div>
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T4</span><span style="color:var(--muted)">Institutional Sweep — שטיפה מוסדית</span></div>
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T5</span><span style="color:var(--muted)">OB + Structure — Order Block + מבנה</span></div>
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T6</span><span style="color:var(--muted)">FVG Retest — חזרה לפער ערך הוגן</span></div>
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T7</span><span style="color:var(--muted)">False Breakout — פריצה מזויפת</span></div>
-          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:24px">T8</span><span style="color:var(--muted)">Supply / Demand Zone — כניסה לאזור</span></div>
+          <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:2px">Tier A — אמינות גבוהה</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);font-weight:700;min-width:30px">T1</span><span style="color:var(--muted)">BOS / CHoCH — שבירת מבנה</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);font-weight:700;min-width:30px">T2</span><span style="color:var(--muted)">S/R Break — שבירת תמיכה/התנגדות + EMA דינמי</span></div>
+
+          <div style="font-size:11px;color:var(--blue);font-weight:700;margin-top:8px;margin-bottom:2px;padding-top:8px;border-top:1px solid var(--border)">Tier B — אמינות טובה</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:30px">T3</span><span style="color:var(--muted)">Sweep Reversal — שטיפה + דחייה + היפוך</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:30px">T4</span><span style="color:var(--muted)">Institutional Sweep — שטיפה מוסדית + ווליום</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;min-width:30px">T5</span><span style="color:var(--muted)">OB + Structure — Order Block + מבנה</span></div>
+
+          <div style="font-size:11px;color:var(--yellow);font-weight:700;margin-top:8px;margin-bottom:2px;padding-top:8px;border-top:1px solid var(--border)">Tier C — אמינות בינונית</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--yellow);font-weight:700;min-width:30px">T6</span><span style="color:var(--muted)">FVG Retest — חזרה לפער ערך הוגן</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--yellow);font-weight:700;min-width:30px">T7</span><span style="color:var(--muted)">False Breakout — פריצה מזויפת</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--yellow);font-weight:700;min-width:30px">T8</span><span style="color:var(--muted)">Supply / Demand Zone — כניסה לאזור S/D</span></div>
+
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:8px;margin-bottom:2px;padding-top:8px;border-top:1px solid var(--border)">Tier D — דורש 2+ אישורים</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--muted);font-weight:700;min-width:30px">T9</span><span style="color:var(--muted)">EMA Pullback — חזרה ל-EMA דינמי</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--muted);font-weight:700;min-width:30px">T10</span><span style="color:var(--muted)">HL/LH Break — שבירת Higher Low / Lower High</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--muted);font-weight:700;min-width:30px">T11</span><span style="color:var(--muted)">Engulfing — נר בולע + ווליום</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--muted);font-weight:700;min-width:30px">T12</span><span style="color:var(--muted)">Reversal — היפוך קרוב ל-EMA20 + RSI</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--muted);font-weight:700;min-width:30px">T13</span><span style="color:var(--muted)">RSI Divergence — סטייה ב-RSI</span></div>
         </div>
       </div>
 
@@ -712,6 +779,21 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
               ↺ איפוס כל הצבעים לברירת מחדל
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Result Auto-Resolver -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">📈 עדכון תוצאות אוטומטי</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          הדשבורד ימשוך מחיר NQ בזמן אמת ויעדכן TP1/TP2/SL אוטומטית.<br>
+          נדרש מפתח API חינמי מ-<a href="https://twelvedata.com" target="_blank" style="color:var(--blue)">Twelve Data</a>.
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="showPriceKeyModal()" class="vol-btn" style="font-size:11px">🔑 הגדר מפתח API</button>
+          <span id="priceKeyStatus" style="font-family:var(--mono);font-size:11px"></span>
+          <button onclick="resolveResults(true)" class="vol-btn" style="font-size:11px">▶ הרץ עכשיו</button>
+          <span id="resolverLastRun" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
         </div>
       </div>
 
@@ -1093,6 +1175,7 @@ function startDash() {
   refresh();
   setInterval(refresh, REFRESH);
   startDynamicAnalysis();
+  startResolver();
 }
 
 async function getToken() {
@@ -1406,6 +1489,18 @@ function showPopup(item) {
   body += '<div class="pr"><div class="pr-label">TP2</div><div class="pr-val" style="color:var(--green);opacity:.8">' + tp2 + '</div></div>';
   body += '<div class="pr"><div class="pr-label">ציון</div><div class="pr-val" style="color:var(--yellow)">' + (item.ClaudeScore||'—') + '/10</div></div>';
   body += '<div class="pr"><div class="pr-label">החלטה</div><div class="pr-val" style="font-family:var(--sans);font-size:11px;font-weight:400;color:var(--text)">' + (item.VerdictNote||'—') + '</div></div>';
+  // Result display + manual update buttons
+  var res = (item.Result||'PENDING').toUpperCase();
+  body += '<div class="pr"><div class="pr-label">תוצאה</div><div class="pr-val">' + resultLabel(res) + '</div></div>';
+  if (!isWin(res) && !isLoss(res)) {
+    body += '<div class="result-actions">';
+    body += '<button class="result-btn rtp1" onclick="updateResult(' + item.ID + ',\'TP1_HIT\')">✅ TP1</button>';
+    body += '<button class="result-btn rtp2" onclick="updateResult(' + item.ID + ',\'TP2_HIT\')">✅ TP2</button>';
+    body += '<button class="result-btn rsl"  onclick="updateResult(' + item.ID + ',\'SL_HIT\')">❌ SL</button>';
+    body += '<button class="result-btn rbe"  onclick="updateResult(' + item.ID + ',\'BE\')">↔ BE</button>';
+    body += '</div>';
+    body += '<div class="resolver-status">או — יעודכן אוטומטית עם מפתח Twelve Data</div>';
+  }
   document.getElementById('popupBody').innerHTML = body;
   document.getElementById('overlay').classList.add('show');
 }
@@ -1416,10 +1511,12 @@ var dirFilter = null;
 
 function isWin(r) { return r === 'WIN' || r === 'TP1_HIT' || r === 'TP2_HIT'; }
 function isLoss(r) { return r === 'LOSS' || r === 'SL_HIT'; }
+function isBE(r) { return r === 'BE'; }
 function resultLabel(r) {
   if (r === 'TP1_HIT') return '✅ TP1';
   if (r === 'TP2_HIT') return '✅ TP2';
   if (r === 'SL_HIT')  return '❌ SL';
+  if (r === 'BE')      return '↔ BE';
   if (r === 'WIN')     return '✅ WIN';
   if (r === 'LOSS')    return '❌ LOSS';
   if (r === 'PENDING') return '⏳ PENDING';
@@ -1565,6 +1662,211 @@ function saveApiKey() {
   if (k) { localStorage.setItem('claude_api_key', k); }
   document.getElementById('dynKeyModal').style.display = 'none';
   runDynamicAnalysis(true);
+}
+
+// ═══════════════════════════════════════════════════
+// RESULT RESOLVER — auto-update TP1/TP2/SL from price
+// ═══════════════════════════════════════════════════
+var RESOLVE_INTERVAL = 5 * 60 * 1000; // 5 minutes
+var resolveNextRun = 0;
+
+function showPriceKeyModal() {
+  var k = localStorage.getItem('price_api_key') || '';
+  document.getElementById('priceKeyInput').value = k;
+  document.getElementById('priceKeyModal').style.display = 'flex';
+}
+function savePriceApiKey() {
+  var k = document.getElementById('priceKeyInput').value.trim();
+  if (k) { localStorage.setItem('price_api_key', k); }
+  document.getElementById('priceKeyModal').style.display = 'none';
+  updatePriceKeyStatus();
+  resolveResults(true);
+}
+function updatePriceKeyStatus() {
+  var el = document.getElementById('priceKeyStatus');
+  if (!el) return;
+  var k = localStorage.getItem('price_api_key');
+  if (k) { el.textContent = '✅ מפתח מוגדר'; el.style.color = 'var(--green)'; }
+  else   { el.textContent = '⚠️ לא מוגדר';   el.style.color = 'var(--yellow)'; }
+}
+
+// Manual result update from popup buttons
+async function updateResult(itemId, result) {
+  try {
+    var token = await getToken();
+    var digest = await getDigest();
+    await fetch(SITE + "/_api/web/lists/getbytitle('TradingPredictions')/items(" + itemId + ")", {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-HTTP-Method': 'MERGE',
+        'IF-MATCH': '*',
+        'X-RequestDigest': digest
+      },
+      body: JSON.stringify({
+        '__metadata': { 'type': 'SP.Data.TradingPredictionsListItem' },
+        'Result': result
+      })
+    });
+    // Update local data
+    for (var i = 0; i < allSignals.length; i++) {
+      if (allSignals[i].ID === itemId) { allSignals[i].Result = result; break; }
+    }
+    // Close popup + refresh display
+    document.getElementById('overlay').classList.remove('show');
+    applyFilter();
+    console.log('[Resolver] Updated item ' + itemId + ' → ' + result);
+  } catch(e) {
+    console.error('[Resolver] updateResult error:', e);
+    alert('שגיאה בעדכון: ' + e.message);
+  }
+}
+
+// Auto-resolver: fetch NQ candles and compare against PENDING signals
+async function resolveResults(manual) {
+  var apiKey = localStorage.getItem('price_api_key');
+  if (!apiKey) {
+    if (manual) alert('נדרש מפתח Twelve Data API — הגדר בהגדרות');
+    return;
+  }
+  if (!allSignals || !allSignals.length) return;
+
+  // Find PENDING signals with valid price levels
+  var pending = allSignals.filter(function(it) {
+    var r = (it.Result||'').toUpperCase();
+    if (isWin(r) || isLoss(r) || r === 'BE') return false;
+    var entry = parseFloat(it.Entry);
+    var sl = parseFloat(it.SL);
+    var tp1 = parseFloat(it['OData__x0054_P1'] || it.TP1);
+    return !isNaN(entry) && !isNaN(sl) && !isNaN(tp1) && entry > 0;
+  });
+
+  if (!pending.length) {
+    if (manual) console.log('[Resolver] No PENDING signals with price levels');
+    resolveNextRun = Date.now() + RESOLVE_INTERVAL;
+    return;
+  }
+
+  try {
+    // Fetch 5-min candles from Twelve Data (NQ continuous futures)
+    var url = 'https://api.twelvedata.com/time_series?symbol=NQ&interval=5min&outputsize=288&apikey=' + apiKey;
+    var resp = await fetch(url);
+    var data = await resp.json();
+
+    if (data.status === 'error') {
+      console.warn('[Resolver] API error:', data.message);
+      // Fallback: try with QQQ converted to NQ-approximate
+      if (manual) alert('API שגיאה: ' + data.message + '\nודא שהמפתח תקין ויש גישה ל-NQ');
+      resolveNextRun = Date.now() + RESOLVE_INTERVAL;
+      return;
+    }
+
+    var candles = (data.values || []).reverse(); // oldest first
+    if (!candles.length) {
+      console.warn('[Resolver] No candle data returned');
+      resolveNextRun = Date.now() + RESOLVE_INTERVAL;
+      return;
+    }
+
+    var updates = 0;
+    for (var p = 0; p < pending.length; p++) {
+      var sig = pending[p];
+      var sigTime = new Date(sig.SignalTime);
+      var dir = (sig.Direction||'').toUpperCase();
+      var entry = parseFloat(sig.Entry);
+      var sl = parseFloat(sig.SL);
+      var tp1 = parseFloat(sig['OData__x0054_P1'] || sig.TP1);
+      var tp2 = parseFloat(sig['OData__x0054_P2'] || sig.TP2);
+      if (isNaN(tp2)) tp2 = 0;
+
+      var tp1Hit = false;
+      var result = null;
+
+      // Scan candles after signal time
+      for (var c = 0; c < candles.length; c++) {
+        var cTime = new Date(candles[c].datetime.replace(' ', 'T') + ':00');
+        if (cTime <= sigTime) continue; // skip candles before signal
+
+        var high = parseFloat(candles[c].high);
+        var low = parseFloat(candles[c].low);
+        var cOpen = parseFloat(candles[c].open);
+        var cClose = parseFloat(candles[c].close);
+
+        if (dir === 'LONG') {
+          // Check SL first if TP1 not yet hit
+          if (!tp1Hit && low <= sl) {
+            // If both SL and TP1 hit in same candle, use candle direction
+            if (high >= tp1) {
+              result = (cOpen < cClose) ? 'TP1_HIT' : 'SL_HIT'; // bullish candle = TP1 first
+            } else {
+              result = 'SL_HIT';
+            }
+            break;
+          }
+          if (!tp1Hit && high >= tp1) {
+            tp1Hit = true;
+            if (tp2 > 0 && high >= tp2) { result = 'TP2_HIT'; break; }
+          }
+          if (tp1Hit) {
+            if (tp2 > 0 && high >= tp2) { result = 'TP2_HIT'; break; }
+            if (low <= entry) { result = 'TP1_HIT'; break; } // trailing stop at entry after TP1
+          }
+        } else { // SHORT
+          if (!tp1Hit && high >= sl) {
+            if (low <= tp1) {
+              result = (cOpen > cClose) ? 'TP1_HIT' : 'SL_HIT'; // bearish candle = TP1 first
+            } else {
+              result = 'SL_HIT';
+            }
+            break;
+          }
+          if (!tp1Hit && low <= tp1) {
+            tp1Hit = true;
+            if (tp2 > 0 && low <= tp2) { result = 'TP2_HIT'; break; }
+          }
+          if (tp1Hit) {
+            if (tp2 > 0 && low <= tp2) { result = 'TP2_HIT'; break; }
+            if (high >= entry) { result = 'TP1_HIT'; break; } // trailing stop at entry
+          }
+        }
+      }
+
+      // If TP1 was hit but no further result, mark as TP1_HIT
+      if (!result && tp1Hit) result = 'TP1_HIT';
+
+      // Update if we have a result
+      if (result) {
+        await updateResult(sig.ID, result);
+        updates++;
+      }
+    }
+
+    // Update UI status
+    var now = new Date();
+    var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    var el = document.getElementById('resolverLastRun');
+    if (el) el.textContent = '🕐 ' + timeStr + ' | ' + updates + ' עודכנו מתוך ' + pending.length + ' pending';
+    console.log('[Resolver] Done. Updated ' + updates + ' of ' + pending.length + ' pending signals.');
+
+  } catch(e) {
+    console.error('[Resolver] Error:', e);
+    if (manual) alert('שגיאה: ' + e.message);
+  }
+
+  resolveNextRun = Date.now() + RESOLVE_INTERVAL;
+}
+
+function startResolver() {
+  updatePriceKeyStatus();
+  var k = localStorage.getItem('price_api_key');
+  if (k) resolveResults(false);
+  setInterval(function() {
+    if (Date.now() >= resolveNextRun && localStorage.getItem('price_api_key')) {
+      resolveResults(false);
+    }
+  }, 30000); // check every 30s if time to resolve
 }
 
 function updateDynTimer() {
