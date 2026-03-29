@@ -1751,14 +1751,32 @@ async function resolveResults(manual) {
 
   try {
     // Fetch 5-min candles from Twelve Data (NQ continuous futures)
-    var url = 'https://api.twelvedata.com/time_series?symbol=NQ&interval=5min&outputsize=288&apikey=' + apiKey;
-    var resp = await fetch(url);
-    var data = await resp.json();
+    // Try symbols in order: NDX (Nasdaq 100 index) tracks NQ futures 1:1
+    var symbols = ['NDX', 'IXIC', 'QQQ'];
+    var data = null;
+    var usedSymbol = '';
+    for (var si = 0; si < symbols.length; si++) {
+      var url = 'https://api.twelvedata.com/time_series?symbol=' + symbols[si] + '&interval=5min&outputsize=288&apikey=' + apiKey;
+      var resp = await fetch(url);
+      data = await resp.json();
+      if (data.status !== 'error' && data.values && data.values.length > 0) {
+        usedSymbol = symbols[si];
+        console.log('[Resolver] Using symbol: ' + usedSymbol);
+        break;
+      }
+    }
 
-    if (data.status === 'error') {
-      console.warn('[Resolver] API error:', data.message);
-      // Fallback: try with QQQ converted to NQ-approximate
-      if (manual) alert('API שגיאה: ' + data.message + '\nודא שהמפתח תקין ויש גישה ל-NQ');
+    if (!data || data.status === 'error' || !data.values) {
+      console.warn('[Resolver] API error:', data ? data.message : 'no data');
+      if (manual) alert('API שגיאה: ' + (data ? data.message : 'אין נתונים') + '\nודא שהמפתח תקין');
+      resolveNextRun = Date.now() + RESOLVE_INTERVAL;
+      return;
+    }
+
+    // QQQ prices are ~1/40 of NQ — cannot compare directly, skip if QQQ was the only match
+    if (usedSymbol === 'QQQ') {
+      console.warn('[Resolver] Only QQQ available — price levels incompatible with NQ. Need NDX or IXIC.');
+      if (manual) alert('רק QQQ זמין (מחירים שונים מ-NQ). נדרשת גישה ל-NDX. שדרג חשבון Twelve Data או נסה מפתח אחר.');
       resolveNextRun = Date.now() + RESOLVE_INTERVAL;
       return;
     }
