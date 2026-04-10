@@ -780,6 +780,34 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="saveCustomConfig()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;white-space:nowrap">💾 שמור תצורה</button>
         </div>
       </div>
+      <!-- REFRESH INTERVALS SECTION -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">⏱ מרווחי רענון</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span class="setting-label">🔄 רענון נתונים (שניות)</span>
+              <span class="setting-val" id="val-data-refresh">30s</span>
+            </div>
+            <input type="range" min="10" max="60" step="5" value="30" id="data-refresh-slider"
+              oninput="applyDataRefresh(this.value)" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>10s</span><span>30s</span><span>60s</span></div>
+          </div>
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span class="setting-label">🤖 ניתוח Claude AI (דקות)</span>
+              <span class="setting-val" id="val-claude-refresh">5m</span>
+            </div>
+            <input type="range" min="1" max="10" step="1" value="5" id="claude-refresh-slider"
+              oninput="applyClaudeRefresh(this.value)" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>1m</span><span>5m</span><span>10m</span></div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted);font-family:var(--mono)">
+          ⚠️ רענון מהיר מאוד עלול לגרום לעומס על SharePoint · מומלץ לא לרדת מ-10s לנתונים
+        </div>
+      </div>
+
       <!-- APPEARANCE SECTION -->
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">🎨 מראה ועיצוב</div>
@@ -1174,7 +1202,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 const CLIENT_ID = '75028ce6-328d-432a-a595-5bc41fe2399a';
 const SITE = 'https://iteracoil.sharepoint.com/sites/Trading';
 const SCOPES = ['https://iteracoil.sharepoint.com/AllSites.Manage'];
-const REFRESH = 30000;
+var REFRESH = parseInt(localStorage.getItem('dataRefreshMs') || '30000');
+var refreshTimer = null;
 
 const FLOW_URL = 'https://default091d179c539f49e5ad857c8399ab46.36.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/988b25a359b9420d9d848fcfaf77ee56/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=73_fdguSWBqZYPcCrtjP_OVr6V979i3MXRtX8d9VSHs';
 
@@ -1299,7 +1328,7 @@ function startDash() {
   loadAppearanceSettings();
   loadApiKey().then(function(){ startDynamicAnalysis(); });
   refresh();
-  setInterval(refresh, REFRESH);
+  refreshTimer = setInterval(refresh, REFRESH);
   startResolver();
 }
 
@@ -1781,7 +1810,7 @@ function updateAnalysis(items) {
 }
 
 // ── Dynamic Analysis (Claude AI every 5 min) ─────────────────────────────────
-var DYN_INTERVAL   = 5 * 60 * 1000;
+var DYN_INTERVAL = parseInt(localStorage.getItem('claudeRefreshMs') || String(5 * 60 * 1000));
 var dynNextRun     = 0;
 var dynTimerTick   = null;
 var cachedApiKey   = '';  // loaded from SharePoint on startup
@@ -2527,6 +2556,13 @@ var customConfigs = JSON.parse(localStorage.getItem('customConfigs') || '[]');
 function initSettingsPanel() {
   applySettingsToUI(currentSettings);
   renderCustomConfigs();
+  // Load saved refresh intervals
+  var savedData   = parseInt(localStorage.getItem('dataRefreshMs')   || '30000') / 1000;
+  var savedClaude = parseInt(localStorage.getItem('claudeRefreshMs') || String(5*60*1000)) / 60000;
+  var drSlider = document.getElementById('data-refresh-slider');
+  var crSlider = document.getElementById('claude-refresh-slider');
+  if (drSlider) { drSlider.value = savedData;   document.getElementById('val-data-refresh').textContent  = savedData + 's'; }
+  if (crSlider) { crSlider.value = savedClaude; document.getElementById('val-claude-refresh').textContent = savedClaude + 'm'; }
 }
 
 function applySettingsToUI(s) {
@@ -3517,6 +3553,24 @@ async function chatSend() {
   btn.disabled = false;
   btn.textContent = 'שלח ↩';
   chatRender();
+}
+
+function applyDataRefresh(val) {
+  val = parseInt(val);
+  REFRESH = val * 1000;
+  localStorage.setItem('dataRefreshMs', REFRESH);
+  document.getElementById('val-data-refresh').textContent = val + 's';
+  // Restart interval with new rate
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(refresh, REFRESH);
+}
+
+function applyClaudeRefresh(val) {
+  val = parseInt(val);
+  DYN_INTERVAL = val * 60 * 1000;
+  localStorage.setItem('claudeRefreshMs', DYN_INTERVAL);
+  document.getElementById('val-claude-refresh').textContent = val + 'm';
+  dynNextRun = 0; // trigger immediate re-run on next tick
 }
 
 function toggleMobileMore() {
