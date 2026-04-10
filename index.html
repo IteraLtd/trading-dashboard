@@ -347,6 +347,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <button class="quick-btn" id="tabLegend" onclick="switchTab('legend')">📖 מקרא</button>
       <button class="quick-btn" id="tabSettings" onclick="switchTab('settings')">⚙️ כיוונון</button>
       <button class="quick-btn" id="tabTrades" onclick="switchTab('trades')">📋 עסקאות</button>
+      <button class="quick-btn" id="tabChat" onclick="switchTab('chat')">💬 צ'אט</button>
     </div>
   </div>
 
@@ -403,12 +404,37 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <div id="dynKeyModal" class="dyn-key-modal" style="display:none">
     <div class="dyn-key-box">
       <div style="font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:8px;color:var(--blue)">🔑 Anthropic API Key</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">המפתח נשמר ב-localStorage בלבד (לא נשלח לשרת)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">המפתח נשמר ב-SharePoint — זמין מכל מחשב</div>
       <input type="password" id="dynKeyInput" placeholder="sk-ant-..." />
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
         <button onclick="saveApiKey()" style="background:var(--blue);color:#000">שמור</button>
         <button onclick="document.getElementById('dynKeyModal').style.display='none'" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">ביטול</button>
       </div>
+    </div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div id="chatPanel" style="display:none;height:calc(100vh - 185px);direction:rtl;display:none;flex-direction:column;background:var(--bg)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue);letter-spacing:1px">💬 CLAUDE AI — צ'אט</span>
+        <span id="chatModelBadge" style="font-family:var(--mono);font-size:10px;background:rgba(77,166,255,.12);color:var(--blue);border:1px solid rgba(77,166,255,.3);padding:1px 8px;border-radius:10px">Sonnet 4</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="chatClearHistory()" style="font-size:11px;padding:3px 10px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:4px;cursor:pointer">🗑 נקה שיחה</button>
+        <button onclick="chatInjectContext()" style="font-size:11px;padding:3px 10px;background:rgba(0,208,132,.1);color:var(--green);border:1px solid rgba(0,208,132,.3);border-radius:4px;cursor:pointer">📊 הזרק נתוני שוק</button>
+      </div>
+    </div>
+    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;min-height:0"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
+      <div style="display:flex;gap:8px;align-items:flex-end;max-width:900px;margin:0 auto">
+        <textarea id="chatInput" placeholder="שאל אותי על הסיגנלים, השוק, או כל שאלה אחרת..." rows="2"
+          style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-family:var(--sans);font-size:13px;resize:none;direction:rtl;outline:none"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"></textarea>
+        <button onclick="chatSend()" id="chatSendBtn"
+          style="padding:8px 18px;background:var(--blue);color:#000;font-weight:700;border:none;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap;flex-shrink:0">שלח ↩</button>
+      </div>
+      <div style="text-align:center;margin-top:6px;font-size:10px;color:var(--muted)">Enter לשליחה · Shift+Enter לשורה חדשה</div>
     </div>
   </div>
 
@@ -1157,9 +1183,9 @@ function startDash() {
   initSoundBtn();
   loadSystemStatus();
   loadAppearanceSettings();
+  loadApiKey().then(function(){ startDynamicAnalysis(); });
   refresh();
   setInterval(refresh, REFRESH);
-  startDynamicAnalysis();
   startResolver();
 }
 
@@ -1636,16 +1662,51 @@ function updateAnalysis(items) {
 var DYN_INTERVAL   = 5 * 60 * 1000;
 var dynNextRun     = 0;
 var dynTimerTick   = null;
+var cachedApiKey   = '';  // loaded from SharePoint on startup
+
+async function loadApiKey() {
+  try {
+    var items = await fetchList('TradingSettings', "$filter=Title eq 'AnthropicApiKey'&$top=1");
+    if (items && items.length > 0 && items[0].StatsJSON) {
+      cachedApiKey = items[0].StatsJSON.trim();
+    }
+  } catch(e) {
+    // fallback to localStorage for backward compatibility
+    cachedApiKey = localStorage.getItem('claude_api_key') || '';
+  }
+}
 
 function showKeyModal() {
-  var k = localStorage.getItem('claude_api_key') || '';
-  document.getElementById('dynKeyInput').value = k;
+  document.getElementById('dynKeyInput').value = cachedApiKey;
   document.getElementById('dynKeyModal').style.display = 'flex';
 }
-function saveApiKey() {
+async function saveApiKey() {
   var k = document.getElementById('dynKeyInput').value.trim();
-  if (k) { localStorage.setItem('claude_api_key', k); }
   document.getElementById('dynKeyModal').style.display = 'none';
+  if (!k) return;
+  cachedApiKey = k;
+  try {
+    var items = await fetchList('TradingSettings', "$filter=Title eq 'AnthropicApiKey'&$top=1");
+    var token = await getToken();
+    if (items && items.length > 0) {
+      await fetch(SITE + "/_api/web/lists/getbytitle('TradingSettings')/items(" + items[0].ID + ")", {
+        method: 'POST',
+        headers: { Authorization:'Bearer '+token, Accept:'application/json;odata=verbose',
+          'Content-Type':'application/json;odata=verbose','X-HTTP-Method':'MERGE','IF-MATCH':'*' },
+        body: JSON.stringify({ '__metadata':{'type':'SP.Data.TradingSettingsListItem'}, 'StatsJSON': k })
+      });
+    } else {
+      await fetch(SITE + "/_api/web/lists/getbytitle('TradingSettings')/items", {
+        method: 'POST',
+        headers: { Authorization:'Bearer '+token, Accept:'application/json;odata=verbose',
+          'Content-Type':'application/json;odata=verbose' },
+        body: JSON.stringify({ '__metadata':{'type':'SP.Data.TradingSettingsListItem'}, 'Title':'AnthropicApiKey', 'StatsJSON': k })
+      });
+    }
+  } catch(e) {
+    // fallback: save to localStorage as backup
+    localStorage.setItem('claude_api_key', k);
+  }
   runDynamicAnalysis(true);
 }
 
@@ -1880,7 +1941,7 @@ function updateDynTimer() {
 }
 
 async function runDynamicAnalysis(manual) {
-  var apiKey = localStorage.getItem('claude_api_key');
+  var apiKey = cachedApiKey;
   var panel  = document.getElementById('dynPanel');
   var body   = document.getElementById('dynBody');
   var spin   = document.getElementById('dynSpinner');
@@ -2185,6 +2246,9 @@ function switchTab(tab) {
   document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
   document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
+  var cp = document.getElementById('chatPanel');
+  if (cp) cp.style.display = tab === 'chat' ? 'flex' : 'none';
+  document.getElementById('tabChat').classList.toggle('active', tab === 'chat');
   if (tab === 'analytics') updateAnalytics(allSignals);
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
@@ -2606,7 +2670,7 @@ function renderTradesDashboard(items) {
 
 // ===================== CLAUDE TRADE ANALYSIS =====================
 async function runTradeAnalysis() {
-  var apiKey=localStorage.getItem('claude_api_key');
+  var apiKey=cachedApiKey;
   var body=document.getElementById('tradeAnalysisBody');
   var spin=document.getElementById('tradeAnalysisSpin');
   var status=document.getElementById('tradeAnalysisStatus');
@@ -3195,6 +3259,122 @@ function btUpdate(){
   });
 }
 // ═══════════════════════════════════════════════════════════════════
+
+// ── CHAT WITH CLAUDE ─────────────────────────────────────────────
+var chatHistory = [];
+
+function chatRender() {
+  var el = document.getElementById('chatMessages');
+  if (!el) return;
+  if (chatHistory.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:40px">👋 שלום! אני Claude.<br>שאל אותי על הסיגנלים, השוק, או כל שאלה אחרת.</div>';
+    return;
+  }
+  el.innerHTML = chatHistory.map(function(m) {
+    var isUser = m.role === 'user';
+    var bg  = isUser ? 'rgba(77,166,255,0.12)' : 'var(--surface)';
+    var bc  = isUser ? 'rgba(77,166,255,0.3)'  : 'var(--border)';
+    var align = isUser ? 'flex-end' : 'flex-start';
+    var label = isUser ? '👤 אתה' : '🤖 Claude';
+    var color = isUser ? 'var(--blue)' : 'var(--green)';
+    var text = m.content.replace(/\n/g, '<br>');
+    return '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:85%;align-self:' + align + '">'
+         + '<div style="font-size:10px;color:' + color + ';margin-bottom:3px;font-family:var(--mono)">' + label + '</div>'
+         + '<div style="background:' + bg + ';border:1px solid ' + bc + ';border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.6;color:var(--text);white-space:pre-wrap;direction:auto">' + text + '</div>'
+         + '</div>';
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function chatBuildSystemPrompt() {
+  var recent = (allSignals || []).slice(0, 10);
+  var longs  = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='LONG'; }).length;
+  var shorts = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='SHORT'; }).length;
+  var takes  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='TAKE'; }).length;
+  var skips  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='SKIP'; }).length;
+  var avgScore = recent.length ? (recent.reduce(function(a,s){ return a + parseFloat(s.ClaudeScore||0); }, 0) / recent.length).toFixed(1) : 'N/A';
+  return 'אתה עוזר מסחר חכם המשולב בדשבורד MNQ של המשתמש.'
+    + ' הדשבורד מציג סיגנלים אוטומטיים על MNQ (Micro E-mini Nasdaq-100 Futures).'
+    + ' סיגנלים מגיעים מ-TradingView ומנותחים ע"י Claude Haiku.'
+    + '\n\nנתוני שוק עדכניים (10 סיגנלים אחרונים):'
+    + '\n- LONG: ' + longs + ' | SHORT: ' + shorts
+    + '\n- TAKE: ' + takes + ' | SKIP: ' + skips
+    + '\n- ציון ממוצע: ' + avgScore
+    + '\n\nענה בעברית אלא אם המשתמש שואל באנגלית. היה תמציתי וממוקד.';
+}
+
+function chatInjectContext() {
+  var recent = (allSignals || []).slice(0, 5);
+  var summary = recent.map(function(s, i) {
+    return (i+1) + '. ' + (s.Direction||'?') + ' | ציון:' + (s.ClaudeScore||'?') + ' | Verdict:' + (s.ClaudeVerdict||'?') + ' | ' + (s.SignalTime||'').substring(0,16);
+  }).join('\n');
+  var msg = '📊 נתוני שוק נוכחיים (5 סיגנלים אחרונים):\n' + summary;
+  document.getElementById('chatInput').value = msg;
+  document.getElementById('chatInput').focus();
+}
+
+function chatClearHistory() {
+  chatHistory = [];
+  chatRender();
+}
+
+async function chatSend() {
+  var input = document.getElementById('chatInput');
+  var btn   = document.getElementById('chatSendBtn');
+  var text  = (input.value || '').trim();
+  if (!text) return;
+  if (!cachedApiKey) {
+    showKeyModal();
+    return;
+  }
+  input.value = '';
+  chatHistory.push({ role: 'user', content: text });
+  chatRender();
+  btn.disabled = true;
+  btn.textContent = '⟳';
+
+  // Add typing indicator
+  var el = document.getElementById('chatMessages');
+  var typingDiv = document.createElement('div');
+  typingDiv.id = 'chatTyping';
+  typingDiv.style.cssText = 'color:var(--muted);font-size:12px;font-family:var(--mono);padding:4px 8px';
+  typingDiv.textContent = '🤖 Claude מקליד...';
+  el.appendChild(typingDiv);
+  el.scrollTop = el.scrollHeight;
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': cachedApiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: chatBuildSystemPrompt(),
+        messages: chatHistory
+      })
+    });
+    var data = await resp.json();
+    var reply = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '⚠️ שגיאה בתשובה';
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    chatHistory.push({ role: 'assistant', content: '⚠️ שגיאת חיבור: ' + e.message });
+  }
+
+  var td = document.getElementById('chatTyping');
+  if (td) td.remove();
+  btn.disabled = false;
+  btn.textContent = 'שלח ↩';
+  chatRender();
+}
+
+// Initialize chat panel on first view
+document.addEventListener('DOMContentLoaded', function(){ chatRender(); });
+// ─────────────────────────────────────────────────────────────────
 
 </script>
 </body>
