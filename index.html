@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0e14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MNQ Dashboard">
 <title>MNQ Trading Dashboard</title>
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js">
 </script>
@@ -62,7 +66,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .filter-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .date-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 10px;border-radius:5px;cursor:pointer}
 .date-input:focus{outline:none;border-color:var(--blue)}
-.quick-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .2s}
+.quick-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .quick-btn:hover,.quick-btn.active{background:var(--blue);border-color:var(--blue);color:#000;font-weight:600}
 .filter-count{margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
 
@@ -120,7 +124,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .badge{background:var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:10px}
 
 /* SIGNAL ROW */
-.sig-row{border-bottom:1px solid var(--border);padding:10px 16px}
+.sig-row{border-bottom:1px solid var(--border);padding:10px 16px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 .sig-row:hover{background:var(--surface2)}
 .sig-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .sig-left{display:flex;align-items:center;gap:6px}
@@ -225,51 +229,110 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
-  /* Header */
-  header{padding:10px 12px}
-  .logo{font-size:13px;letter-spacing:1px}
-  .logout-btn{font-size:10px;padding:3px 8px}
+  /* Header — compact */
+  header { padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
+  .logo { font-size: 13px; letter-spacing: 1px; }
+  .logout-btn { font-size: 10px; padding: 3px 8px; }
+  header > div:last-child { gap: 8px; flex-wrap: wrap; }
+  #lastUpdate, #lastSeenBadge { display: none; }
+  #marketStatusBadge { font-size: 10px; padding: 2px 6px; }
 
-  /* Filter bar */
-  .filter-bar{padding:8px 12px;gap:6px}
-  .date-input{font-size:11px;padding:4px 8px;width:100%}
-  .quick-btn{font-size:10px;padding:4px 10px}
-  .filter-count{width:100%;margin-right:0;margin-top:2px}
+  /* Filter bar — scrollable row, no wrap */
+  .filter-bar {
+    padding: 6px 10px;
+    gap: 5px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-label { display: none; }
+  .date-input { font-size: 11px; padding: 4px 6px; min-width: 120px; flex-shrink: 0; }
+  .quick-btn { font-size: 10px; padding: 4px 9px; white-space: nowrap; flex-shrink: 0; }
+  .filter-count { display: none; }
 
-  /* Inline stats - 2x2 on mobile */
-  .inline-stats{grid-template-columns:repeat(2,1fr)}
-  .i-stat-value{font-size:14px}
+  /* Tab row — scrollable */
+  .filter-bar > div:last-child {
+    display: flex !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 5px;
+    flex-shrink: 0;
+    scrollbar-width: none;
+  }
+  .filter-bar > div:last-child::-webkit-scrollbar { display: none; }
 
-  /* Analysis bar - stack vertically */
-  .analysis-bar{grid-template-columns:1fr}
-  .analysis-panel{padding:10px 12px}
-  .chart-wrap{height:80px}
-  .analysis-stats{grid-template-columns:repeat(3,1fr)}
+  /* Analysis bar — stack vertically, hide dynPanel */
+  .analysis-bar { grid-template-columns: 1fr; gap: 8px; padding: 8px 10px; }
+  .analysis-panel { padding: 10px 12px; }
+  .chart-wrap { height: 80px; }
+  .analysis-stats { grid-template-columns: repeat(3, 1fr); }
+  #dynPanel { display: none !important; } /* hide Claude AI panel on mobile — use Chat tab */
 
-  /* Main - stack panels vertically */
-  .main{grid-template-columns:1fr;height:auto;min-height:0;overflow:visible}
-  .panel{border-left:none;border-top:1px solid var(--border);overflow-y:visible;max-height:400px;height:auto}
+  /* Main area — single column */
+  .main { grid-template-columns: 1fr; height: auto; min-height: 0; overflow: visible; }
+  .panel {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    overflow-y: visible;
+    max-height: none;
+    height: auto;
+  }
+  .panel-header { position: sticky; top: 0; z-index: 10; }
 
-  /* Signal rows */
-  .sig-row{padding:10px 12px}
-  .scan-row{padding:10px 12px}
+  /* Signal / scan rows */
+  .sig-row { padding: 10px 12px; }
+  .scan-row { padding: 10px 12px; }
 
-  /* Popup - full width on mobile */
-  .popup{width:calc(100vw - 24px);max-width:380px}
-  .overlay{align-items:flex-end;padding-bottom:0}
-  .overlay.show .popup{border-radius:12px 12px 0 0}
+  /* Inline stats — 2x2 */
+  .inline-stats { grid-template-columns: repeat(2, 1fr); }
+  .i-stat-value { font-size: 14px; }
 
-  /* Panel header sticky */
-  .panel-header{position:sticky;top:0;z-index:10}
+  /* Popup — slide up from bottom */
+  .popup { width: 100vw; max-width: 100vw; border-radius: 0; margin: 0; }
+  .overlay { align-items: flex-end; padding: 0; }
+  .overlay.show .popup { border-radius: 16px 16px 0 0; }
+  .popup-body { max-height: 65vh; overflow-y: auto; }
+
+  /* Analytics panel */
+  #analyticsPanel { padding: 10px 12px; }
+  #analyticsPanel canvas { max-height: 160px; }
+
+  /* Trades */
+  .trades-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .trades-charts-row { grid-template-columns: 1fr; }
+  .trades-table-wrap { overflow-x: auto; }
+  .trades-filter-row { flex-wrap: wrap; gap: 5px; }
+
+  /* Settings */
+  #settingsPanel { padding: 12px; }
+  #settingsPanel > div { max-width: 100% !important; }
+
+  /* Chat panel */
+  #chatPanel { height: calc(100vh - 170px); }
+  #chatMessages { padding: 10px 12px; }
+  #chatPanel textarea { font-size: 14px; }
+
+  /* Backtest */
+  #backtestPanel { padding: 10px 12px; }
+  .bt-grid { grid-template-columns: 1fr !important; }
+
+  /* Skip streak banner */
+  #skipStreakBanner { padding: 8px 12px; font-size: 11px; }
 }
 
 @media (max-width: 480px) {
-  .logo{font-size:12px}
-  .i-stat-value{font-size:13px}
-  .i-stat-label{font-size:8px}
-  .quick-btn{font-size:10px;padding:4px 8px}
-  .analysis-title{font-size:10px}
-  .a-stat-val{font-size:12px}
+  .logo { font-size: 11px; }
+  .sys-btn { font-size: 10px; padding: 4px 8px; }
+  .i-stat-value { font-size: 13px; }
+  .i-stat-label { font-size: 8px; }
+  .analysis-title { font-size: 10px; }
+  .a-stat-val { font-size: 12px; }
+  .sig-row { font-size: 11px; }
+  /* Stack header buttons */
+  header > div:last-child { gap: 5px; }
+  .theme-btn { font-size: 14px; padding: 3px 5px; }
 }
 .setting-row{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
 .setting-label{font-size:12px;color:var(--muted)}
