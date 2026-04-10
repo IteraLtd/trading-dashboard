@@ -237,7 +237,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   #lastUpdate, #lastSeenBadge { display: none; }
   #marketStatusBadge { font-size: 10px; padding: 2px 6px; }
 
-  /* Filter bar — scrollable row, no wrap */
+  /* Show mobile bottom nav */
+  #mobileNav { display: flex !important; }
+
+  /* Hide desktop tab buttons row */
+  .filter-bar > div:last-child { display: none !important; }
+
+  /* Filter bar — scrollable, no tab row */
   .filter-bar {
     padding: 6px 10px;
     gap: 5px;
@@ -252,23 +258,15 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .quick-btn { font-size: 10px; padding: 4px 9px; white-space: nowrap; flex-shrink: 0; }
   .filter-count { display: none; }
 
-  /* Tab row — scrollable */
-  .filter-bar > div:last-child {
-    display: flex !important;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 5px;
-    flex-shrink: 0;
-    scrollbar-width: none;
-  }
-  .filter-bar > div:last-child::-webkit-scrollbar { display: none; }
+  /* Add bottom padding so content isn't hidden behind nav bar */
+  #dashboard { padding-bottom: 60px; }
 
   /* Analysis bar — stack vertically, hide dynPanel */
   .analysis-bar { grid-template-columns: 1fr; gap: 8px; padding: 8px 10px; }
   .analysis-panel { padding: 10px 12px; }
   .chart-wrap { height: 80px; }
   .analysis-stats { grid-template-columns: repeat(3, 1fr); }
-  #dynPanel { display: none !important; } /* hide Claude AI panel on mobile — use Chat tab */
+  #dynPanel { display: none !important; }
 
   /* Main area — single column */
   .main { grid-template-columns: 1fr; height: auto; min-height: 0; overflow: visible; }
@@ -334,8 +332,41 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   header > div:last-child { gap: 5px; }
   .theme-btn { font-size: 14px; padding: 3px 5px; }
 }
+/* Mobile bottom nav bar */
+#mobileNav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: none;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: stretch;
+  height: 60px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mnav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 2px;
+  color: var(--muted);
+  font-family: var(--sans);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .15s;
+}
+.mnav-btn.active { color: var(--blue); }
+.mnav-icon { font-size: 18px; line-height: 1; }
+.mnav-label { font-size: 9px; font-family: var(--mono); letter-spacing: 0.3px; }
 .setting-row{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
-.setting-label{font-size:12px;color:var(--muted)}
 .setting-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue)}
 .setting-slider{width:100%;accent-color:var(--blue);cursor:pointer}
 .preset-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:12px;color:var(--fg);cursor:pointer;transition:all .15s}
@@ -412,6 +443,22 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <button class="quick-btn" id="tabTrades" onclick="switchTab('trades')">📋 עסקאות</button>
       <button class="quick-btn" id="tabChat" onclick="switchTab('chat')">💬 צ'אט</button>
     </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAV BAR (only visible on mobile) -->
+  <nav id="mobileNav" style="display:none">
+    <button class="mnav-btn active" id="mTabSignals"   onclick="switchTab('signals')">  <span class="mnav-icon">📡</span><span class="mnav-label">סיגנלים</span></button>
+    <button class="mnav-btn"        id="mTabAnalytics" onclick="switchTab('analytics')"><span class="mnav-icon">📈</span><span class="mnav-label">אנליטיקס</span></button>
+    <button class="mnav-btn"        id="mTabTrades"    onclick="switchTab('trades')">   <span class="mnav-icon">📋</span><span class="mnav-label">עסקאות</span></button>
+    <button class="mnav-btn"        id="mTabChat"      onclick="switchTab('chat')">     <span class="mnav-icon">💬</span><span class="mnav-label">צ'אט</span></button>
+    <button class="mnav-btn"        id="mTabMore"      onclick="toggleMobileMore()">    <span class="mnav-icon">⋯</span><span class="mnav-label">עוד</span></button>
+  </nav>
+
+  <!-- MOBILE MORE MENU -->
+  <div id="mobileMore" style="display:none;position:fixed;bottom:65px;left:0;right:0;z-index:1100;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;flex-wrap:wrap;gap:8px;justify-content:center">
+    <button class="quick-btn" id="mTabBacktest" onclick="switchTab('backtest');closeMobileMore()">🔬 Backtest</button>
+    <button class="quick-btn" id="mTabLegend"   onclick="switchTab('legend');closeMobileMore()">📖 מקרא</button>
+    <button class="quick-btn" id="mTabSettings" onclick="switchTab('settings');closeMobileMore()">⚙️ כיוונון</button>
   </div>
 
 
@@ -2322,6 +2369,8 @@ function switchTab(tab) {
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
   if (tab === 'trades')    renderTradesDashboard(filteredSignals.length ? filteredSignals : allSignals);
+  syncMobileNav(tab);
+  closeMobileMore();
 }
 
 function updateAnalytics(items) {
@@ -3440,6 +3489,31 @@ async function chatSend() {
   btn.disabled = false;
   btn.textContent = 'שלח ↩';
   chatRender();
+}
+
+function toggleMobileMore() {
+  var m = document.getElementById('mobileMore');
+  m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+}
+function closeMobileMore() {
+  document.getElementById('mobileMore').style.display = 'none';
+}
+
+function syncMobileNav(tab) {
+  var map = { signals:'mTabSignals', analytics:'mTabAnalytics', trades:'mTabTrades', chat:'mTabChat' };
+  ['mTabSignals','mTabAnalytics','mTabTrades','mTabChat','mTabMore'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  var activeId = map[tab];
+  if (activeId) {
+    var el = document.getElementById(activeId);
+    if (el) el.classList.add('active');
+  } else {
+    // backtest / legend / settings → highlight "עוד"
+    var more = document.getElementById('mTabMore');
+    if (more) more.classList.add('active');
+  }
 }
 
 // Initialize chat panel on first view
