@@ -1346,14 +1346,17 @@ function renderSignals(items) {
   if (!items.length) { el.innerHTML = '<div class="empty">אין סיגנלים עדיין</div>'; return; }
 
   if (!isFirst && lastSigId && items[0].ID !== lastSigId) {
-    showPopup(items[0]);
-    if ((items[0].ClaudeVerdict||'').toUpperCase() === 'TAKE') {
+    var isTake = (items[0].ClaudeVerdict||'').toUpperCase() === 'TAKE';
+    if (isTake) {
+      showPopup(items[0]);
       playSignalSound(items[0].Direction, items[0].ClaudeVerdict);
-    }
-    if (Notification.permission === 'granted') {
-      new Notification('🎯 ' + (items[0].ClaudeVerdict||'') + ': ' + (items[0].Direction||'') + ' ' + (items[0].Ticker||''), {
-        body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'')
-      });
+      if (Notification.permission === 'granted') {
+        var dir = (items[0].Direction||'').toUpperCase();
+        var icon = dir === 'LONG' ? '🟢' : '🔴';
+        new Notification(icon + ' TAKE: ' + dir + ' ' + (items[0].Ticker||''), {
+          body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'') + ' | ציון: ' + (items[0].ClaudeScore||'')
+        });
+      }
     }
   }
   lastSigId = items[0].ID;
