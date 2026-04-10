@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0e14">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MNQ Dashboard">
 <title>MNQ Trading Dashboard</title>
@@ -2280,23 +2280,27 @@ async function refresh() {
     var scans = await fetchList('TradingScans', '$orderby=ScanTime%20desc&$top=10');
     loadTradingStats();
     loadSystemSettings();
-    if (scans.length > 0) { console.log('SCAN KEYS:', JSON.stringify(Object.keys(scans[0]))); console.log('SCAN DATA:', JSON.stringify(scans[0])); }
-    if (allSignals.length > 0) console.log('SignalTime raw:', allSignals[0].SignalTime);
-    if (allSignals.length > 0) console.log('SIGNAL KEYS:', JSON.stringify(Object.keys(allSignals[0])));
-    if (allSignals.length > 0) console.log('SIGNAL TP1:', allSignals[0].TP1, '| TP2:', allSignals[0].TP2, '| Entry:', allSignals[0].Entry, '| SL:', allSignals[0].SL);
     applyFilter();
     renderScans(scans);
     dot.className = 'dot';
     document.getElementById('statusText').textContent = 'מחובר';
     var now = new Date();
-    document.getElementById('lastUpdate').textContent = 'עדכון: ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('lastUpdate').textContent = 'עדכון: ' + timeStr;
+    // Show last signal time for quick diagnosis
+    if (allSignals.length > 0) {
+      var lastSigTime = new Date(allSignals[0].SignalTime);
+      var diffMin = Math.round((now - lastSigTime) / 60000);
+      var sigStr = diffMin < 60 ? diffMin + ' דק\'' : Math.round(diffMin/60) + ' שע\'';
+      document.getElementById('lastUpdate').textContent = 'עדכון: ' + timeStr + ' | סיגנל: לפני ' + sigStr;
+    }
     window._lastDataTime = now.toISOString();
     updateMarketStatus();
     isFirst = false;
   } catch(e) {
     dot.className = 'dot err';
-    document.getElementById('statusText').textContent = 'שגיאה';
-    console.error(e);
+    document.getElementById('statusText').textContent = 'שגיאה: ' + (e.message || e.errorCode || 'לא ידוע');
+    console.error('refresh error:', e);
   }
 }
 
