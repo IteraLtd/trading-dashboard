@@ -1519,7 +1519,7 @@ function showPopup(item) {
   document.getElementById('overlay').classList.add('show');
 }
 
-var allSignals = [], dirChart = null;
+var allSignals = [], filteredSignals = [], dirChart = null;
 var verdictFilter = null;
 var dirFilter = null;
 
@@ -1602,9 +1602,12 @@ function applyFilter() {
     filtered = filtered.filter(function(it){ return (it.Direction||'').toLowerCase() === dirFilter; });
   }
   document.getElementById('filterCount').textContent = filtered.length + ' סיגנלים';
+  filteredSignals = filtered;
   renderSignals(filtered);
   updateStats(filtered);
   updateAnalysis(filtered);
+  if (currentTab === 'analytics') updateAnalytics(filtered);
+  if (currentTab === 'trades')    renderTradesDashboard(filtered);
 }
 
 function updateAnalysis(items) {
@@ -2232,7 +2235,7 @@ function toggleTheme() {
     var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     return document.getElementById('btnWeek').classList.contains('active') ? ds >= dateVal : ds === dateVal;
   }));
-  if (currentTab === 'analytics') updateAnalytics(allSignals);
+  if (currentTab === 'analytics') updateAnalytics(filteredSignals.length ? filteredSignals : allSignals);
 }
 
 function switchTab(tab) {
@@ -2252,10 +2255,10 @@ function switchTab(tab) {
   var cp = document.getElementById('chatPanel');
   if (cp) cp.style.display = tab === 'chat' ? 'flex' : 'none';
   document.getElementById('tabChat').classList.toggle('active', tab === 'chat');
-  if (tab === 'analytics') updateAnalytics(allSignals);
+  if (tab === 'analytics') updateAnalytics(filteredSignals.length ? filteredSignals : allSignals);
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
-  if (tab === 'trades')    renderTradesDashboard(allSignals);
+  if (tab === 'trades')    renderTradesDashboard(filteredSignals.length ? filteredSignals : allSignals);
 }
 
 function updateAnalytics(items) {
@@ -2550,7 +2553,7 @@ function setTradeFilter(f) {
   });
   var btnId = !f?'trAll':f==='win'?'trWin':f==='loss'?'trLoss':f==='pending'?'trPend':f==='long'?'trLong2':'trShort2';
   var btn=document.getElementById(btnId); if(btn) btn.classList.add('active');
-  renderTradesDashboard(allSignals);
+  renderTradesDashboard(filteredSignals.length ? filteredSignals : allSignals);
 }
 
 function renderTradesDashboard(items) {
