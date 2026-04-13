@@ -1759,13 +1759,13 @@ async function resolveResults(manual) {
         return !(isWin(r) || isLoss(r) || r === 'BE');
       }).length;
       var sample = allSignals[0] || {};
-      var dbg = 'Total: ' + total + ' | Not resolved: ' + notResolved
-        + ' | Entry[0]: [' + sample.Entry + '] SL[0]: [' + sample.SL + '] TP1[0]: [' + (sample['OData__x0054_P1']||sample.TP1||'null') + ']'
-        + ' | Result[0]: [' + sample.Result + ']';
-      console.log('[Resolver DEBUG]', dbg);
-      console.log('[Resolver DEBUG] Keys:', Object.keys(sample).join(', '));
+      var keys = Object.keys(sample).filter(function(k){ return k.indexOf('__metadata')===- 1 && k.indexOf('odata')===- 1; }).join(', ');
+      var dbg = 'Total:' + total + ' Pending:' + notResolved
+        + ' | Entry:[' + sample.Entry + '] SL:[' + sample.SL + '] TP1:[' + (sample['OData__x0054_P1']||sample.TP1||'null') + ']'
+        + ' | Result:[' + sample.Result + ']'
+        + '\nKeys: ' + keys;
       var el=document.getElementById('resolverLastRun');
-      if(el) el.textContent='⚠ ' + dbg;
+      if(el) { el.style.whiteSpace='pre-wrap'; el.style.maxWidth='100%'; el.style.wordBreak='break-all'; el.textContent='⚠ ' + dbg; }
     }
     resolveNextRun = Date.now() + RESOLVE_INTERVAL;
     return;
