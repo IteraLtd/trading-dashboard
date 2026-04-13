@@ -1740,33 +1740,17 @@ function yahooToCandles(result) {
 async function resolveResults(manual) {
   if (!allSignals || !allSignals.length) return;
 
-  // Find PENDING signals with valid price levels
+  // Find PENDING signals with valid price levels (Entry OR SL+TP1 sufficient)
   var pending = allSignals.filter(function(it) {
     var r = (it.Result||'').toUpperCase();
     if (isWin(r) || isLoss(r) || r === 'BE') return false;
-    var entry = parseFloat(it.Entry);
     var sl = parseFloat(it.SL);
     var tp1 = parseFloat(it['OData__x0054_P1'] || it.TP1);
-    return !isNaN(entry) && !isNaN(sl) && !isNaN(tp1) && entry > 0;
+    return !isNaN(sl) && !isNaN(tp1) && sl > 0 && tp1 > 0;
   });
 
   if (!pending.length) {
-    if (manual) {
-      // Debug: show WHY no signals qualify
-      var total = allSignals.length;
-      var notResolved = allSignals.filter(function(it) {
-        var r = (it.Result||'').toUpperCase();
-        return !(isWin(r) || isLoss(r) || r === 'BE');
-      }).length;
-      var sample = allSignals[0] || {};
-      var keys = Object.keys(sample).filter(function(k){ return k.indexOf('__metadata')===- 1 && k.indexOf('odata')===- 1; }).join(', ');
-      var dbg = 'Total:' + total + ' Pending:' + notResolved
-        + ' | Entry:[' + sample.Entry + '] SL:[' + sample.SL + '] TP1:[' + (sample['OData__x0054_P1']||sample.TP1||'null') + ']'
-        + ' | Result:[' + sample.Result + ']'
-        + '\nKeys: ' + keys;
-      var el=document.getElementById('resolverLastRun');
-      if(el) { el.style.whiteSpace='pre-wrap'; el.style.maxWidth='100%'; el.style.wordBreak='break-all'; el.textContent='⚠ ' + dbg; }
-    }
+    if (manual) { var el=document.getElementById('resolverLastRun'); if(el) el.textContent='אין סיגנלים PENDING עם SL+TP1'; }
     resolveNextRun = Date.now() + RESOLVE_INTERVAL;
     return;
   }
@@ -1801,6 +1785,11 @@ async function resolveResults(manual) {
       var tp1 = parseFloat(sig['OData__x0054_P1'] || sig.TP1);
       var tp2 = parseFloat(sig['OData__x0054_P2'] || sig.TP2);
       if (isNaN(tp2)) tp2 = 0;
+      // If Entry is missing, estimate from SL+TP1 (SL is 1.5*ATR away, TP1 is 1*RR away)
+      // For LONG: entry is above SL, below TP1. For SHORT: entry is below SL, above TP1.
+      if (isNaN(entry) || entry <= 0) {
+        entry = (sl + tp1) / 2;  // rough midpoint — good enough for BE trailing
+      }
 
       var tp1Hit = false;
       var result = null;
