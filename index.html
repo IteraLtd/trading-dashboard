@@ -113,8 +113,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .i-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
 .i-stat-value{font-family:var(--mono);font-size:16px;font-weight:600}
 
-.main{display:grid;grid-template-columns:1fr 340px;min-height:400px}
-.panel{border-left:1px solid var(--border)}
+.main{display:grid;grid-template-columns:1fr 340px;min-height:400px;direction:rtl}
+#skipStreakBanner{grid-column:1/-1}
+.panel{border-left:1px solid var(--border);min-width:0;overflow:hidden}
 .panel-header{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .panel-title{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);letter-spacing:1px}
 .badge{background:var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:10px}
@@ -137,6 +138,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .r-win{background:rgba(0,208,132,.2);color:var(--green)}
 .r-loss{background:rgba(255,69,96,.2);color:var(--red)}
 .r-pending{background:rgba(74,96,128,.2);color:var(--muted)}
+.r-notrade{background:transparent;color:var(--muted);opacity:.55;font-style:italic}
 .sig-time{font-family:var(--mono);font-size:11px;color:var(--blue)}
 .score-txt{font-family:var(--mono);font-size:11px;color:var(--yellow)}
 
@@ -1321,17 +1323,35 @@ function renderSignals(items) {
   if (!items.length) { el.innerHTML = '<div class="empty">אין סיגנלים עדיין</div>'; return; }
 
   if (!isFirst && lastSigId && items[0].ID !== lastSigId) {
-    showPopup(items[0]);
-    if ((items[0].ClaudeVerdict||'').toUpperCase() === 'TAKE') {
+    var _newVerdict = (items[0].ClaudeVerdict||'').toUpperCase();
+    // Only TAKE signals trigger popup + sound + browser notification.
+    // SKIP/WAIT/NEUTRAL are informational only — no interruption.
+    if (_newVerdict === 'TAKE') {
+      showPopup(items[0]);
       playSignalSound(items[0].Direction, items[0].ClaudeVerdict);
-    }
-    if (Notification.permission === 'granted') {
-      new Notification('🎯 ' + (items[0].ClaudeVerdict||'') + ': ' + (items[0].Direction||'') + ' ' + (items[0].Ticker||''), {
-        body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'')
-      });
+      if (Notification.permission === 'granted') {
+        new Notification('🎯 TAKE: ' + (items[0].Direction||'') + ' ' + (items[0].Ticker||''), {
+          body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'')
+        });
+      }
     }
   }
   lastSigId = items[0].ID;
+
+  // === ONE PENDING AT A TIME ===
+  // Real trading can't hold two concurrent positions. Find the newest TAKE
+  // that is still PENDING — that's the only "live" trade. Any older PENDING
+  // TAKE is displayed as "SUPERSEDED" (closed by newer signal). Non-TAKE
+  // verdicts (SKIP/WAIT/NEUTRAL) never represent real trades.
+  var _latestActivePendingTakeId = null;
+  for (var _i = 0; _i < items.length; _i++) {
+    var _v = (items[_i].ClaudeVerdict||'').toUpperCase();
+    var _r = (items[_i].Result||'PENDING').toUpperCase();
+    if (_v === 'TAKE' && _r === 'PENDING') {
+      _latestActivePendingTakeId = items[_i].ID;
+      break;  // items[] is sorted newest-first, so first match = latest
+    }
+  }
 
   // Calculate max total range across all signals for proportional bar scaling
   var maxRange = 0;
@@ -1355,8 +1375,17 @@ function renderSignals(items) {
     var tp2 = it['OData__x0054_P2'] || '';
     var entry = it.Entry || '';
     var sl = it.SL || '';
+    // Apply "one pending at a time" display overrides — data in SharePoint
+    // stays intact, only the UI shows the real trading state.
+    if (r === 'PENDING') {
+      if (v !== 'take') {
+        r = 'NO_TRADE';  // non-TAKE verdicts are analysis only, never real trades
+      } else if (it.ID !== _latestActivePendingTakeId) {
+        r = 'SUPERSEDED';  // older TAKE pending — closed by a newer signal
+      }
+    }
     var vClass = v === 'take' ? 'v-take' : v === 'skip' ? 'v-skip' : v === 'wait' ? 'v-wait' : 'v-neutral';
-    var rClass = isWin(r) ? 'r-win' : isLoss(r) ? 'r-loss' : 'r-pending';
+    var rClass = isWin(r) ? 'r-win' : isLoss(r) ? 'r-loss' : (r === 'NO_TRADE' || r === 'SUPERSEDED') ? 'r-notrade' : 'r-pending';
     var dClass = d === 'long' ? 'dir-long' : 'dir-short';
 
     // Extract signal type and reason from ClaudeAnalysis JSON
@@ -1367,23 +1396,21 @@ function renderSignals(items) {
 
     html += '<div class="sig-row" onclick="showPopupById(' + i + ')">';
 
-    // === SINGLE HEADER ROW — RTL logical flow: time → direction → score → sigType → verdict → result ===
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">';
-    // 1. Time (rightmost — first read in RTL)
-    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:90px">' + fmtTime(it.SignalTime) + '</span>';
-    if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
-    // 2. Direction (what is the trade)
-    html += '<span class="dir-badge ' + dClass + '">' + (d === 'long' ? '▲' : '▼') + ' ' + (it.Direction||'') + '</span>';
-    // 3. Score (quality)
-    html += '<span class="score-txt" style="font-size:12px">⭐' + (it.ClaudeScore||'—') + '</span>';
-    // 4. Signal type (pattern detected)
-    if (sigType) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);padding:1px 6px;border-radius:3px" title="' + sigReason + '">' + sigType + '</span>';
-    // spacer
-    html += '<span style="flex:1"></span>';
-    // 5. Verdict (AI decision)
-    html += '<span class="verdict-badge ' + vClass + '">' + (it.ClaudeVerdict||'NEUTRAL') + '</span>';
-    // 6. Result (final outcome — leftmost, last in logical flow)
-    html += '<span class="res-badge ' + rClass + '">' + resultLabel(r) + '</span>';
+    // === HEADER — two groups separated by justify-content:space-between ===
+    // RTL right group: time → bars → direction → score → sigType
+    // RTL left group: verdict → result
+    html += '<div class="sig-top" style="flex-wrap:wrap;gap:6px">';
+    html += '<div class="sig-right" style="flex-wrap:wrap;gap:6px;min-width:0">';
+    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap">' + fmtTime(it.SignalTime) + '</span>';
+    if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px;white-space:nowrap" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
+    html += '<span class="dir-badge ' + dClass + '" style="white-space:nowrap">' + (d === 'long' ? '▲' : '▼') + ' ' + (it.Direction||'') + '</span>';
+    html += '<span class="score-txt" style="font-size:12px;white-space:nowrap">⭐' + (it.ClaudeScore||'—') + '</span>';
+    if (sigType) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);padding:1px 6px;border-radius:3px;white-space:nowrap" title="' + sigReason + '">' + sigType + '</span>';
+    html += '</div>';
+    html += '<div class="sig-left" style="flex-wrap:wrap;gap:6px">';
+    html += '<span class="verdict-badge ' + vClass + '" style="white-space:nowrap">' + (it.ClaudeVerdict||'NEUTRAL') + '</span>';
+    html += '<span class="res-badge ' + rClass + '" style="white-space:nowrap">' + resultLabel(r) + '</span>';
+    html += '</div>';
     html += '</div>';
 
     // Price bar
@@ -1505,14 +1532,16 @@ function isWin(r) { return r === 'WIN' || r === 'TP1_HIT' || r === 'TP2_HIT'; }
 function isLoss(r) { return r === 'LOSS' || r === 'SL_HIT'; }
 function isBE(r) { return r === 'BE'; }
 function resultLabel(r) {
-  if (r === 'TP1_HIT') return '✅ TP1';
-  if (r === 'TP2_HIT') return '✅ TP2';
-  if (r === 'SL_HIT')  return '❌ SL';
-  if (r === 'BE')      return '↔ BE';
-  if (r === 'WIN')     return '✅ WIN';
-  if (r === 'LOSS')    return '❌ LOSS';
-  if (r === 'PENDING') return '⏳ PENDING';
-  if (r === 'SIGNAL')  return '📡';
+  if (r === 'TP1_HIT')   return '✅ TP1';
+  if (r === 'TP2_HIT')   return '✅ TP2';
+  if (r === 'SL_HIT')    return '❌ SL';
+  if (r === 'BE')        return '↔ BE';
+  if (r === 'WIN')       return '✅ WIN';
+  if (r === 'LOSS')      return '❌ LOSS';
+  if (r === 'PENDING')   return '⏳ PENDING';
+  if (r === 'NO_TRADE')  return '—';
+  if (r === 'SUPERSEDED') return '⊘ הוחלף';
+  if (r === 'SIGNAL')    return '📡';
   return r;
 }
 
