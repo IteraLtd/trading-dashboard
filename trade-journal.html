@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MNQ Trade Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<style>
+:root {
+  --bg:#0a0e14; --surface:#0f1520; --surface2:#161d2e; --border:#1e2d42;
+  --text:#c8d4e8; --muted:#4a6080; --green:#00d084; --red:#ff4560;
+  --yellow:#ffa500; --blue:#4da6ff; --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+a{color:var(--blue);text-decoration:none}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,select,textarea{font-family:inherit;font-size:13px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:7px 10px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:60px}
+
+/* LOGIN */
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px}
+.login-logo{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--blue);letter-spacing:2px}
+.login-sub{color:var(--muted);font-size:13px}
+.btn-login{background:var(--blue);color:#0a0e14;font-weight:700;padding:11px 32px;border-radius:6px;font-size:14px;letter-spacing:1px;transition:opacity .2s}
+.btn-login:hover{opacity:.85}
+
+/* HEADER */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:12px;height:50px;flex-shrink:0}
+.hdr-title{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue);letter-spacing:1px}
+.hdr-sep{flex:1}
+.hdr-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:5px 12px;font-size:12px;transition:background .15s}
+.hdr-btn:hover{background:var(--border)}
+.hdr-btn.primary{background:var(--blue);color:#0a0e14;font-weight:700;border-color:var(--blue)}
+.hdr-btn.primary:hover{opacity:.85}
+
+/* FILTER BAR */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.filter-bar select,.filter-bar input[type=date]{height:30px;padding:0 8px;font-size:12px;border-radius:4px}
+.qbtn{background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:4px 10px;font-size:11px;transition:all .15s}
+.qbtn:hover,.qbtn.active{background:rgba(77,166,255,.15);color:var(--blue);border-color:rgba(77,166,255,.4)}
+.stat-pill{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:10px;margin-right:2px}
+.sp-win{background:rgba(0,208,132,.12);color:var(--green);border:1px solid rgba(0,208,132,.3)}
+.sp-loss{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.3)}
+.sp-open{background:rgba(77,166,255,.1);color:var(--blue);border:1px solid rgba(77,166,255,.2)}
+
+/* LAYOUT */
+.jlayout{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 108px);overflow:hidden}
+.jpanel{border-left:1px solid var(--border);overflow-y:auto;height:100%}
+.jpanel-hdr{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between}
+.jpanel-title{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:1px}
+
+/* TRADE CARD */
+.trade-card{border-bottom:1px solid var(--border);padding:12px 16px;cursor:pointer;transition:background .12s;position:relative}
+.trade-card:hover{background:var(--surface2)}
+.trade-card.selected{background:rgba(77,166,255,.05);border-right:3px solid var(--blue)}
+.tc-top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.tc-dir{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px}
+.tc-long{background:rgba(0,208,132,.15);color:var(--green);border:1px solid rgba(0,208,132,.3)}
+.tc-short{background:rgba(255,69,96,.15);color:var(--red);border:1px solid rgba(255,69,96,.3)}
+.tc-type{font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,.08);border:1px solid rgba(77,166,255,.2);padding:1px 6px;border-radius:3px}
+.tc-time{font-size:11px;color:var(--muted);margin-right:auto}
+.tc-grade{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 6px;border-radius:3px}
+.grade-a{background:rgba(0,208,132,.2);color:var(--green)}
+.grade-b{background:rgba(77,166,255,.2);color:var(--blue)}
+.grade-c{background:rgba(255,165,0,.2);color:var(--yellow)}
+.grade-d{background:rgba(255,69,96,.2);color:var(--red)}
+.tc-result{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px}
+.res-win{background:rgba(0,208,132,.15);color:var(--green)}
+.res-loss{background:rgba(255,69,96,.15);color:var(--red)}
+.res-be{background:rgba(255,165,0,.15);color:var(--yellow)}
+.res-open{background:rgba(77,166,255,.1);color:var(--blue)}
+.tc-nums{display:flex;gap:12px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tc-pnl{font-weight:700}
+.tc-lesson{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+.no-reviewed{opacity:.55}
+
+/* DETAIL PANEL */
+.detail-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--muted)}
+.detail-empty .icon{font-size:40px;opacity:.3}
+.detail-wrap{padding:20px}
+.det-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.det-title{font-family:var(--mono);font-size:16px;font-weight:700}
+.det-sub{font-size:12px;color:var(--muted)}
+.det-actions{margin-right:auto;display:flex;gap:8px}
+.det-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px}
+.det-section-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.det-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.det-field{display:flex;flex-direction:column;gap:3px}
+.det-label{font-size:10px;color:var(--muted);letter-spacing:.5px}
+.det-val{font-family:var(--mono);font-size:13px;font-weight:600}
+.det-notes{font-size:12px;color:var(--text);line-height:1.6;white-space:pre-wrap}
+
+/* AI REVIEW */
+.ai-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.ai-hdr{padding:10px 14px;background:rgba(77,166,255,.06);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ai-hdr-title{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue)}
+.ai-body{padding:14px}
+.ai-grade-box{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:6px;margin-bottom:12px}
+.grade-big{font-family:var(--mono);font-size:32px;font-weight:700}
+.ai-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.ai-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ai-content{flex:1}
+.ai-row-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+.ai-row-text{font-size:12px;color:var(--text);line-height:1.5}
+.ai-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.ai-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(255,69,96,.1);color:var(--red);border:1px solid rgba(255,69,96,.2)}
+.ai-tag.green{background:rgba(0,208,132,.1);color:var(--green);border-color:rgba(0,208,132,.2)}
+.ai-tag.blue{background:rgba(77,166,255,.1);color:var(--blue);border-color:rgba(77,166,255,.2)}
+.sl-tight{color:var(--red)} .sl-correct{color:var(--green)} .sl-wide{color:var(--yellow)}
+.btn-analyze{background:linear-gradient(135deg,rgba(77,166,255,.2),rgba(0,208,132,.15));border:1px solid rgba(77,166,255,.4);color:var(--blue);font-weight:700;padding:9px 18px;border-radius:6px;font-size:12px;transition:all .2s;width:100%}
+.btn-analyze:hover{background:linear-gradient(135deg,rgba(77,166,255,.3),rgba(0,208,132,.25))}
+.btn-analyze:disabled{opacity:.4;cursor:not-allowed}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 10px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:100%;max-width:560px;overflow:hidden;margin:auto}
+.modal-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)}
+.modal-close{background:none;color:var(--muted);font-size:18px;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{width:100%}
+.modal-foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.btn-cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:5px;font-size:12px}
+.btn-save{background:var(--green);color:#0a0e14;font-weight:700;padding:8px 20px;border-radius:5px;font-size:12px}
+.btn-save:hover{opacity:.85}
+
+/* CSV IMPORT */
+.csv-drop{border:2px dashed var(--border);border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;color:var(--muted);font-size:12px}
+.csv-drop:hover,.csv-drop.drag{border-color:var(--blue);background:rgba(77,166,255,.05);color:var(--blue)}
+.csv-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+.csv-table th{background:var(--surface2);padding:5px 8px;text-align:right;color:var(--muted);border:1px solid var(--border)}
+.csv-table td{padding:5px 8px;border:1px solid var(--border);font-family:var(--mono)}
+.csv-table tr:hover td{background:var(--surface2)}
+
+/* IMAGE PASTE */
+.img-paste-zone{border:2px dashed var(--border);border-radius:6px;padding:15px;text-align:center;cursor:pointer;color:var(--muted);font-size:12px;position:relative;transition:border-color .2s}
+.img-paste-zone:hover{border-color:var(--blue);color:var(--blue)}
+.img-preview{max-width:100%;max-height:200px;border-radius:5px;border:1px solid var(--border);margin-top:8px}
+.img-clear{position:absolute;top:8px;left:8px;background:rgba(255,69,96,.2);color:var(--red);border:none;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer}
+
+/* TABS */
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 18px}
+.modal-tab{padding:10px 14px;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.modal-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* LOADING */
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.analyzing-overlay{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(77,166,255,.06);border-radius:6px;font-size:12px;color:var(--blue)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* EMPTY STATE */
+.empty-journal{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:10px;color:var(--muted)}
+.empty-journal .icon{font-size:36px;opacity:.3}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);padding:9px 18px;border-radius:6px;font-size:12px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* KEY MODAL */
+#keyModal{display:none}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-logo">📓 MNQ Trade Journal</div>
+  <div class="login-sub">יומן עסקאות עם ניתוח AI איכותי</div>
+  <button class="btn-login" onclick="doLogin()">🔐 התחבר עם Microsoft</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;flex-direction:column;height:100vh">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-title">📓 TRADE JOURNAL</div>
+    <span id="hdrStats" style="font-size:11px;color:var(--muted)"></span>
+    <div class="hdr-sep"></div>
+    <button class="hdr-btn" onclick="showCsvImport()" title="ייבוא CSV מ-Tradovate">📥 ייבוא CSV</button>
+    <button class="hdr-btn primary" onclick="openAddModal()">+ הוסף עסקה</button>
+    <button class="hdr-btn" onclick="document.getElementById('keyModal').style.display='flex'" title="API Key">🔑</button>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <input type="date" id="dateFilter" onchange="applyFilter()" style="height:30px">
+    <select id="dirFilter" onchange="applyFilter()">
+      <option value="">כל הכיוונים</option>
+      <option value="LONG">LONG בלבד</option>
+      <option value="SHORT">SHORT בלבד</option>
+    </select>
+    <select id="resultFilter" onchange="applyFilter()">
+      <option value="">כל התוצאות</option>
+      <option value="WIN">WIN</option>
+      <option value="LOSS">LOSS</option>
+      <option value="BE">Break Even</option>
+      <option value="OPEN">Open</option>
+    </select>
+    <select id="reviewFilter" onchange="applyFilter()">
+      <option value="">הכל</option>
+      <option value="reviewed">נסקרו ✓</option>
+      <option value="pending">ממתינות לסקירה</option>
+    </select>
+    <button class="qbtn" onclick="setQuickDate(0)">היום</button>
+    <button class="qbtn" onclick="setQuickDate(7)">שבוע</button>
+    <button class="qbtn" onclick="setQuickDate(30)">חודש</button>
+    <button class="qbtn" onclick="setQuickDate(null)">הכל</button>
+    <div style="margin-right:auto;display:flex;gap:6px;align-items:center">
+      <span id="statWin" class="stat-pill sp-win"></span>
+      <span id="statLoss" class="stat-pill sp-loss"></span>
+      <span id="statOpen" class="stat-pill sp-open"></span>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="jlayout">
+    <!-- LIST -->
+    <div class="jpanel">
+      <div class="jpanel-hdr">
+        <div class="jpanel-title">📋 עסקאות</div>
+        <span id="tradeCount" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+      <div id="tradeList"></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="jpanel" id="detailPanel">
+      <div class="detail-empty">
+        <div class="icon">📊</div>
+        <div>בחר עסקה לסקירה מלאה</div>
+        <div style="font-size:11px">לחץ על עסקה ברשימה משמאל</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="tradeModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalTitle">➕ הוספת עסקה</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="tabManual" onclick="switchTab('manual')">📝 ידני</div>
+      <div class="modal-tab" id="tabImage" onclick="switchTab('image')">🖼 תמונה</div>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Dynamic content -->
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">ביטול</button>
+      <button class="btn-save" onclick="saveTrade()">💾 שמור עסקה</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV IMPORT MODAL -->
+<div id="csvModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)closeCsvModal()">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-hdr">
+      <div class="modal-title">📥 ייבוא CSV מ-Tradovate</div>
+      <button class="modal-close" onclick="closeCsvModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">
+        ייצא את ה-Fills/Trades מ-Tradovate ← Account ← Reports ← Export. הדבק את תוכן ה-CSV למטה או גרור קובץ.
+      </div>
+      <div id="csvDrop" class="csv-drop" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCsvDrop(event)" onclick="document.getElementById('csvFileInput').click()">
+        📁 גרור קובץ CSV לכאן או לחץ לבחירה<br>
+        <span style="font-size:10px;opacity:.6">(Tradovate Fills / Trades export)</span>
+        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="handleCsvFile(this)">
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">— או הדבק CSV ישירות —</div>
+      <textarea id="csvPaste" placeholder="הדבק תוכן CSV כאן..." style="height:100px;width:100%;font-family:var(--mono);font-size:11px" oninput="parseCsvInput(this.value)"></textarea>
+      <div id="csvPreview" style="overflow-x:auto;max-height:200px;overflow-y:auto"></div>
+      <div id="csvImportCount" style="font-size:11px;color:var(--muted)"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeCsvModal()">ביטול</button>
+      <button class="btn-save" id="btnImportConfirm" onclick="confirmCsvImport()" style="display:none">✓ ייבא עסקאות</button>
+    </div>
+  </div>
+</div>
+
+<!-- API KEY MODAL -->
+<div id="keyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hdr">
+      <div class="modal-title">🔑 Anthropic API Key</div>
+      <button class="modal-close" onclick="document.getElementById('keyModal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--muted)">הכנס את ה-API Key של Anthropic לניתוח AI. המפתח נשמר ב-localStorage בלבד.</div>
+      <div class="form-group">
+        <label class="form-label">API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;font-family:monospace">
+      </div>
+      <select id="modelSelect" style="width:100%">
+        <option value="claude-haiku-4-5-20251001">Haiku (מהיר + חסכוני)</option>
+        <option value="claude-sonnet-4-20250514" selected>Sonnet (עמוק יותר)</option>
+      </select>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="document.getElementById('keyModal').style.display='none'">ביטול</button>
+      <button class="btn-save" onclick="saveApiKey()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const CLIENT_ID = '75028ce6-328d-432a-a595-5bc41fe2399a';
+const SITE = 'https://iteracoil.sharepoint.com/sites/Trading';
+const SCOPES = ['https://iteracoil.sharepoint.com/AllSites.Manage'];
+const LIST_NAME = 'TradingJournal';
+const LIST_TYPE = 'SP.Data.TradingJournalListItem';
+
+const SIGNAL_TYPES = {
+  'T1_BOS':'T1 - BOS/CHoCH','T2_SR':'T2 - S/R Break','T3_SWEEP':'T3 - Sweep Reversal',
+  'T4_INST':'T4 - Inst. Sweep','T5_OB':'T5 - OB+Structure','T6_FVG':'T6 - FVG Retest',
+  'T7_FB':'T7 - False Breakout','T8_SD':'T8 - Supply/Demand','T8_HPZ':'T8 - HPZ Zone',
+  'T9_EMA':'T9 - EMA Pullback','T10_HL':'T10 - HL/LH Break','T11_ENG':'T11 - Engulfing',
+  'T12_REV':'T12 - Reversal','T13_RSI':'T13 - RSI Divergence','MANUAL':'ידני'
+};
+
+// ============================================================
+// STATE
+// ============================================================
+var account = null, msalApp = null;
+var allTrades = [], filteredTrades = [], selectedTrade = null;
+var pendingCsvTrades = [], activeTab = 'manual', editingId = null;
+var pastedImageB64 = null;
+// In-memory chart assets keyed by trade ID (not saved to SP — too large)
+var tradeAssets = {}; // { [id]: { imageB64: '...', imageType: 'image/png', candles: [...], candlesSummary: '...' } }
+
+// ============================================================
+// MSAL AUTH
+// ============================================================
+async function getApp() {
+  if (msalApp) return msalApp;
+  const cfg = {
+    auth: { clientId: CLIENT_ID, redirectUri: window.location.href.split('?')[0].split('#')[0] },
+    cache: { cacheLocation: 'localStorage' }
+  };
+  msalApp = new msal.PublicClientApplication(cfg);
+  await msalApp.initialize();
+  const resp = await msalApp.handleRedirectPromise().catch(() => null);
+  if (resp) { account = resp.account; msalApp.setActiveAccount(account); }
+  const accs = msalApp.getAllAccounts();
+  if (!account && accs.length) { account = accs[0]; msalApp.setActiveAccount(account); }
+  return msalApp;
+}
+
+async function doLogin() {
+  const app = await getApp();
+  if (account) { startApp(); return; }
+  try {
+    const r = await app.loginPopup({ scopes: SCOPES });
+    account = r.account; app.setActiveAccount(account);
+    startApp();
+  } catch(e) { showToast('שגיאת התחברות: ' + e.message, true); }
+}
+
+async function getToken() {
+  const app = await getApp();
+  try { return (await app.acquireTokenSilent({ scopes: SCOPES, account })).accessToken; }
+  catch(e) { return (await app.acquireTokenPopup({ scopes: SCOPES })).accessToken; }
+}
+
+// ============================================================
+// SHAREPOINT CRUD
+// ============================================================
+async function spFetch(url, opts={}) {
+  const token = await getToken();
+  const r = await fetch(SITE + url, {
+    ...opts,
+    headers: {
+      Authorization: 'Bearer ' + token,
+      Accept: 'application/json;odata=verbose',
+      'Content-Type': 'application/json;odata=verbose',
+      ...(opts.headers || {})
+    }
+  });
+  if (!r.ok) throw new Error('SP error ' + r.status);
+  return r.status === 204 ? null : r.json();
+}
+
+async function loadTrades() {
+  try {
+    const d = await spFetch("/_api/web/lists/getbytitle('" + LIST_NAME + "')/items?$orderby=TradeDate%20desc&$top=500&$select=ID,Title,TradeDate,Direction,SignalType,EntryPrice,StopLoss,TakeProfit1,TakeProfit2,ExitPrice,TradeResult,PnLPoints,TraderNotes,AIReview,Platform,Reviewed");
+    allTrades = d.d.results;
+    applyFilter();
+    updateHeaderStats();
+  } catch(e) {
+    if (e.message.includes('404')) {
+      showToast('⚠️ רשימת TradingJournal לא נמצאה — ראה הוראות התקנה בהגדרות', true);
+      allTrades = [];
+      renderList([]);
+    } else {
+      showToast('שגיאת טעינה: ' + e.message, true);
+    }
+  }
+}
+
+async function createTrade(data) {
+  const body = { __metadata: { type: LIST_TYPE }, ...data };
+  const r = await spFetch("/_api/web/lists/getbytitle('" + LIST_NAME + "')/items", {
+    method: 'POST', body: JSON.stringify(body)
+  });
+  return r.d;
+}
+
+async function updateTrade(id, data) {
+  const body = { __metadata: { type: LIST_TYPE }, ...data };
+  await spFetch("/_api/web/lists/getbytitle('" + LIST_NAME + "')/items(" + id + ")", {
+    method: 'POST', body: JSON.stringify(body),
+    headers: { 'X-HTTP-Method': 'MERGE', 'IF-MATCH': '*' }
+  });
+}
+
+// ============================================================
+// APP START
+// ============================================================
+async function startApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  loadApiKeyFromStorage();
+  await loadTrades();
+}
+
+window.addEventListener('load', async () => {
+  const app = await getApp();
+  if (account) startApp();
+});
+
+// ============================================================
+// FILTER & STATS
+// ============================================================
+function applyFilter() {
+  const date = document.getElementById('dateFilter').value;
+  const dir  = document.getElementById('dirFilter').value;
+  const res  = document.getElementById('resultFilter').value;
+  const rev  = document.getElementById('reviewFilter').value;
+
+  filteredTrades = allTrades.filter(t => {
+    if (date && t.TradeDate && t.TradeDate.substring(0,10) < date) return false;
+    if (dir  && t.Direction !== dir) return false;
+    if (res  && t.TradeResult !== res) return false;
+    if (rev === 'reviewed' && !t.Reviewed) return false;
+    if (rev === 'pending'  && t.Reviewed) return false;
+    return true;
+  });
+
+  renderList(filteredTrades);
+  updateStats(filteredTrades);
+}
+
+function setQuickDate(daysBack) {
+  const f = document.getElementById('dateFilter');
+  if (daysBack === null) { f.value = ''; applyFilter(); return; }
+  const d = new Date();
+  d.setDate(d.getDate() - daysBack);
+  f.value = d.toISOString().substring(0,10);
+  applyFilter();
+}
+
+function updateStats(trades) {
+  const wins = trades.filter(t=>t.TradeResult==='WIN').length;
+  const losses = trades.filter(t=>t.TradeResult==='LOSS').length;
+  const open = trades.filter(t=>t.TradeResult==='OPEN'||!t.TradeResult).length;
+  document.getElementById('statWin').textContent  = wins   + ' ✓ WIN';
+  document.getElementById('statLoss').textContent = losses + ' ✗ LOSS';
+  document.getElementById('statOpen').textContent = open   + ' ○ Open';
+  document.getElementById('tradeCount').textContent = filteredTrades.length + ' עסקאות';
+}
+
+function updateHeaderStats() {
+  const total = allTrades.length;
+  const wins  = allTrades.filter(t=>t.TradeResult==='WIN').length;
+  const rev   = allTrades.filter(t=>t.Reviewed).length;
+  const wr    = total > 0 ? Math.round(wins/(total-allTrades.filter(t=>t.TradeResult==='OPEN'||!t.TradeResult).length)*100)||0 : 0;
+  document.getElementById('hdrStats').textContent = total + ' עסקאות | WR ' + wr + '% | ' + rev + ' נסקרו';
+}
+
+// ============================================================
+// RENDER LIST
+// ============================================================
+function renderList(trades) {
+  const el = document.getElementById('tradeList');
+  if (!trades.length) {
+    el.innerHTML = '<div class="empty-journal"><div class="icon">📋</div><div>אין עסקאות</div><div style="font-size:11px">הוסף עסקה ראשונה</div></div>';
+    return;
+  }
+  el.innerHTML = trades.map(t => {
+    const rev = t.Reviewed;
+    const dirCls = t.Direction==='LONG'?'tc-long':'tc-short';
+    const resCls = {WIN:'res-win',LOSS:'res-loss',BE:'res-be',PARTIAL:'res-be',OPEN:'res-open'}[t.TradeResult]||'res-open';
+    let grade = '', gradeCls = '', lesson = '';
+    try {
+      const ai = JSON.parse(t.AIReview||'{}');
+      grade = ai.overall_grade||'';
+      lesson = ai.lesson||ai.mistake||'';
+      gradeCls = {A:'grade-a',B:'grade-b',C:'grade-c',D:'grade-d'}[grade]||'';
+    } catch(e){}
+    const dateStr = t.TradeDate ? new Date(t.TradeDate).toLocaleString('he-IL',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    const pnl = t.PnLPoints;
+    const pnlStr = pnl ? (pnl > 0 ? '+' : '') + pnl + ' pts' : '';
+    const pnlCol = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
+    const isSelected = selectedTrade && selectedTrade.ID === t.ID;
+    const sigShort = t.SignalType ? t.SignalType.split('_')[0] : '';
+    return `<div class="trade-card${isSelected?' selected':''}${!rev?' no-reviewed':''}" onclick="selectTrade(${t.ID})">
+      <div class="tc-top">
+        <span class="tc-dir ${dirCls}">${t.Direction||'?'}</span>
+        ${sigShort?`<span class="tc-type">${sigShort}</span>`:''}
+        <span class="tc-time">${dateStr}</span>
+        ${grade?`<span class="tc-grade ${gradeCls}">${grade}</span>`:''}
+        <span class="tc-result ${resCls}">${t.TradeResult||'Open'}</span>
+      </div>
+      <div class="tc-nums">
+        <span>כניסה: <b>${t.EntryPrice||'—'}</b></span>
+        <span>SL: ${t.StopLoss||'—'}</span>
+        <span>TP2: ${t.TakeProfit2||'—'}</span>
+        ${pnlStr?`<span class="tc-pnl" style="color:${pnlCol}">${pnlStr}</span>`:''}
+      </div>
+      ${lesson?`<div class="tc-lesson">💡 ${lesson}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// SELECT / SHOW DETAIL
+// ============================================================
+function selectTrade(id) {
+  selectedTrade = allTrades.find(t=>t.ID===id);
+  renderList(filteredTrades);
+  renderDetail(selectedTrade);
+}
+
+function renderDetail(t) {
+  const el = document.getElementById('detailPanel');
+  if (!t) { el.innerHTML = '<div class="detail-empty"><div class="icon">📊</div><div>בחר עסקה לסקירה</div></div>'; return; }
+
+  let ai = null;
+  try { ai = JSON.parse(t.AIReview||'null'); } catch(e){}
+
+  const dateStr = t.TradeDate ? new Date(t.TradeDate).toLocaleString('he-IL',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  const pnl = t.PnLPoints || 0;
+  const pnlStr = (pnl >= 0 ? '+' : '') + pnl;
+  const pnlCol = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
+  const dirCls = t.Direction==='LONG'?'tc-long':'tc-short';
+
+  el.innerHTML = `
+    <div class="detail-wrap">
+      <div class="det-hdr">
+        <div>
+          <div class="det-title" style="display:flex;align-items:center;gap:10px">
+            <span class="tc-dir ${dirCls}">${t.Direction||'?'}</span>
+            <span>${SIGNAL_TYPES[t.SignalType]||t.SignalType||'ידני'}</span>
+          </div>
+          <div class="det-sub" style="margin-top:4px">${dateStr} · ${t.Platform||'ידני'}</div>
+        </div>
+        <div class="det-actions">
+          <button class="hdr-btn" onclick="openEditModal(${t.ID})">✏️ ערוך</button>
+          <button class="hdr-btn" style="color:var(--red)" onclick="deleteTrade(${t.ID})">🗑</button>
+        </div>
+      </div>
+
+      <!-- PRICE DATA -->
+      <div class="det-section">
+        <div class="det-section-title">📊 נתוני עסקה</div>
+        <div class="det-grid-3" style="margin-bottom:10px">
+          <div class="det-field"><div class="det-label">כניסה</div><div class="det-val">${t.EntryPrice||'—'}</div></div>
+          <div class="det-field"><div class="det-label">יציאה</div><div class="det-val">${t.ExitPrice||'—'}</div></div>
+          <div class="det-field"><div class="det-label">P&L</div><div class="det-val" style="color:${pnlCol}">${pnlStr} pts</div></div>
+        </div>
+        <div class="det-grid-3">
+          <div class="det-field"><div class="det-label">Stop Loss</div><div class="det-val" style="color:var(--red)">${t.StopLoss||'—'}</div></div>
+          <div class="det-field"><div class="det-label">TP1</div><div class="det-val" style="color:var(--yellow)">${t.TakeProfit1||'—'}</div></div>
+          <div class="det-field"><div class="det-label">TP2</div><div class="det-val" style="color:var(--green)">${t.TakeProfit2||'—'}</div></div>
+        </div>
+        ${t.TradeResult?`<div style="margin-top:10px"><span class="tc-result ${({WIN:'res-win',LOSS:'res-loss',BE:'res-be',PARTIAL:'res-be',OPEN:'res-open'}[t.TradeResult]||'res-open')}" style="padding:3px 10px;font-size:12px">${t.TradeResult}</span></div>`:''}
+      </div>
+
+      <!-- NOTES -->
+      ${t.TraderNotes?`<div class="det-section"><div class="det-section-title">📝 הערות</div><div class="det-notes">${escHtml(t.TraderNotes)}</div></div>`:''}
+
+      <!-- CHART ASSETS -->
+      <div class="det-section" id="chartAssetsSection">
+        <div class="det-section-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>📎 נתוני גרף לניתוח AI</span>
+          <span style="font-size:10px;color:var(--muted);font-weight:400">נשמר בזיכרון — לא ל-SharePoint</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <!-- Image upload -->
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:5px">📸 גרף (תמונה)</div>
+            <div id="chartImgBox_${t.ID}" onclick="triggerChartImgUpload(${t.ID})"
+              style="border:2px dashed var(--border);border-radius:6px;padding:10px;text-align:center;cursor:pointer;font-size:11px;color:var(--muted);transition:border-color .2s;min-height:70px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px"
+              onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+              ${tradeAssets[t.ID]&&tradeAssets[t.ID].imageB64
+                ? `<img src="${tradeAssets[t.ID].imageB64}" style="max-width:100%;max-height:60px;border-radius:3px"><div style="font-size:10px;color:var(--green);margin-top:3px">✓ גרף נטען</div>`
+                : `<span style="font-size:20px">🖼</span><span>לחץ להעלאה או Ctrl+V</span>`}
+            </div>
+            <input type="file" id="chartImgInput_${t.ID}" accept="image/*" style="display:none" onchange="handleChartImgFile(${t.ID}, this)">
+          </div>
+          <!-- Candles CSV upload -->
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:5px">📊 נרות CSV (TradingView)</div>
+            <div id="chartCsvBox_${t.ID}" onclick="triggerCandlesCsvUpload(${t.ID})"
+              style="border:2px dashed var(--border);border-radius:6px;padding:10px;text-align:center;cursor:pointer;font-size:11px;color:var(--muted);transition:border-color .2s;min-height:70px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px"
+              onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+              ${tradeAssets[t.ID]&&tradeAssets[t.ID].candles
+                ? `<span style="font-size:20px">📊</span><span style="color:var(--green)">✓ ${tradeAssets[t.ID].candles.length} נרות</span><span style="font-size:10px">${tradeAssets[t.ID].candlesSummary||''}</span>`
+                : `<span style="font-size:20px">📊</span><span>לחץ לייבוא CSV</span><span style="font-size:10px">TradingView Export</span>`}
+            </div>
+            <input type="file" id="candlesCsvInput_${t.ID}" accept=".csv,.txt" style="display:none" onchange="handleCandlesCsvFile(${t.ID}, this)">
+          </div>
+        </div>
+        ${(tradeAssets[t.ID]&&(tradeAssets[t.ID].imageB64||tradeAssets[t.ID].candles))
+          ? `<div style="margin-top:8px;font-size:11px;color:var(--green);text-align:center">✅ הקשר גרף מוכן — הניתוח ישתמש בנתונים אלו</div>`
+          : `<div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">הוסף גרף/נרות לניתוח AI עמוק יותר — אופציונלי</div>`}
+      </div>
+
+      <!-- AI REVIEW -->
+      <div class="ai-section">
+        <div class="ai-hdr">
+          <span style="font-size:16px">🧠</span>
+          <div class="ai-hdr-title">סקירת AI — ניתוח איכותי</div>
+          <div style="margin-right:auto;display:flex;gap:8px;align-items:center">
+            ${t.Reviewed?'<span style="font-size:10px;color:var(--green)">✓ נסקר</span>':''}
+          </div>
+        </div>
+        <div class="ai-body">
+          ${ai ? renderAIReview(ai) : `
+            <div style="text-align:center;padding:10px 0">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:12px">הניתוח AI עדיין לא בוצע לעסקה זו</div>
+              ${(tradeAssets[t.ID]&&(tradeAssets[t.ID].imageB64||tradeAssets[t.ID].candles))
+                ? `<div style="font-size:11px;color:var(--blue);margin-bottom:8px">📎 יש הקשר גרף — הניתוח יהיה עמוק יותר</div>`
+                : `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">הוסף גרף/נרות למעלה לניתוח עמוק יותר</div>`}
+              <button class="btn-analyze" id="analyzeBtn" onclick="analyzeCurrentTrade()">
+                🧠 נתח עסקה זו עם AI
+              </button>
+            </div>
+          `}
+          ${ai?`<div style="margin-top:10px;text-align:center"><button class="btn-analyze" onclick="analyzeCurrentTrade()" style="opacity:.6;font-size:11px">↺ עדכן ניתוח</button></div>`:''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAIReview(ai) {
+  const gradeColors = {A:'var(--green)',B:'var(--blue)',C:'var(--yellow)',D:'var(--red)'};
+  const gradeCol = gradeColors[ai.overall_grade] || 'var(--muted)';
+  const gradeBg = {A:'rgba(0,208,132,.08)',B:'rgba(77,166,255,.08)',C:'rgba(255,165,0,.08)',D:'rgba(255,69,96,.08)'}[ai.overall_grade]||'rgba(255,255,255,.04)';
+  const slMap = {too_tight:'🔴 קצר מדי — SL',correct:'✅ SL תקין',too_wide:'🟡 רחב מדי — SL'};
+  const timingMap = {early:'🟡 מוקדם מדי',correct:'✅ תזמון טוב',late:'🔴 איחור בכניסה'};
+  const slCls = {too_tight:'sl-tight',correct:'sl-correct',too_wide:'sl-wide'}[ai.sl_assessment]||'';
+  const setupValid = ai.setup_valid;
+
+  return `
+    <div class="ai-grade-box" style="background:${gradeBg};border:1px solid ${gradeCol}40">
+      <div class="grade-big" style="color:${gradeCol}">${ai.overall_grade||'—'}</div>
+      <div>
+        <div style="font-size:11px;color:var(--muted)">ציון כולל</div>
+        <div style="font-size:12px;margin-top:2px">${ai.grade_note||''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Setup: ${setupValid?'✅ תקין':'❌ לא תקין'} · ${ai.setup_score||'—'}/10</div>
+      </div>
+    </div>
+
+    ${ai.what_was_right?`
+    <div class="ai-row">
+      <div class="ai-icon">✅</div>
+      <div class="ai-content">
+        <div class="ai-row-label">מה עשית נכון</div>
+        <div class="ai-row-text">${ai.what_was_right}</div>
+      </div>
+    </div>`:''}
+
+    ${ai.blind_spots&&ai.blind_spots.length?`
+    <div class="ai-row">
+      <div class="ai-icon">🔍</div>
+      <div class="ai-content">
+        <div class="ai-row-label">Blind Spots — מה לא ראית</div>
+        <div class="ai-tags">${ai.blind_spots.map(b=>`<span class="ai-tag">${b}</span>`).join('')}</div>
+      </div>
+    </div>`:''}
+
+    ${ai.missed_confluence&&ai.missed_confluence.length?`
+    <div class="ai-row">
+      <div class="ai-icon">🧩</div>
+      <div class="ai-content">
+        <div class="ai-row-label">Confluence חסרה</div>
+        <div class="ai-tags">${ai.missed_confluence.map(b=>`<span class="ai-tag blue">${b}</span>`).join('')}</div>
+      </div>
+    </div>`:''}
+
+    <div class="ai-row">
+      <div class="ai-icon">🛑</div>
+      <div class="ai-content">
+        <div class="ai-row-label">הערכת SL</div>
+        <div class="ai-row-text ${slCls}">${slMap[ai.sl_assessment]||ai.sl_assessment} · ${ai.sl_note||''}</div>
+      </div>
+    </div>
+
+    <div class="ai-row">
+      <div class="ai-icon">⏱</div>
+      <div class="ai-content">
+        <div class="ai-row-label">תזמון כניסה</div>
+        <div class="ai-row-text">${timingMap[ai.entry_timing]||ai.entry_timing} · ${ai.entry_note||''}</div>
+      </div>
+    </div>
+
+    ${ai.mistake?`
+    <div class="ai-row">
+      <div class="ai-icon">⚠️</div>
+      <div class="ai-content">
+        <div class="ai-row-label">הטעות העיקרית</div>
+        <div class="ai-row-text" style="color:var(--red)">${ai.mistake}</div>
+      </div>
+    </div>`:''}
+
+    ${ai.lesson?`
+    <div class="ai-row">
+      <div class="ai-icon">💡</div>
+      <div class="ai-content">
+        <div class="ai-row-label">לקח מרכזי לעתיד</div>
+        <div class="ai-row-text" style="color:var(--green);font-weight:600">${ai.lesson}</div>
+      </div>
+    </div>`:''}
+  `;
+}
+
+// ============================================================
+// ANALYZE TRADE
+// ============================================================
+async function analyzeCurrentTrade() {
+  if (!selectedTrade) return;
+  const apiKey = localStorage.getItem('jrn_api_key');
+  if (!apiKey) { document.getElementById('keyModal').style.display='flex'; showToast('הכנס API Key תחילה'); return; }
+  const model = localStorage.getItem('jrn_model') || 'claude-sonnet-4-20250514';
+
+  const btn = document.getElementById('analyzeBtn');
+  if (btn) { btn.disabled = true; btn.textContent = ''; btn.innerHTML = '<span class="spinner"></span> מנתח...'; }
+
+  const t = selectedTrade;
+  const sigName = SIGNAL_TYPES[t.SignalType] || t.SignalType || 'ידני';
+  const pnl = t.PnLPoints || 0;
+  const rrActual = t.EntryPrice && t.StopLoss && t.ExitPrice ?
+    Math.abs((t.ExitPrice - t.EntryPrice) / (t.EntryPrice - t.StopLoss)).toFixed(2) : '?';
+
+  try {
+    const assets = tradeAssets[t.ID] || {};
+    const hasImage   = !!assets.imageB64;
+    const hasCandles = assets.candles && assets.candles.length > 0;
+    const candlesText = hasCandles ? buildCandlesPromptText(assets.candles) : '';
+
+    const prompt = `אתה מאמן מסחר מומחה ב-SMC/ICT עבור MNQ futures.
+המטרה: לנתח עסקה זו לצרכי למידה ושיפור — לא WIN/LOSS סטטיסטיקה.
+${hasImage ? '\n[צילום גרף צורף — נתח את מבנה המחיר, ה-zones, ה-SMC signals הנראים]' : ''}
+${hasCandles ? '\n[נתוני נרות צורפו — נתח מגמה, מבנה, volume, ATR]' : ''}
+
+נתוני העסקה:
+- כיוון: ${t.Direction}
+- סוג סיגנל: ${sigName}
+- כניסה: ${t.EntryPrice} | SL: ${t.StopLoss} | TP1: ${t.TakeProfit1} | TP2: ${t.TakeProfit2}
+- יציאה: ${t.ExitPrice||'—'} | תוצאה: ${t.TradeResult||'OPEN'} | P&L: ${pnl} נקודות | RR בפועל: ${rrActual}
+- פלטפורמה: ${t.Platform||'Tradovate'}
+
+הערות הטריידר: ${t.TraderNotes||'ללא הערות'}
+${candlesText}
+
+קריטריונים של MNQ Engine לפי סוג סיגנל:
+T1 BOS/CHoCH: יישור bias TF + dynEMA + שבירת מבנה עם מומנטום
+T2 S/R Break: bias + dynEMA + שבירת תמיכה/התנגדות עם מומנטום
+T3 Sweep Reversal: sweep של high/low + נר דחייה + dynEMA
+T4 Inst. Sweep: reclaim של נזילות מוסדית + volume > 1.2x
+T5 OB+Structure: order block + אישור BOS/CHoCH
+T6 FVG Retest: בדיקה חוזרת של fair value gap + כיוון
+T7 False Breakout: פריצה מזויפת + נר היפוך
+T8 Demand/Supply: כניסה לזון (body-defined) + bias + RSI ניטרלי
+T9 EMA Pullback: פולבק ל-EMA8 + מגמה + volume + RSI
+T10 HL/LH Break: שבירת HL או LH עם מומנטום
+T11 Engulfing: נר בליעה מלא + volume + יישור מגמה
+T12 Reversal: קרוב ל-20-period extreme + RSI + מבנה
+T13 RSI Divergence: דיברגנציה 8+ נקודות RSI + volume + מבנה
+
+ענה ONLY בזה בדיוק JSON:
+{"setup_valid":true,"setup_score":7,"what_was_right":"כניסה בזון ביקוש עם BOS מאושר","blind_spots":["לא ראה שה-HTF בצד מכירה","RSI היה גבוה מ-65"],"missed_confluence":["BOS על HTF","VWAP alignment"],"sl_assessment":"too_tight","sl_note":"SL מתחת ל-wick קצר — חשוף לswipe","entry_timing":"correct","entry_note":"כניסה טובה בבר הנכון","mistake":"נכנס בלי לבדוק bias ב-15m","lesson":"תמיד בדוק alignment של שני TF לפני כניסה","overall_grade":"B","grade_note":"Setup טוב אך SL חלש"}`;
+
+    // Build message content — add image if available
+    let userContent;
+    if (hasImage) {
+      const b64Data = assets.imageB64.split(',')[1];
+      userContent = [
+        { type: 'image', source: { type: 'base64', media_type: assets.imageType || 'image/png', data: b64Data } },
+        { type: 'text', text: prompt }
+      ];
+    } else {
+      userContent = prompt;
+    }
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model, max_tokens: 1000, messages: [{ role: 'user', content: userContent }] })
+    });
+    if (!resp.ok) throw new Error('API error ' + resp.status);
+    const data = await resp.json();
+    let text = (data.content||[]).map(c=>c.text||'').join('');
+    const j1 = text.indexOf('{'), j2 = text.lastIndexOf('}');
+    if (j1 !== -1 && j2 > j1) text = text.substring(j1, j2 + 1);
+    const aiResult = JSON.parse(text);
+
+    // Save to SharePoint
+    await updateTrade(t.ID, { AIReview: JSON.stringify(aiResult), Reviewed: true });
+    t.AIReview = JSON.stringify(aiResult);
+    t.Reviewed = true;
+    // Update in allTrades
+    const idx = allTrades.findIndex(x=>x.ID===t.ID);
+    if (idx>=0) { allTrades[idx].AIReview = t.AIReview; allTrades[idx].Reviewed = true; }
+
+    renderDetail(t);
+    renderList(filteredTrades);
+    updateHeaderStats();
+    showToast('✅ ניתוח AI הושלם ונשמר');
+  } catch(e) {
+    showToast('שגיאה: ' + e.message, true);
+    if (btn) { btn.disabled = false; btn.textContent = '🧠 נסה שוב'; }
+  }
+}
+
+// ============================================================
+// CHART ASSETS — image + candles per trade (in-memory)
+// ============================================================
+function triggerChartImgUpload(id) {
+  document.getElementById('chartImgInput_' + id).click();
+}
+
+function handleChartImgFile(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    if (!tradeAssets[id]) tradeAssets[id] = {};
+    tradeAssets[id].imageB64 = ev.target.result;
+    tradeAssets[id].imageType = file.type || 'image/png';
+    renderDetail(selectedTrade);
+    showToast('📸 גרף נטען בהצלחה');
+  };
+  reader.readAsDataURL(file);
+}
+
+function triggerCandlesCsvUpload(id) {
+  document.getElementById('candlesCsvInput_' + id).click();
+}
+
+function handleCandlesCsvFile(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const candles = parseCandlesCsv(ev.target.result);
+    if (!candles || candles.length === 0) { showToast('לא נמצאו נרות בקובץ', true); return; }
+    if (!tradeAssets[id]) tradeAssets[id] = {};
+    tradeAssets[id].candles = candles;
+    tradeAssets[id].candlesSummary = buildCandlesSummary(candles);
+    renderDetail(selectedTrade);
+    showToast('📊 ' + candles.length + ' נרות נטענו');
+  };
+  reader.readAsText(file);
+}
+
+// Paste event — route to active trade if detail panel is open
+document.addEventListener('paste', function(e) {
+  const items = (e.clipboardData||e.originalEvent.clipboardData).items;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      const blob = items[i].getAsFile();
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        // Route to active trade detail if one is selected
+        if (selectedTrade && document.getElementById('app').style.display !== 'none') {
+          const id = selectedTrade.ID;
+          if (!tradeAssets[id]) tradeAssets[id] = {};
+          tradeAssets[id].imageB64 = ev.target.result;
+          tradeAssets[id].imageType = 'image/png';
+          renderDetail(selectedTrade);
+          showToast('📸 גרף הודבק לעסקה הנוכחית');
+          return;
+        }
+        // Fallback: modal image tab
+        pastedImageB64 = ev.target.result;
+        if (activeTab === 'image') renderImageTab();
+      };
+      reader.readAsDataURL(blob);
+      break;
+    }
+  }
+});
+
+function parseCandlesCsv(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim() && !l.startsWith('#'));
+  if (lines.length < 3) return [];
+  const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/["\s]/g,''));
+  // Detect columns: time, open, high, low, close, volume
+  const fTime  = header.findIndex(h => h.includes('time') || h.includes('date'));
+  const fOpen  = header.findIndex(h => h === 'open'  || h === 'o');
+  const fHigh  = header.findIndex(h => h === 'high'  || h === 'h');
+  const fLow   = header.findIndex(h => h === 'low'   || h === 'l');
+  const fClose = header.findIndex(h => h === 'close' || h === 'c');
+  const fVol   = header.findIndex(h => h.includes('vol'));
+  if (fClose < 0) return [];
+
+  return lines.slice(1).map(l => {
+    const v = l.split(',').map(x => x.trim().replace(/"/g,''));
+    return {
+      t: fTime >= 0  ? v[fTime]  : '',
+      o: fOpen  >= 0 ? parseFloat(v[fOpen])  : null,
+      h: fHigh  >= 0 ? parseFloat(v[fHigh])  : null,
+      l: fLow   >= 0 ? parseFloat(v[fLow])   : null,
+      c: parseFloat(v[fClose]),
+      v: fVol   >= 0 ? parseFloat(v[fVol])   : null
+    };
+  }).filter(c => !isNaN(c.c));
+}
+
+function buildCandlesSummary(candles) {
+  if (!candles || candles.length === 0) return '';
+  const last = candles.slice(-40); // last 40 candles
+  const closes = last.map(c => c.c);
+  const highs  = last.map(c => c.h || c.c);
+  const lows   = last.map(c => c.l || c.c);
+  const avgVol = last.reduce((s,c) => s + (c.v||0), 0) / last.length;
+  const trend  = closes[closes.length-1] > closes[0] ? '▲ עולה' : '▼ יורד';
+  const range  = Math.max(...highs) - Math.min(...lows);
+  // Simple ATR approximation
+  let atrSum = 0;
+  for (let i = 1; i < last.length; i++) {
+    atrSum += Math.max(
+      (last[i].h||last[i].c) - (last[i].l||last[i].c),
+      Math.abs((last[i].h||last[i].c) - last[i-1].c),
+      Math.abs((last[i].l||last[i].c) - last[i-1].c)
+    );
+  }
+  const atr = (atrSum / (last.length - 1)).toFixed(2);
+  return `${trend} | Range: ${range.toFixed(1)} | ATR≈${atr}`;
+}
+
+function buildCandlesPromptText(candles) {
+  if (!candles || candles.length === 0) return '';
+  const last20 = candles.slice(-20);
+  const header = 'Time | O | H | L | C | Vol\n';
+  const rows = last20.map(c =>
+    (c.t||'').substring(0,16) + ' | ' + (c.o||'').toString().substring(0,8) +
+    ' | ' + (c.h||'').toString().substring(0,8) +
+    ' | ' + (c.l||'').toString().substring(0,8) +
+    ' | ' + c.c.toString().substring(0,8) +
+    ' | ' + Math.round(c.v||0)
+  ).join('\n');
+  const summary = buildCandlesSummary(candles);
+  return `\n\nנתוני נרות אחרונים (${last20.length} נרות מתוך ${candles.length}):\n${header}${rows}\nסיכום: ${summary}`;
+}
+function openAddModal() {
+  editingId = null;
+  pastedImageB64 = null;
+  document.getElementById('modalTitle').textContent = '➕ הוספת עסקה';
+  renderManualForm({});
+  document.getElementById('tradeModal').style.display = 'flex';
+  switchTab('manual');
+}
+
+function openEditModal(id) {
+  const t = allTrades.find(x=>x.ID===id);
+  if (!t) return;
+  editingId = id;
+  pastedImageB64 = null;
+  document.getElementById('modalTitle').textContent = '✏️ עריכת עסקה';
+  renderManualForm(t);
+  document.getElementById('tradeModal').style.display = 'flex';
+  switchTab('manual');
+}
+
+function closeModal() {
+  document.getElementById('tradeModal').style.display = 'none';
+  pastedImageB64 = null;
+  editingId = null;
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabManual').classList.toggle('active', tab==='manual');
+  document.getElementById('tabImage').classList.toggle('active', tab==='image');
+  if (tab === 'manual') renderManualForm(editingId ? (allTrades.find(t=>t.ID===editingId)||{}) : {});
+  else renderImageTab();
+}
+
+function renderManualForm(t) {
+  const sigOptions = Object.entries(SIGNAL_TYPES).map(([k,v]) =>
+    `<option value="${k}" ${t.SignalType===k?'selected':''}>${v}</option>`
+  ).join('');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">תאריך + שעה</label>
+        <input type="datetime-local" id="f_date" value="${t.TradeDate ? new Date(t.TradeDate).toISOString().slice(0,16) : new Date().toISOString().slice(0,16)}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">כיוון</label>
+        <select id="f_dir">
+          <option value="LONG" ${t.Direction==='LONG'?'selected':''}>▲ LONG</option>
+          <option value="SHORT" ${t.Direction==='SHORT'?'selected':''}>▼ SHORT</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">סוג סיגנל</label>
+        <select id="f_type">${sigOptions}</select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">פלטפורמה</label>
+        <select id="f_platform">
+          <option value="Tradovate" ${t.Platform==='Tradovate'?'selected':''}>Tradovate</option>
+          <option value="TradingView" ${t.Platform==='TradingView'?'selected':''}>TradingView</option>
+          <option value="ידני" ${t.Platform==='ידני'?'selected':''}>ידני</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label class="form-label">כניסה</label><input type="number" id="f_entry" step="0.25" value="${t.EntryPrice||''}"></div>
+      <div class="form-group"><label class="form-label">Stop Loss</label><input type="number" id="f_sl" step="0.25" value="${t.StopLoss||''}"></div>
+      <div class="form-group"><label class="form-label">יציאה</label><input type="number" id="f_exit" step="0.25" value="${t.ExitPrice||''}"></div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label class="form-label">TP1</label><input type="number" id="f_tp1" step="0.25" value="${t.TakeProfit1||''}"></div>
+      <div class="form-group"><label class="form-label">TP2</label><input type="number" id="f_tp2" step="0.25" value="${t.TakeProfit2||''}"></div>
+      <div class="form-group">
+        <label class="form-label">תוצאה</label>
+        <select id="f_result">
+          <option value="OPEN" ${(t.TradeResult||'OPEN')==='OPEN'?'selected':''}>פתוחה</option>
+          <option value="WIN" ${t.TradeResult==='WIN'?'selected':''}>WIN ✓</option>
+          <option value="LOSS" ${t.TradeResult==='LOSS'?'selected':''}>LOSS ✗</option>
+          <option value="BE" ${t.TradeResult==='BE'?'selected':''}>Break Even</option>
+          <option value="PARTIAL" ${t.TradeResult==='PARTIAL'?'selected':''}>Partial</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">הערות — מה ראית, מה הרגשת, מה חשבת</label>
+      <textarea id="f_notes" rows="3" placeholder="פרט את ההיגיון שלך, מה שגרם לך להיכנס, ספקות שהיו לך...">${t.TraderNotes||''}</textarea>
+    </div>
+  `;
+}
+
+function renderImageTab() {
+  document.getElementById('modalBody').innerHTML = `
+    <div style="font-size:12px;color:var(--muted);line-height:1.6">
+      הדבק צילום מסך של הגרף (Ctrl+V) — ה-AI ינתח את המבנה הויזואלי ביחד עם נתוני העסקה.
+    </div>
+    <div class="img-paste-zone" id="imgPasteZone" tabindex="0">
+      📸 לחץ כאן ואז הדבק תמונה (Ctrl+V)<br>
+      <span style="font-size:10px;opacity:.6">PNG, JPG — מגרף TradingView / Tradovate</span>
+      ${pastedImageB64 ? `<img src="${pastedImageB64}" class="img-preview"><button class="img-clear" onclick="clearImage()">✕</button>` : ''}
+    </div>
+    <div id="imgStatus" style="font-size:11px;color:var(--muted);text-align:center"></div>
+  `;
+  document.getElementById('imgPasteZone').addEventListener('click', () => {
+    document.getElementById('imgPasteZone').focus();
+  });
+}
+
+document.addEventListener('paste', function(e) {
+  const items = (e.clipboardData||e.originalEvent.clipboardData).items;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      const blob = items[i].getAsFile();
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        pastedImageB64 = ev.target.result;
+        if (activeTab === 'image') renderImageTab();
+        document.getElementById('imgStatus') && (document.getElementById('imgStatus').textContent = '✅ תמונה נטענה בהצלחה');
+      };
+      reader.readAsDataURL(blob);
+      break;
+    }
+  }
+});
+
+function clearImage() { pastedImageB64 = null; renderImageTab(); }
+
+async function saveTrade() {
+  const date   = document.getElementById('f_date')?.value;
+  const dir    = document.getElementById('f_dir')?.value;
+  const type   = document.getElementById('f_type')?.value;
+  const plat   = document.getElementById('f_platform')?.value;
+  const entry  = parseFloat(document.getElementById('f_entry')?.value)||null;
+  const sl     = parseFloat(document.getElementById('f_sl')?.value)||null;
+  const exit   = parseFloat(document.getElementById('f_exit')?.value)||null;
+  const tp1    = parseFloat(document.getElementById('f_tp1')?.value)||null;
+  const tp2    = parseFloat(document.getElementById('f_tp2')?.value)||null;
+  const result = document.getElementById('f_result')?.value;
+  const notes  = document.getElementById('f_notes')?.value||'';
+
+  if (!dir || !entry) { showToast('כניסה וכיוון הם שדות חובה', true); return; }
+
+  const pnl = exit && entry ? Math.round((dir==='LONG' ? exit-entry : entry-exit) * 4) / 1 : null; // MNQ: $2/pt → use raw points
+  const pnlPts = exit && entry ? Math.round((dir==='LONG' ? exit-entry : entry-exit) * 100) / 100 : null;
+
+  const data = {
+    Title: (dir||'?') + ' ' + (date||'').substring(0,10),
+    TradeDate: date ? new Date(date).toISOString() : new Date().toISOString(),
+    Direction: dir,
+    SignalType: type,
+    EntryPrice: entry,
+    StopLoss: sl,
+    TakeProfit1: tp1,
+    TakeProfit2: tp2,
+    ExitPrice: exit,
+    TradeResult: result,
+    PnLPoints: pnlPts,
+    TraderNotes: notes,
+    Platform: plat,
+    Reviewed: false
+  };
+
+  const btn = document.querySelector('#tradeModal .btn-save');
+  btn.disabled = true; btn.textContent = '...שומר';
+
+  try {
+    if (editingId) {
+      await updateTrade(editingId, data);
+      const idx = allTrades.findIndex(t=>t.ID===editingId);
+      if (idx>=0) Object.assign(allTrades[idx], data);
+      showToast('✅ עסקה עודכנה');
+    } else {
+      const created = await createTrade(data);
+      created && allTrades.unshift({...data, ID: created.ID});
+      showToast('✅ עסקה נשמרה');
+    }
+    closeModal();
+    applyFilter();
+    updateHeaderStats();
+    if (editingId && selectedTrade && selectedTrade.ID === editingId) {
+      selectedTrade = allTrades.find(t=>t.ID===editingId);
+      renderDetail(selectedTrade);
+    }
+  } catch(e) {
+    showToast('שגיאה: ' + e.message, true);
+    btn.disabled = false; btn.textContent = '💾 שמור עסקה';
+  }
+}
+
+async function deleteTrade(id) {
+  if (!confirm('למחוק עסקה זו?')) return;
+  try {
+    await spFetch("/_api/web/lists/getbytitle('" + LIST_NAME + "')/items(" + id + ")", {
+      method: 'POST', body: '{}',
+      headers: { 'X-HTTP-Method': 'DELETE', 'IF-MATCH': '*' }
+    });
+    allTrades = allTrades.filter(t=>t.ID!==id);
+    if (selectedTrade && selectedTrade.ID === id) { selectedTrade = null; renderDetail(null); }
+    applyFilter();
+    updateHeaderStats();
+    showToast('🗑 עסקה נמחקה');
+  } catch(e) { showToast('שגיאת מחיקה: ' + e.message, true); }
+}
+
+// ============================================================
+// CSV IMPORT
+// ============================================================
+function showCsvImport() { document.getElementById('csvModal').style.display = 'flex'; }
+function closeCsvModal() { document.getElementById('csvModal').style.display = 'none'; pendingCsvTrades = []; }
+
+function handleCsvDrop(e) {
+  e.preventDefault();
+  document.getElementById('csvDrop').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) { const r = new FileReader(); r.onload = ev => parseCsvInput(ev.target.result); r.readAsText(file); }
+}
+
+function handleCsvFile(input) {
+  const file = input.files[0];
+  if (file) { const r = new FileReader(); r.onload = ev => parseCsvInput(ev.target.result); r.readAsText(file); }
+}
+
+function parseCsvInput(text) {
+  if (!text || text.trim().length < 10) return;
+  const lines = text.trim().split('\n').filter(l=>l.trim());
+  if (lines.length < 2) return;
+
+  const header = lines[0].split(',').map(h=>h.trim().replace(/"/g,'').toLowerCase());
+  const rows = lines.slice(1).map(l => {
+    const vals = l.split(',').map(v=>v.trim().replace(/"/g,''));
+    const obj = {};
+    header.forEach((h,i) => obj[h] = vals[i]||'');
+    return obj;
+  });
+
+  // Auto-map Tradovate columns
+  const map = {
+    date: ['fill date/time','trade date/time','date/time','tradedate','date'],
+    dir: ['b/s','direction','side','buysell'],
+    price: ['price','entry price','fill price'],
+    exit: ['exit price'],
+    pnl: ['realized p/l','p/l','realized pnl','profit/loss'],
+    sym: ['instrument','symbol','contract']
+  };
+
+  function findCol(keys) { return keys.find(k => header.some(h=>h.includes(k))); }
+  const dateCol  = findCol(map.date);
+  const dirCol   = findCol(map.dir);
+  const priceCol = findCol(map.price);
+  const exitCol  = findCol(map.exit);
+  const pnlCol   = findCol(map.pnl);
+
+  pendingCsvTrades = rows.filter(r=>{
+    const sym = r['instrument']||r['symbol']||r['contract']||'';
+    return sym.toUpperCase().includes('MNQ') || sym.toUpperCase().includes('NQ') || !sym;
+  }).map(r => ({
+    TradeDate: dateCol ? parseDate(r[dateCol]) : new Date().toISOString(),
+    Direction: dirCol ? (r[dirCol].toUpperCase().includes('B')?'LONG':'SHORT') : 'LONG',
+    EntryPrice: priceCol ? parseFloat(r[priceCol])||null : null,
+    ExitPrice: exitCol ? parseFloat(r[exitCol])||null : null,
+    PnLPoints: pnlCol ? parseFloat(r[pnlCol])||null : null,
+    TradeResult: pnlCol ? (parseFloat(r[pnlCol])>0?'WIN':parseFloat(r[pnlCol])<0?'LOSS':'BE') : 'OPEN',
+    Platform: 'Tradovate',
+    SignalType: 'MANUAL',
+    TraderNotes: ''
+  })).slice(0,50);
+
+  const preview = document.getElementById('csvPreview');
+  const btn = document.getElementById('btnImportConfirm');
+  const cnt = document.getElementById('csvImportCount');
+
+  if (pendingCsvTrades.length === 0) {
+    preview.innerHTML = '<div style="color:var(--red);font-size:12px;padding:8px">לא נמצאו עסקאות MNQ. בדוק פורמט ה-CSV.</div>';
+    btn.style.display = 'none';
+    return;
+  }
+
+  preview.innerHTML = `<table class="csv-table"><thead><tr><th>תאריך</th><th>כיוון</th><th>כניסה</th><th>יציאה</th><th>P&L</th><th>תוצאה</th></tr></thead><tbody>` +
+    pendingCsvTrades.slice(0,10).map(t=>`<tr>
+      <td>${t.TradeDate?new Date(t.TradeDate).toLocaleDateString('he-IL'):''}</td>
+      <td style="color:${t.Direction==='LONG'?'var(--green)':'var(--red)'}">${t.Direction}</td>
+      <td>${t.EntryPrice||''}</td><td>${t.ExitPrice||''}</td>
+      <td style="color:${(t.PnLPoints||0)>=0?'var(--green)':'var(--red)'}">${t.PnLPoints||''}</td>
+      <td>${t.TradeResult}</td>
+    </tr>`).join('') + '</tbody></table>';
+
+  cnt.textContent = `נמצאו ${pendingCsvTrades.length} עסקאות${pendingCsvTrades.length>10?' (מציג 10 ראשונות)':''}`;
+  btn.style.display = 'inline-block';
+}
+
+function parseDate(str) {
+  if (!str) return new Date().toISOString();
+  try { return new Date(str).toISOString(); } catch(e) { return new Date().toISOString(); }
+}
+
+async function confirmCsvImport() {
+  if (!pendingCsvTrades.length) return;
+  const btn = document.getElementById('btnImportConfirm');
+  btn.disabled = true; btn.textContent = 'מייבא...';
+  let imported = 0;
+  for (const t of pendingCsvTrades) {
+    try {
+      const data = { ...t, Title: (t.Direction||'?')+' '+(t.TradeDate||'').substring(0,10), Reviewed: false };
+      const r = await createTrade(data);
+      r && allTrades.unshift({...data, ID: r.ID});
+      imported++;
+    } catch(e) {}
+  }
+  applyFilter(); updateHeaderStats();
+  closeCsvModal();
+  showToast('✅ יובאו ' + imported + ' עסקאות');
+}
+
+// ============================================================
+// API KEY
+// ============================================================
+function loadApiKeyFromStorage() {
+  const key = localStorage.getItem('jrn_api_key');
+  const model = localStorage.getItem('jrn_model') || 'claude-sonnet-4-20250514';
+  if (key) document.getElementById('apiKeyInput').value = key;
+  document.getElementById('modelSelect').value = model;
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  const model = document.getElementById('modelSelect').value;
+  if (key) localStorage.setItem('jrn_api_key', key);
+  localStorage.setItem('jrn_model', model);
+  document.getElementById('keyModal').style.display = 'none';
+  showToast('✅ API Key נשמר');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isError ? 'var(--red)' : 'var(--green)';
+  t.style.color = isError ? 'var(--red)' : 'var(--green)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
