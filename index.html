@@ -1115,6 +1115,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 <div id="journalPanel" style="display:none;flex-direction:column;height:calc(100vh - 185px)">
   <!-- filter bar -->
   <div class="jrn-filter">
+    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:5px;overflow:hidden;flex-shrink:0">
+      <button id="jSubTabTrades"   onclick="jSwitchSub('trades')"   style="background:var(--blue);color:#000;font-weight:700;border:none;padding:4px 14px;font-size:11px;cursor:pointer;font-family:inherit">📋 עסקאות</button>
+      <button id="jSubTabInsights" onclick="jSwitchSub('insights')" style="background:var(--surface2);color:var(--muted);border:none;padding:4px 14px;font-size:11px;cursor:pointer;font-family:inherit">📊 תובנות</button>
+    </div>
     <input type="date" id="jDateFilter" onchange="jApplyFilter()">
     <select id="jDirFilter" onchange="jApplyFilter()">
       <option value="">כל הכיוונים</option>
@@ -1146,7 +1150,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
   </div>
   <!-- two-col layout -->
-  <div class="jrn-layout" style="flex:1">
+  <div class="jrn-layout" id="jTradesView" style="flex:1">
     <div class="jrn-pane">
       <div class="jrn-pane-hdr">
         <div class="jrn-pane-title">📋 עסקאות</div>
@@ -1156,6 +1160,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
     <div class="jrn-pane" id="jDetailPane">
       <div class="jdet-empty"><div style="font-size:36px;opacity:.25">📊</div><div>בחר עסקה לסקירה</div></div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS VIEW -->
+  <div id="jInsightsView" style="display:none;flex:1;overflow-y:auto;padding:20px 24px;direction:rtl">
+    <div id="jInsightsBody" style="max-width:1100px;margin:0 auto">
+      <div class="jdet-empty"><div style="font-size:32px;opacity:.3">📊</div><div>לחץ "רענן תובנות" לניתוח</div></div>
     </div>
   </div>
 </div>
@@ -3993,7 +4004,314 @@ async function jConfirmCsvImport() {
   if (typeof showNotification==='function') showNotification('✅ יובאו '+n+' עסקאות','success');
 }
 
-function jEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// ── SUB-TABS ────────────────────────────────────────────────────────
+function jSwitchSub(sub) {
+  var isInsights = sub === 'insights';
+  document.getElementById('jTradesView').style.display   = isInsights ? 'none' : 'grid';
+  document.getElementById('jInsightsView').style.display = isInsights ? 'block' : 'none';
+  document.getElementById('jSubTabTrades').style.background   = isInsights ? 'var(--surface2)' : 'var(--blue)';
+  document.getElementById('jSubTabTrades').style.color        = isInsights ? 'var(--muted)' : '#000';
+  document.getElementById('jSubTabInsights').style.background = isInsights ? 'var(--blue)' : 'var(--surface2)';
+  document.getElementById('jSubTabInsights').style.color      = isInsights ? '#000' : 'var(--muted)';
+  // Also show/hide filter bar items
+  var filterItems = document.querySelectorAll('.jrn-filter > *:not(:first-child)');
+  filterItems.forEach(function(el) { el.style.display = isInsights ? 'none' : ''; });
+  // Show insights refresh btn
+  var refreshBtn = document.getElementById('jInsightsRefreshBtn');
+  if (refreshBtn) refreshBtn.style.display = isInsights ? '' : 'none';
+  if (isInsights) jRenderInsights();
+}
+
+// ── INSIGHTS ENGINE ─────────────────────────────────────────────────
+function jRenderInsights() {
+  var el = document.getElementById('jInsightsBody');
+  var reviewed = jAllTrades.filter(function(t){ return t.Reviewed && t.AIReview; });
+  if (!reviewed.length) {
+    el.innerHTML = '<div class="jdet-empty"><div style="font-size:32px;opacity:.3">🔍</div><div>אין עסקאות נסקרות עדיין</div><div style="font-size:11px">נתח לפחות עסקה אחת עם AI כדי לראות תובנות</div></div>';
+    return;
+  }
+
+  // Parse all AI reviews
+  var reviews = reviewed.map(function(t) {
+    var ai = {}; try { ai = JSON.parse(t.AIReview); } catch(e){}
+    return { t: t, ai: ai };
+  }).filter(function(r){ return r.ai && r.ai.overall_grade; });
+
+  var total = reviews.length;
+
+  // ── Grade distribution ──
+  var grades = {A:0, B:0, C:0, D:0};
+  reviews.forEach(function(r){ if (grades[r.ai.overall_grade] !== undefined) grades[r.ai.overall_grade]++; });
+
+  // ── SL assessment ──
+  var slCounts = {too_tight:0, correct:0, too_wide:0};
+  reviews.forEach(function(r){ if (r.ai.sl_assessment && slCounts[r.ai.sl_assessment] !== undefined) slCounts[r.ai.sl_assessment]++; });
+
+  // ── Entry timing ──
+  var timingCounts = {early:0, correct:0, late:0};
+  reviews.forEach(function(r){ if (r.ai.entry_timing && timingCounts[r.ai.entry_timing] !== undefined) timingCounts[r.ai.entry_timing]++; });
+
+  // ── Setup validity ──
+  var validCount   = reviews.filter(function(r){ return r.ai.setup_valid === true; }).length;
+  var invalidCount = reviews.filter(function(r){ return r.ai.setup_valid === false; }).length;
+
+  // ── Blind spots frequency ──
+  var blindMap = {};
+  reviews.forEach(function(r){
+    (r.ai.blind_spots||[]).forEach(function(b){
+      var k = (b||'').trim().toLowerCase();
+      if (k) blindMap[k] = (blindMap[k]||0) + 1;
+    });
+  });
+  var blindSorted = Object.entries(blindMap).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+
+  // ── Missed confluence frequency ──
+  var confMap = {};
+  reviews.forEach(function(r){
+    (r.ai.missed_confluence||[]).forEach(function(c){
+      var k = (c||'').trim().toLowerCase();
+      if (k) confMap[k] = (confMap[k]||0) + 1;
+    });
+  });
+  var confSorted = Object.entries(confMap).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+
+  // ── Mistakes frequency ──
+  var mistakeMap = {};
+  reviews.forEach(function(r){
+    var m = (r.ai.mistake||'').trim().toLowerCase();
+    if (m) mistakeMap[m] = (mistakeMap[m]||0) + 1;
+  });
+  var mistakeSorted = Object.entries(mistakeMap).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+
+  // ── Lessons frequency ──
+  var lessonMap = {};
+  reviews.forEach(function(r){
+    var l = (r.ai.lesson||'').trim();
+    if (l) lessonMap[l] = (lessonMap[l]||0) + 1;
+  });
+  var lessonSorted = Object.entries(lessonMap).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+
+  // ── Per signal type ──
+  var sigStats = {};
+  reviews.forEach(function(r){
+    var st = r.t.SignalType || 'MANUAL';
+    if (!sigStats[st]) sigStats[st] = {total:0, wins:0, grades:{A:0,B:0,C:0,D:0}, setupValid:0};
+    sigStats[st].total++;
+    if (r.t.TradeResult === 'WIN') sigStats[st].wins++;
+    if (r.ai.overall_grade && sigStats[st].grades[r.ai.overall_grade] !== undefined) sigStats[st].grades[r.ai.overall_grade]++;
+    if (r.ai.setup_valid) sigStats[st].setupValid++;
+  });
+
+  // ── Helper: pct bar ──
+  function pctBar(val, max, col) {
+    var pct = max > 0 ? Math.round(val/max*100) : 0;
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">' +
+      '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">' +
+      '<div style="width:'+pct+'%;height:100%;background:'+col+';border-radius:3px"></div></div>' +
+      '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);min-width:30px">'+val+'</span></div>';
+  }
+
+  function gradeColor(g) { return {A:'var(--green)',B:'var(--blue)',C:'var(--yellow)',D:'var(--red)'}[g]||'var(--muted)'; }
+
+  // ── BUILD HTML ──
+  var html = '';
+
+  // Header
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">';
+  html += '<div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--blue)">📊 תובנות ושיפור</div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin-top:3px">מבוסס על '+total+' עסקאות נסקרות</div></div>';
+  html += '<button class="j-analyze-btn" id="jAISynthBtn" onclick="jGenerateAISynthesis()" style="width:auto;padding:8px 16px">🧠 סיכום AI מלא</button></div>';
+
+  // Row 1: Grade + Setup + SL + Timing
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px">';
+
+  // Grade dist
+  html += '<div class="jsec"><div class="jsec-title">🎓 ציונים</div>';
+  ['A','B','C','D'].forEach(function(g){
+    var col = gradeColor(g);
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+    html += '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:'+col+'">'+g+'</span>';
+    html += pctBar(grades[g], total, col);
+    html += '<span style="font-size:10px;color:var(--muted)">'+Math.round(grades[g]/total*100)+'%</span></div>';
+  });
+  html += '</div>';
+
+  // Setup validity
+  html += '<div class="jsec"><div class="jsec-title">✅ תקינות Setup</div>';
+  html += '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;gap:8px">';
+  html += '<div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--green)">'+Math.round(validCount/total*100)+'%</div>';
+  html += '<div style="font-size:10px;color:var(--muted)">סטאפים תקינים</div>';
+  html += '<div style="display:flex;gap:10px;font-size:10px"><span style="color:var(--green)">✅ '+validCount+' תקין</span><span style="color:var(--red)">❌ '+invalidCount+' לא תקין</span></div>';
+  html += '</div></div>';
+
+  // SL assessment
+  html += '<div class="jsec"><div class="jsec-title">🛑 איכות SL</div>';
+  var slLabels = {too_tight:'קצר מדי', correct:'תקין', too_wide:'רחב מדי'};
+  var slColors = {too_tight:'var(--red)', correct:'var(--green)', too_wide:'var(--yellow)'};
+  Object.keys(slCounts).forEach(function(k){
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">';
+    html += '<span style="font-size:10px;color:'+slColors[k]+'">'+slLabels[k]+'</span>';
+    html += pctBar(slCounts[k], total, slColors[k]);
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Entry timing
+  html += '<div class="jsec"><div class="jsec-title">⏱ תזמון כניסה</div>';
+  var tmLabels = {early:'מוקדם', correct:'תקין', late:'מאחר'};
+  var tmColors = {early:'var(--yellow)', correct:'var(--green)', late:'var(--red)'};
+  Object.keys(timingCounts).forEach(function(k){
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">';
+    html += '<span style="font-size:10px;color:'+tmColors[k]+'">'+tmLabels[k]+'</span>';
+    html += pctBar(timingCounts[k], total, tmColors[k]);
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '</div>'; // end row 1
+
+  // Row 2: Blind spots + Missed confluence
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">';
+
+  // Blind spots
+  html += '<div class="jsec"><div class="jsec-title">🔍 Blind Spots חוזרים</div>';
+  if (blindSorted.length) {
+    blindSorted.forEach(function(e){
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px">';
+      html += '<span style="font-size:11px;flex:1">'+jEsc(e[0])+'</span>';
+      html += pctBar(e[1], total, 'var(--red)');
+      html += '<span style="font-family:var(--mono);font-size:10px;color:var(--red);font-weight:700">×'+e[1]+'</span></div>';
+    });
+  } else { html += '<div style="font-size:11px;color:var(--muted)">אין נתונים</div>'; }
+  html += '</div>';
+
+  // Missed confluence
+  html += '<div class="jsec"><div class="jsec-title">🧩 Confluence שנשכחה</div>';
+  if (confSorted.length) {
+    confSorted.forEach(function(e){
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px">';
+      html += '<span style="font-size:11px;flex:1">'+jEsc(e[0])+'</span>';
+      html += pctBar(e[1], total, 'var(--blue)');
+      html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);font-weight:700">×'+e[1]+'</span></div>';
+    });
+  } else { html += '<div style="font-size:11px;color:var(--muted)">אין נתונים</div>'; }
+  html += '</div>';
+  html += '</div>'; // end row 2
+
+  // Row 3: Mistakes + Lessons
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">';
+
+  // Top mistakes
+  html += '<div class="jsec"><div class="jsec-title">⚠️ טעויות נפוצות</div>';
+  if (mistakeSorted.length) {
+    mistakeSorted.forEach(function(e, i){
+      html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--border)">';
+      html += '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--red);flex-shrink:0">'+(i+1)+'.</span>';
+      html += '<span style="font-size:11px;flex:1">'+jEsc(e[0])+'</span>';
+      html += '<span style="font-family:var(--mono);font-size:10px;color:var(--red);flex-shrink:0">×'+e[1]+'</span></div>';
+    });
+  } else { html += '<div style="font-size:11px;color:var(--muted)">אין נתונים</div>'; }
+  html += '</div>';
+
+  // Top lessons
+  html += '<div class="jsec"><div class="jsec-title">💡 לקחים מרכזיים</div>';
+  if (lessonSorted.length) {
+    lessonSorted.forEach(function(e, i){
+      html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--border)">';
+      html += '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green);flex-shrink:0">'+(i+1)+'.</span>';
+      html += '<span style="font-size:11px;flex:1">'+jEsc(e[0])+'</span>';
+      if (e[1] > 1) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--green);flex-shrink:0">×'+e[1]+'</span>';
+      html += '</div>';
+    });
+  } else { html += '<div style="font-size:11px;color:var(--muted)">אין נתונים</div>'; }
+  html += '</div>';
+  html += '</div>'; // end row 3
+
+  // Per-signal type table
+  var sigEntries = Object.entries(sigStats).sort(function(a,b){ return b[1].total - a[1].total; });
+  if (sigEntries.length > 1) {
+    html += '<div class="jsec" style="margin-bottom:14px"><div class="jsec-title">📋 ביצועים לפי סוג סיגנל</div>';
+    html += '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+    html += '<thead><tr style="color:var(--muted);font-size:10px"><th style="text-align:right;padding:4px 8px;border-bottom:1px solid var(--border)">סוג</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">עסקאות</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">WR</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">Setup תקין</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">ציונים</th></tr></thead><tbody>';
+    sigEntries.forEach(function(e){
+      var sn = JRN_SIG[e[0]]||e[0], st = e[1];
+      var wr = st.total > 0 ? Math.round(st.wins/st.total*100) : 0;
+      var svPct = st.total > 0 ? Math.round(st.setupValid/st.total*100) : 0;
+      var wrCol = wr >= 55 ? 'var(--green)' : wr >= 40 ? 'var(--yellow)' : 'var(--red)';
+      var gradeStr = ['A','B','C','D'].map(function(g){
+        return st.grades[g] > 0 ? '<span style="color:'+gradeColor(g)+';font-weight:700">'+g+':'+st.grades[g]+'</span>' : '';
+      }).filter(Boolean).join(' ');
+      html += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 8px">'+jEsc(sn)+'</td>';
+      html += '<td style="padding:5px 8px;text-align:center;font-family:var(--mono)">'+st.total+'</td>';
+      html += '<td style="padding:5px 8px;text-align:center;font-family:var(--mono);color:'+wrCol+'">'+wr+'%</td>';
+      html += '<td style="padding:5px 8px;text-align:center;font-family:var(--mono)">'+svPct+'%</td>';
+      html += '<td style="padding:5px 8px">'+gradeStr+'</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // AI synthesis area
+  html += '<div id="jSynthesisBox" class="jsec" style="background:rgba(77,166,255,.03);border-color:rgba(77,166,255,.2)"><div class="jsec-title">🧠 סיכום AI — מאמן אישי</div>';
+  html += '<div id="jSynthesisContent" style="font-size:12px;color:var(--muted);line-height:1.7">לחץ "סיכום AI מלא" למעלה לקבלת ניתוח מעמיק ומותאם אישית של דפוסי המסחר שלך.</div></div>';
+
+  el.innerHTML = html;
+}
+
+// ── AI SYNTHESIS ────────────────────────────────────────────────────
+async function jGenerateAISynthesis() {
+  var apiKey = localStorage.getItem('claude_api_key');
+  if (!apiKey) { showNotification('הכנס API Key בהגדרות (🔑)','warn'); return; }
+  var model = localStorage.getItem('jrn_model') || 'claude-sonnet-4-20250514';
+
+  var reviewed = jAllTrades.filter(function(t){ return t.Reviewed && t.AIReview; });
+  if (!reviewed.length) { showNotification('אין עסקאות נסקרות','warn'); return; }
+
+  var btn = document.getElementById('jAISynthBtn');
+  if (btn) { btn.disabled=true; btn.innerHTML='<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(77,166,255,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:6px"></span> מנתח...'; }
+
+  var synthBox = document.getElementById('jSynthesisContent');
+  if (synthBox) synthBox.innerHTML = '<span style="color:var(--blue)">⟳ מעבד '+reviewed.length+' עסקאות...</span>';
+
+  // Build compact summary of all reviews
+  var summaries = reviewed.map(function(t) {
+    var ai = {}; try { ai = JSON.parse(t.AIReview); } catch(e){}
+    var ds = t.TradeDate ? new Date(t.TradeDate).toLocaleDateString('he-IL') : '';
+    return ds+'|'+(t.Direction||'')+'|'+(t.SignalType||'')+'|'+(t.TradeResult||'')+'|'+
+      'Grade:'+(ai.overall_grade||'?')+'|SL:'+(ai.sl_assessment||'?')+'|Timing:'+(ai.entry_timing||'?')+'|'+
+      'Mistake:'+(ai.mistake||'—')+'|Lesson:'+(ai.lesson||'—')+'|'+
+      'Blind:'+(ai.blind_spots||[]).join(',')+'|Setup:'+(ai.setup_valid?'valid':'invalid');
+  }).join('\n');
+
+  var prompt = 'אתה מאמן מסחר מקצועי. אתה מנתח היסטוריית עסקאות של טריידר MNQ futures.\n\n'+
+    'נתוני '+reviewed.length+' עסקאות נסקרות (תאריך|כיוון|סיגנל|תוצאה|ציון|SL|תזמון|טעות|לקח|blind spots|setup):\n\n'+
+    summaries+'\n\n'+
+    'ספק ניתוח מאמן מעמיק בעברית. התמקד ב:\n'+
+    '1. **דפוס הטעות המרכזי** — מה חוזר שוב ושוב?\n'+
+    '2. **חוזקות ברורות** — מה הטריידר עושה טוב?\n'+
+    '3. **3 נקודות לשיפור מיידי** — ספציפיות, ניתנות לביצוע\n'+
+    '4. **המלצה לשינוי אחד בתהליך** — שינוי ספציפי בצ\'קליסט לפני כניסה\n'+
+    '5. **אבחנה כללית של רמת הטריידר** — איפה הוא בדרך ולמה\n\n'+
+    'כתוב ישיר, מועיל, ספציפי. לא כללי. לא מחמיא. כמו מאמן אמיתי.';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:model, max_tokens:1200, messages:[{role:'user',content:prompt}]})
+    });
+    if (!resp.ok) throw new Error('API '+resp.status);
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(c){return c.text||'';}).join('');
+    // Render markdown-style bold (**text**) and numbered lists
+    text = text.replace(/\*\*([^*]+)\*\*/g,'<strong style="color:var(--blue)">$1</strong>');
+    text = text.replace(/\n\n/g,'</p><p style="margin-top:10px">');
+    text = text.replace(/\n/g,'<br>');
+    if (synthBox) synthBox.innerHTML = '<p style="margin-top:10px">'+text+'</p>';
+    if (btn) { btn.disabled=false; btn.innerHTML='🧠 עדכן סיכום'; }
+  } catch(e) {
+    if (synthBox) synthBox.innerHTML = '<span style="color:var(--red)">שגיאה: '+e.message+'</span>';
+    if (btn) { btn.disabled=false; btn.innerHTML='🧠 נסה שוב'; }
+  }
+}
 
 function showNotification(msg, type) {
   var el = document.getElementById('jNotif');
