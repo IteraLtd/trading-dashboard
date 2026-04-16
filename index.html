@@ -223,6 +223,81 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 @media(max-width:768px){.trades-stats-grid{grid-template-columns:repeat(2,1fr)}.trades-charts-row{grid-template-columns:1fr}}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* ── JOURNAL ── */
+.jrn-layout{display:grid;grid-template-columns:360px 1fr;height:calc(100vh - 185px);overflow:hidden}
+.jrn-pane{overflow-y:auto;height:100%;border-left:1px solid var(--border)}
+.jrn-pane-hdr{padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between}
+.jrn-pane-title{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:1px}
+.jrn-filter{background:var(--surface);border-bottom:1px solid var(--border);padding:7px 14px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.jrn-filter select,.jrn-filter input[type=date]{height:28px;padding:0 7px;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-family:inherit;outline:none}
+.jqbtn{background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:3px 9px;font-size:11px;cursor:pointer;transition:all .15s}
+.jqbtn:hover,.jqbtn.act{background:rgba(77,166,255,.15);color:var(--blue);border-color:rgba(77,166,255,.4)}
+.jtc{border-bottom:1px solid var(--border);padding:10px 14px;cursor:pointer;transition:background .12s}
+.jtc:hover{background:var(--surface2)}.jtc.sel{background:rgba(77,166,255,.05);border-right:3px solid var(--blue)}.jtc.dim{opacity:.55}
+.jtc-top{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.jtc-dir{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px}
+.jtc-long{background:rgba(0,208,132,.15);color:var(--green);border:1px solid rgba(0,208,132,.3)}
+.jtc-short{background:rgba(255,69,96,.15);color:var(--red);border:1px solid rgba(255,69,96,.3)}
+.jtc-type{font-family:var(--mono);font-size:9px;color:var(--blue);background:rgba(77,166,255,.08);border:1px solid rgba(77,166,255,.2);padding:1px 5px;border-radius:3px}
+.jtc-time{font-size:10px;color:var(--muted);margin-right:auto}
+.jtc-grade{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px}
+.jg-a{background:rgba(0,208,132,.2);color:var(--green)}.jg-b{background:rgba(77,166,255,.2);color:var(--blue)}.jg-c{background:rgba(255,165,0,.2);color:var(--yellow)}.jg-d{background:rgba(255,69,96,.2);color:var(--red)}
+.jres{font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:3px}
+.jr-win{background:rgba(0,208,132,.15);color:var(--green)}.jr-loss{background:rgba(255,69,96,.15);color:var(--red)}.jr-be{background:rgba(255,165,0,.15);color:var(--yellow)}.jr-open{background:rgba(77,166,255,.1);color:var(--blue)}
+.jtc-nums{display:flex;gap:10px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.jtc-lesson{font-size:10px;color:var(--muted);margin-top:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+.jdet-wrap{padding:18px}
+.jdet-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--muted)}
+.jdet-hdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
+.jdet-title{font-family:var(--mono);font-size:15px;font-weight:700}
+.jdet-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.jdet-actions{margin-right:auto;display:flex;gap:7px;flex-shrink:0}
+.jsec{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px;margin-bottom:10px}
+.jsec-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px}
+.jgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.jgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.jfld{display:flex;flex-direction:column;gap:2px}.jflbl{font-size:9px;color:var(--muted);letter-spacing:.5px}.jfval{font-family:var(--mono);font-size:12px;font-weight:600}
+.jnotes{font-size:11px;color:var(--text);line-height:1.6;white-space:pre-wrap}
+.jai-hdr{padding:9px 13px;background:rgba(77,166,255,.06);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.jai-title{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--blue)}
+.jai-body{padding:13px}
+.jai-grade-box{display:flex;align-items:center;gap:11px;padding:9px 13px;border-radius:5px;margin-bottom:11px}
+.jai-grade{font-family:var(--mono);font-size:30px;font-weight:700}
+.jai-row{display:flex;gap:7px;margin-bottom:7px;align-items:flex-start}
+.jai-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.jai-lbl{font-size:9px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+.jai-txt{font-size:11px;color:var(--text);line-height:1.5}
+.jai-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.jai-tag{font-size:9px;padding:2px 7px;border-radius:9px;background:rgba(255,69,96,.1);color:var(--red);border:1px solid rgba(255,69,96,.2)}
+.jai-tag.g{background:rgba(0,208,132,.1);color:var(--green);border-color:rgba(0,208,132,.2)}.jai-tag.b{background:rgba(77,166,255,.1);color:var(--blue);border-color:rgba(77,166,255,.2)}
+.j-analyze-btn{background:linear-gradient(135deg,rgba(77,166,255,.2),rgba(0,208,132,.15));border:1px solid rgba(77,166,255,.4);color:var(--blue);font-weight:700;padding:8px 16px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .2s;width:100%}
+.j-analyze-btn:hover{background:linear-gradient(135deg,rgba(77,166,255,.3),rgba(0,208,132,.25))}.j-analyze-btn:disabled{opacity:.4;cursor:not-allowed}
+.jasset-box{border:2px dashed var(--border);border-radius:5px;padding:9px;text-align:center;cursor:pointer;font-size:10px;color:var(--muted);transition:border-color .2s;min-height:65px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.jasset-box:hover{border-color:var(--blue);color:var(--blue)}
+.jmodal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 10px}
+.jmodal{background:var(--surface);border:1px solid var(--border);border-radius:9px;width:100%;max-width:520px;overflow:hidden;margin:auto}
+.jmodal-hdr{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.jmodal-title{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue)}
+.jmodal-close{background:none;color:var(--muted);font-size:17px;padding:0 3px;cursor:pointer;border:none}
+.jmodal-close:hover{color:var(--text)}
+.jmodal-body{padding:16px;display:flex;flex-direction:column;gap:11px}
+.jmodal-foot{padding:12px 17px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end}
+.jform-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.jform-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.jform-grp{display:flex;flex-direction:column;gap:4px}
+.jform-lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.5px}
+.jform-grp input,.jform-grp select,.jform-grp textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:6px 9px;font-size:12px;font-family:inherit;outline:none}
+.jform-grp input:focus,.jform-grp select:focus,.jform-grp textarea:focus{border-color:var(--blue)}
+.jform-grp textarea{resize:vertical;min-height:55px}
+.jbtn-cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border);padding:7px 15px;border-radius:4px;font-size:11px;cursor:pointer}
+.jbtn-save{background:var(--green);color:#0a0e14;font-weight:700;padding:7px 18px;border-radius:4px;font-size:11px;cursor:pointer;border:none}
+.jbtn-save:hover{opacity:.85}
+.jstat-pill{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:9px}
+.jsp-win{background:rgba(0,208,132,.12);color:var(--green);border:1px solid rgba(0,208,132,.3)}.jsp-loss{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.3)}.jsp-open{background:rgba(77,166,255,.1);color:var(--blue);border:1px solid rgba(77,166,255,.2)}
+.jempty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;gap:9px;color:var(--muted)}
+.jcsv-drop{border:2px dashed var(--border);border-radius:5px;padding:16px;text-align:center;cursor:pointer;color:var(--muted);font-size:11px;transition:all .2s}
+.jcsv-drop:hover,.jcsv-drop.cdrag{border-color:var(--blue);background:rgba(77,166,255,.05);color:var(--blue)}
+.jcsv-tbl{width:100%;border-collapse:collapse;font-size:10px}
+.jcsv-tbl th{background:var(--surface2);padding:4px 7px;text-align:right;color:var(--muted);border:1px solid var(--border)}
+.jcsv-tbl td{padding:4px 7px;border:1px solid var(--border);font-family:var(--mono)}
 #dashboard{display:none}
 
 /* ===== MOBILE RESPONSIVE ===== */
@@ -350,6 +425,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <button class="quick-btn" id="tabLegend" onclick="switchTab('legend')">📖 מקרא</button>
       <button class="quick-btn" id="tabSettings" onclick="switchTab('settings')">⚙️ כיוונון</button>
       <button class="quick-btn" id="tabTrades" onclick="switchTab('trades')">📋 עסקאות</button>
+      <button class="quick-btn" id="tabJournal" onclick="switchTab('journal')">📓 יומן</button>
     </div>
   </div>
 
@@ -1030,6 +1106,100 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <button class="popup-close" id="popupClose">✕</button>
     </div>
     <div class="popup-body" id="popupBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JOURNAL PANEL
+═══════════════════════════════════════════════════════ -->
+<div id="journalPanel" style="display:none;flex-direction:column;height:calc(100vh - 185px)">
+  <!-- filter bar -->
+  <div class="jrn-filter">
+    <input type="date" id="jDateFilter" onchange="jApplyFilter()">
+    <select id="jDirFilter" onchange="jApplyFilter()">
+      <option value="">כל הכיוונים</option>
+      <option value="LONG">LONG</option>
+      <option value="SHORT">SHORT</option>
+    </select>
+    <select id="jResFilter" onchange="jApplyFilter()">
+      <option value="">כל התוצאות</option>
+      <option value="WIN">WIN</option>
+      <option value="LOSS">LOSS</option>
+      <option value="BE">Break Even</option>
+      <option value="OPEN">Open</option>
+    </select>
+    <select id="jRevFilter" onchange="jApplyFilter()">
+      <option value="">הכל</option>
+      <option value="reviewed">נסקרו ✓</option>
+      <option value="pending">ממתינות</option>
+    </select>
+    <button class="jqbtn" onclick="jSetDate(0)">היום</button>
+    <button class="jqbtn" onclick="jSetDate(7)">שבוע</button>
+    <button class="jqbtn" onclick="jSetDate(30)">חודש</button>
+    <button class="jqbtn" onclick="jSetDate(null)">הכל</button>
+    <span id="jStatWin"  class="jstat-pill jsp-win"></span>
+    <span id="jStatLoss" class="jstat-pill jsp-loss"></span>
+    <span id="jStatOpen" class="jstat-pill jsp-open"></span>
+    <div style="margin-right:auto;display:flex;gap:7px">
+      <button class="quick-btn" style="font-size:11px;padding:4px 10px" onclick="jShowCsvModal()">📥 CSV</button>
+      <button class="quick-btn" style="font-size:11px;padding:4px 10px;background:var(--blue);color:#000;font-weight:700;border-color:var(--blue)" onclick="jOpenAddModal()">+ הוסף</button>
+    </div>
+  </div>
+  <!-- two-col layout -->
+  <div class="jrn-layout" style="flex:1">
+    <div class="jrn-pane">
+      <div class="jrn-pane-hdr">
+        <div class="jrn-pane-title">📋 עסקאות</div>
+        <span id="jTradeCount" style="font-size:10px;color:var(--muted)"></span>
+      </div>
+      <div id="jTradeList"></div>
+    </div>
+    <div class="jrn-pane" id="jDetailPane">
+      <div class="jdet-empty"><div style="font-size:36px;opacity:.25">📊</div><div>בחר עסקה לסקירה</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="jTradeModal" class="jmodal-backdrop" style="display:none" onclick="if(event.target===this)jCloseModal()">
+  <div class="jmodal">
+    <div class="jmodal-hdr">
+      <div class="jmodal-title" id="jModalTitle">➕ הוספת עסקה</div>
+      <button class="jmodal-close" onclick="jCloseModal()">✕</button>
+    </div>
+    <div class="jmodal-body" id="jModalBody"></div>
+    <div class="jmodal-foot">
+      <button class="jbtn-cancel" onclick="jCloseModal()">ביטול</button>
+      <button class="jbtn-save" onclick="jSaveTrade()">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV IMPORT MODAL -->
+<div id="jCsvModal" class="jmodal-backdrop" style="display:none" onclick="if(event.target===this)jCloseCsvModal()">
+  <div class="jmodal" style="max-width:640px">
+    <div class="jmodal-hdr">
+      <div class="jmodal-title">📥 ייבוא CSV מ-Tradovate</div>
+      <button class="jmodal-close" onclick="jCloseCsvModal()">✕</button>
+    </div>
+    <div class="jmodal-body">
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">ייצא Fills מ-Tradovate: Account → Reports → Export. גרור קובץ או הדבק CSV.</div>
+      <div id="jCsvDrop" class="jcsv-drop"
+        ondragover="event.preventDefault();this.classList.add('cdrag')"
+        ondragleave="this.classList.remove('cdrag')"
+        ondrop="jHandleCsvDrop(event)"
+        onclick="document.getElementById('jCsvFileInput').click()">
+        📁 גרור קובץ CSV לכאן או לחץ לבחירה
+        <input type="file" id="jCsvFileInput" accept=".csv,.txt" style="display:none" onchange="jHandleCsvFile(this)">
+      </div>
+      <textarea id="jCsvPaste" placeholder="או הדבק CSV ישירות..." style="height:80px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:7px;font-family:var(--mono);font-size:10px;resize:vertical;outline:none" oninput="jParseCsvInput(this.value)"></textarea>
+      <div id="jCsvPreview" style="overflow-x:auto;max-height:180px;overflow-y:auto"></div>
+      <div id="jCsvCount" style="font-size:10px;color:var(--muted)"></div>
+    </div>
+    <div class="jmodal-foot">
+      <button class="jbtn-cancel" onclick="jCloseCsvModal()">ביטול</button>
+      <button class="jbtn-save" id="jBtnImport" style="display:none" onclick="jConfirmCsvImport()">✓ ייבא</button>
+    </div>
   </div>
 </div>
 
@@ -2265,10 +2435,13 @@ function switchTab(tab) {
   document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
   document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
+  document.getElementById('journalPanel').style.display   = tab === 'journal'   ? 'flex' : 'none';
+  document.getElementById('tabJournal').classList.toggle('active',   tab === 'journal');
   if (tab === 'analytics') updateAnalytics(allSignals);
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
   if (tab === 'trades')    renderTradesDashboard(allSignals);
+  if (tab === 'journal')   jrnInit();
 }
 
 function updateAnalytics(items) {
@@ -3306,6 +3479,536 @@ function btUpdate(){
 }
 // ═══════════════════════════════════════════════════════════════════
 
-</script>
+// ═══════════════════════════════════════════════════════════════════
+// JOURNAL MODULE
+// ═══════════════════════════════════════════════════════════════════
+var jAllTrades = [], jFiltered = [], jSelected = null, jEditingId = null;
+var jPendingCsv = [], jAssets = {}; // jAssets[id] = {imageB64, imageType, candles, candlesSummary}
+var jInited = false;
+
+var JRN_LIST = 'TradingJournal';
+var JRN_TYPE = 'SP.Data.TradingJournalListItem';
+var JRN_SIG  = {'T1_BOS':'T1 BOS/CHoCH','T2_SR':'T2 S/R Break','T3_SWEEP':'T3 Sweep Rev','T4_INST':'T4 Inst.Sweep',
+  'T5_OB':'T5 OB+Struct','T6_FVG':'T6 FVG','T7_FB':'T7 False Break','T8_SD':'T8 S/D Zone','T8_HPZ':'T8 HPZ',
+  'T9_EMA':'T9 EMA Pull','T10_HL':'T10 HL/LH','T11_ENG':'T11 Engulf','T12_REV':'T12 Reversal',
+  'T13_RSI':'T13 RSI Div','MANUAL':'ידני'};
+
+async function jrnInit() {
+  if (jInited) return;
+  jInited = true;
+  await jLoadTrades();
+}
+
+async function jSpFetch(url, opts) {
+  opts = opts || {};
+  const tok = await getToken();
+  const r = await fetch(SITE + url, Object.assign({}, opts, {
+    headers: Object.assign({'Authorization':'Bearer '+tok,'Accept':'application/json;odata=verbose','Content-Type':'application/json;odata=verbose'}, opts.headers||{})
+  }));
+  if (!r.ok) throw new Error('SP '+r.status);
+  return r.status === 204 ? null : r.json();
+}
+
+async function jLoadTrades() {
+  try {
+    var d = await jSpFetch("/_api/web/lists/getbytitle('"+JRN_LIST+"')/items?$orderby=TradeDate%20desc&$top=500&$select=ID,Title,TradeDate,Direction,SignalType,EntryPrice,StopLoss,TakeProfit1,TakeProfit2,ExitPrice,TradeResult,PnLPoints,TraderNotes,AIReview,Platform,Reviewed");
+    jAllTrades = d.d.results;
+    jApplyFilter();
+    jUpdateHdrStats();
+  } catch(e) {
+    if (e.message.indexOf('404') >= 0) {
+      document.getElementById('jTradeList').innerHTML = '<div class="jempty"><div style="font-size:28px">⚠️</div><div style="color:var(--red)">רשימת TradingJournal לא נמצאה</div><div style="font-size:10px;text-align:center;padding:0 20px">צור רשימה בשם TradingJournal ב-SharePoint עם עמודות: TradeDate, Direction, SignalType, EntryPrice, StopLoss, TakeProfit1, TakeProfit2, ExitPrice, TradeResult, PnLPoints, TraderNotes, AIReview (multiline), Platform, Reviewed (Yes/No)</div></div>';
+    }
+  }
+}
+
+async function jCreateTrade(data) {
+  var body = Object.assign({'__metadata':{'type':JRN_TYPE}}, data);
+  var r = await jSpFetch("/_api/web/lists/getbytitle('"+JRN_LIST+"')/items", {method:'POST',body:JSON.stringify(body)});
+  return r.d;
+}
+
+async function jUpdateTrade(id, data) {
+  var body = Object.assign({'__metadata':{'type':JRN_TYPE}}, data);
+  await jSpFetch("/_api/web/lists/getbytitle('"+JRN_LIST+"')/items("+id+")", {
+    method:'POST', body:JSON.stringify(body),
+    headers:{'X-HTTP-Method':'MERGE','IF-MATCH':'*'}
+  });
+}
+
+// ── FILTER ─────────────────────────────────────────────────────────
+function jApplyFilter() {
+  var date = document.getElementById('jDateFilter').value;
+  var dir  = document.getElementById('jDirFilter').value;
+  var res  = document.getElementById('jResFilter').value;
+  var rev  = document.getElementById('jRevFilter').value;
+  jFiltered = jAllTrades.filter(function(t) {
+    if (date && t.TradeDate && t.TradeDate.substring(0,10) < date) return false;
+    if (dir && t.Direction !== dir) return false;
+    if (res && t.TradeResult !== res) return false;
+    if (rev === 'reviewed' && !t.Reviewed) return false;
+    if (rev === 'pending'  &&  t.Reviewed) return false;
+    return true;
+  });
+  jRenderList();
+  jUpdateStats();
+}
+
+function jSetDate(days) {
+  var f = document.getElementById('jDateFilter');
+  if (days === null) { f.value = ''; jApplyFilter(); return; }
+  var d = new Date(); d.setDate(d.getDate() - days);
+  f.value = d.toISOString().substring(0,10);
+  jApplyFilter();
+}
+
+function jUpdateStats() {
+  var wins  = jFiltered.filter(function(t){return t.TradeResult==='WIN';}).length;
+  var losses= jFiltered.filter(function(t){return t.TradeResult==='LOSS';}).length;
+  var open  = jFiltered.filter(function(t){return !t.TradeResult||t.TradeResult==='OPEN';}).length;
+  document.getElementById('jStatWin').textContent  = wins  +' ✓ WIN';
+  document.getElementById('jStatLoss').textContent = losses+' ✗ LOSS';
+  document.getElementById('jStatOpen').textContent = open  +' ○';
+  document.getElementById('jTradeCount').textContent = jFiltered.length+' עסקאות';
+}
+
+function jUpdateHdrStats() {
+  var total = jAllTrades.length;
+  var rev   = jAllTrades.filter(function(t){return t.Reviewed;}).length;
+  var wins  = jAllTrades.filter(function(t){return t.TradeResult==='WIN';}).length;
+  var closed= jAllTrades.filter(function(t){return t.TradeResult==='WIN'||t.TradeResult==='LOSS';}).length;
+  var wr    = closed>0?Math.round(wins/closed*100):0;
+  // Could show in header if desired
+}
+
+// ── RENDER LIST ────────────────────────────────────────────────────
+function jRenderList() {
+  var el = document.getElementById('jTradeList');
+  if (!jFiltered.length) {
+    el.innerHTML = '<div class="jempty"><div style="font-size:28px;opacity:.3">📋</div><div>אין עסקאות</div></div>';
+    return;
+  }
+  var html = '';
+  for (var i=0; i<jFiltered.length; i++) {
+    var t = jFiltered[i];
+    var dCls = t.Direction==='LONG'?'jtc-long':'jtc-short';
+    var rCls = {WIN:'jr-win',LOSS:'jr-loss',BE:'jr-be',PARTIAL:'jr-be',OPEN:'jr-open'}[t.TradeResult]||'jr-open';
+    var grade='',gCls='',lesson='';
+    try { var ai=JSON.parse(t.AIReview||'{}'); grade=ai.overall_grade||''; lesson=ai.lesson||ai.mistake||''; gCls={A:'jg-a',B:'jg-b',C:'jg-c',D:'jg-d'}[grade]||''; } catch(e){}
+    var ds = t.TradeDate ? new Date(t.TradeDate).toLocaleString('he-IL',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    var pnl = t.PnLPoints||0;
+    var pnlStr = pnl?(pnl>0?'+':'')+pnl+' pts':'';
+    var pnlCol = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+    var sel = jSelected&&jSelected.ID===t.ID?' sel':'';
+    var dim = t.Reviewed?'':' dim';
+    var sig = t.SignalType?(t.SignalType.split('_')[0]):'';
+    html += '<div class="jtc'+sel+dim+'" onclick="jSelectTrade('+t.ID+')">';
+    html += '<div class="jtc-top"><span class="jtc-dir '+dCls+'">'+t.Direction+'</span>';
+    if (sig) html += '<span class="jtc-type">'+sig+'</span>';
+    html += '<span class="jtc-time">'+ds+'</span>';
+    if (grade) html += '<span class="jtc-grade '+gCls+'">'+grade+'</span>';
+    html += '<span class="jres '+rCls+'">'+(t.TradeResult||'Open')+'</span></div>';
+    html += '<div class="jtc-nums"><span>כניסה: <b>'+(t.EntryPrice||'—')+'</b></span><span>SL: '+(t.StopLoss||'—')+'</span><span>TP2: '+(t.TakeProfit2||'—')+'</span>';
+    if (pnlStr) html += '<span style="font-weight:700;color:'+pnlCol+'">'+pnlStr+'</span>';
+    html += '</div>';
+    if (lesson) html += '<div class="jtc-lesson">💡 '+jEsc(lesson)+'</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// ── DETAIL ─────────────────────────────────────────────────────────
+function jSelectTrade(id) {
+  jSelected = jAllTrades.find(function(t){return t.ID===id;});
+  jRenderList();
+  jRenderDetail(jSelected);
+}
+
+function jRenderDetail(t) {
+  var el = document.getElementById('jDetailPane');
+  if (!t) { el.innerHTML = '<div class="jdet-empty"><div style="font-size:36px;opacity:.25">📊</div><div>בחר עסקה</div></div>'; return; }
+  var ai = null; try { ai = JSON.parse(t.AIReview||'null'); } catch(e){}
+  var ds = t.TradeDate ? new Date(t.TradeDate).toLocaleString('he-IL',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  var pnl = t.PnLPoints||0;
+  var pnlStr = (pnl>=0?'+':'')+pnl;
+  var pnlCol = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+  var dCls = t.Direction==='LONG'?'jtc-long':'jtc-short';
+  var assets = jAssets[t.ID]||{};
+  var hasImg = !!assets.imageB64, hasCsv = !!(assets.candles&&assets.candles.length);
+
+  var html = '<div class="jdet-wrap">';
+  html += '<div class="jdet-hdr"><div><div class="jdet-title" style="display:flex;align-items:center;gap:9px"><span class="jtc-dir '+dCls+'">'+t.Direction+'</span><span>'+(JRN_SIG[t.SignalType]||t.SignalType||'ידני')+'</span></div><div class="jdet-sub">'+ds+' · '+(t.Platform||'ידני')+'</div></div>';
+  html += '<div class="jdet-actions"><button class="quick-btn" style="font-size:11px" onclick="jOpenEditModal('+t.ID+')">✏️ ערוך</button><button class="quick-btn" style="font-size:11px;color:var(--red)" onclick="jDeleteTrade('+t.ID+')">🗑</button></div></div>';
+
+  // Price data
+  html += '<div class="jsec"><div class="jsec-title">📊 נתוני עסקה</div><div class="jgrid3" style="margin-bottom:9px">';
+  html += '<div class="jfld"><div class="jflbl">כניסה</div><div class="jfval">'+(t.EntryPrice||'—')+'</div></div>';
+  html += '<div class="jfld"><div class="jflbl">יציאה</div><div class="jfval">'+(t.ExitPrice||'—')+'</div></div>';
+  html += '<div class="jfld"><div class="jflbl">P&L</div><div class="jfval" style="color:'+pnlCol+'">'+pnlStr+' pts</div></div></div>';
+  html += '<div class="jgrid3"><div class="jfld"><div class="jflbl">Stop Loss</div><div class="jfval" style="color:var(--red)">'+(t.StopLoss||'—')+'</div></div>';
+  html += '<div class="jfld"><div class="jflbl">TP1</div><div class="jfval" style="color:var(--yellow)">'+(t.TakeProfit1||'—')+'</div></div>';
+  html += '<div class="jfld"><div class="jflbl">TP2</div><div class="jfval" style="color:var(--green)">'+(t.TakeProfit2||'—')+'</div></div></div>';
+  if (t.TradeResult) { var rc={WIN:'jr-win',LOSS:'jr-loss',BE:'jr-be',PARTIAL:'jr-be',OPEN:'jr-open'}[t.TradeResult]||'jr-open'; html += '<div style="margin-top:9px"><span class="jres '+rc+'" style="padding:3px 9px;font-size:11px">'+t.TradeResult+'</span></div>'; }
+  html += '</div>';
+
+  // Notes
+  if (t.TraderNotes) html += '<div class="jsec"><div class="jsec-title">📝 הערות</div><div class="jnotes">'+jEsc(t.TraderNotes)+'</div></div>';
+
+  // Chart assets section
+  html += '<div class="jsec"><div class="jsec-title" style="display:flex;align-items:center;justify-content:space-between"><span>📎 נתוני גרף לניתוח AI</span><span style="font-size:9px;color:var(--muted);font-weight:400">זיכרון בלבד</span></div>';
+  html += '<div class="jgrid2">';
+  // Image
+  html += '<div><div style="font-size:9px;color:var(--muted);margin-bottom:4px">📸 גרף / תמונה</div>';
+  html += '<div class="jasset-box" id="jImgBox_'+t.ID+'" onclick="jTriggerImg('+t.ID+')" onmouseover="this.style.borderColor=\'var(--blue)\'" onmouseout="this.style.borderColor=\'var(--border)\'">';
+  if (hasImg) html += '<img src="'+assets.imageB64+'" style="max-width:100%;max-height:55px;border-radius:3px"><div style="font-size:9px;color:var(--green)">✓ גרף נטען</div>';
+  else html += '<span style="font-size:18px">🖼</span><span>לחץ / Ctrl+V</span>';
+  html += '</div><input type="file" id="jImgInput_'+t.ID+'" accept="image/*" style="display:none" onchange="jHandleImgFile('+t.ID+',this)"></div>';
+  // Candles
+  html += '<div><div style="font-size:9px;color:var(--muted);margin-bottom:4px">📊 נרות CSV</div>';
+  html += '<div class="jasset-box" id="jCsvBox_'+t.ID+'" onclick="jTriggerCsv('+t.ID+')" onmouseover="this.style.borderColor=\'var(--blue)\'" onmouseout="this.style.borderColor=\'var(--border)\'">';
+  if (hasCsv) html += '<span style="font-size:18px">📊</span><span style="color:var(--green)">✓ '+assets.candles.length+' נרות</span><span style="font-size:9px">'+(assets.candlesSummary||'')+'</span>';
+  else html += '<span style="font-size:18px">📊</span><span>CSV מ-TradingView</span>';
+  html += '</div><input type="file" id="jCsvInput_'+t.ID+'" accept=".csv" style="display:none" onchange="jHandleCsvFile2('+t.ID+',this)"></div></div>';
+  var hasAssets = hasImg||hasCsv;
+  html += '<div style="margin-top:7px;font-size:10px;text-align:center;color:'+(hasAssets?'var(--green)':'var(--muted)')+'">'+
+    (hasAssets?'✅ הקשר מוכן — הניתוח ישתמש בנתונים אלו':'הוסף גרף / נרות לניתוח עמוק יותר — אופציונלי')+'</div></div>';
+
+  // AI Review
+  html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:10px">';
+  html += '<div class="jai-hdr"><span style="font-size:15px">🧠</span><div class="jai-title">סקירת AI — ניתוח איכותי</div>'+(t.Reviewed?'<span style="font-size:9px;color:var(--green);margin-right:auto">✓ נסקר</span>':'<span style="margin-right:auto"></span>')+'</div>';
+  html += '<div class="jai-body">';
+  if (ai) {
+    html += jRenderAI(ai);
+    html += '<div style="margin-top:9px"><button class="j-analyze-btn" onclick="jAnalyzeTrade()" style="opacity:.6;font-size:10px">↺ עדכן ניתוח</button></div>';
+  } else {
+    html += '<div style="text-align:center;padding:9px 0">';
+    html += '<div style="font-size:11px;color:var(--muted);margin-bottom:10px">הניתוח AI עדיין לא בוצע</div>';
+    if (hasAssets) html += '<div style="font-size:10px;color:var(--blue);margin-bottom:7px">📎 הקשר גרף מוכן</div>';
+    else html += '<div style="font-size:10px;color:var(--muted);margin-bottom:7px">הוסף גרף/נרות לניתוח עמוק יותר</div>';
+    html += '<button class="j-analyze-btn" id="jAnalyzeBtn" onclick="jAnalyzeTrade()">🧠 נתח עם AI</button></div>';
+  }
+  html += '</div></div>';
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function jRenderAI(ai) {
+  var gc={A:'var(--green)',B:'var(--blue)',C:'var(--yellow)',D:'var(--red)'}[ai.overall_grade]||'var(--muted)';
+  var gb={A:'rgba(0,208,132,.08)',B:'rgba(77,166,255,.08)',C:'rgba(255,165,0,.08)',D:'rgba(255,69,96,.08)'}[ai.overall_grade]||'rgba(255,255,255,.03)';
+  var slMap={too_tight:'🔴 קצר מדי',correct:'✅ תקין',too_wide:'🟡 רחב מדי'};
+  var tmMap={early:'🟡 מוקדם',correct:'✅ תזמון טוב',late:'🔴 מאחר'};
+  var h='<div class="jai-grade-box" style="background:'+gb+';border:1px solid '+gc+'40">';
+  h+='<div class="jai-grade" style="color:'+gc+'">'+(ai.overall_grade||'—')+'</div>';
+  h+='<div><div style="font-size:10px;color:var(--muted)">ציון כולל</div><div style="font-size:11px;margin-top:2px">'+(ai.grade_note||'')+'</div>';
+  h+='<div style="font-size:10px;color:var(--muted);margin-top:2px">Setup: '+(ai.setup_valid?'✅':'❌')+' · '+(ai.setup_score||'—')+'/10</div></div></div>';
+  if (ai.what_was_right) h+='<div class="jai-row"><div class="jai-icon">✅</div><div><div class="jai-lbl">מה עשית נכון</div><div class="jai-txt">'+jEsc(ai.what_was_right)+'</div></div></div>';
+  if (ai.blind_spots&&ai.blind_spots.length) h+='<div class="jai-row"><div class="jai-icon">🔍</div><div><div class="jai-lbl">Blind Spots</div><div class="jai-tags">'+ai.blind_spots.map(function(b){return'<span class="jai-tag">'+jEsc(b)+'</span>';}).join('')+'</div></div></div>';
+  if (ai.missed_confluence&&ai.missed_confluence.length) h+='<div class="jai-row"><div class="jai-icon">🧩</div><div><div class="jai-lbl">Confluence חסרה</div><div class="jai-tags">'+ai.missed_confluence.map(function(b){return'<span class="jai-tag b">'+jEsc(b)+'</span>';}).join('')+'</div></div></div>';
+  if (ai.sl_assessment) h+='<div class="jai-row"><div class="jai-icon">🛑</div><div><div class="jai-lbl">SL</div><div class="jai-txt">'+(slMap[ai.sl_assessment]||ai.sl_assessment)+' · '+jEsc(ai.sl_note||'')+'</div></div></div>';
+  if (ai.entry_timing)  h+='<div class="jai-row"><div class="jai-icon">⏱</div><div><div class="jai-lbl">תזמון</div><div class="jai-txt">'+(tmMap[ai.entry_timing]||ai.entry_timing)+' · '+jEsc(ai.entry_note||'')+'</div></div></div>';
+  if (ai.mistake) h+='<div class="jai-row"><div class="jai-icon">⚠️</div><div><div class="jai-lbl">הטעות</div><div class="jai-txt" style="color:var(--red)">'+jEsc(ai.mistake)+'</div></div></div>';
+  if (ai.lesson)  h+='<div class="jai-row"><div class="jai-icon">💡</div><div><div class="jai-lbl">לקח</div><div class="jai-txt" style="color:var(--green);font-weight:600">'+jEsc(ai.lesson)+'</div></div></div>';
+  return h;
+}
+
+// ── AI ANALYSIS ────────────────────────────────────────────────────
+async function jAnalyzeTrade() {
+  if (!jSelected) return;
+  var apiKey = localStorage.getItem('claude_api_key');
+  if (!apiKey) { showNotification('הכנס API Key בהגדרות (🔑)','warn'); return; }
+  var model = localStorage.getItem('jrn_model') || 'claude-sonnet-4-20250514';
+  var btn = document.getElementById('jAnalyzeBtn');
+  if (btn) { btn.disabled=true; btn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(77,166,255,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle"></span> מנתח...'; }
+  var t = jSelected;
+  var sigName = JRN_SIG[t.SignalType]||t.SignalType||'ידני';
+  var pnl = t.PnLPoints||0;
+  var rrA = (t.EntryPrice&&t.StopLoss&&t.ExitPrice)?Math.abs((t.ExitPrice-t.EntryPrice)/(t.EntryPrice-t.StopLoss)).toFixed(2):'?';
+  var assets = jAssets[t.ID]||{};
+  var hasImg = !!assets.imageB64, hasCsv = !!(assets.candles&&assets.candles.length);
+  var candlesText = hasCsv ? jBuildCandlesText(assets.candles) : '';
+  var prompt = 'אתה מאמן מסחר מומחה ב-SMC/ICT עבור MNQ futures.\nהמטרה: לנתח עסקה זו לצרכי למידה — לא סטטיסטיקה.\n'+
+    (hasImg?'[צילום גרף צורף — נתח מבנה, zones, SMC]\n':'')+
+    (hasCsv?'[נתוני נרות צורפו — נתח מגמה, volume, ATR]\n':'')+
+    '\nנתוני העסקה:\n- כיוון: '+t.Direction+'\n- סיגנל: '+sigName+
+    '\n- כניסה: '+t.EntryPrice+' | SL: '+t.StopLoss+' | TP1: '+t.TakeProfit1+' | TP2: '+t.TakeProfit2+
+    '\n- יציאה: '+(t.ExitPrice||'—')+' | תוצאה: '+(t.TradeResult||'OPEN')+' | P&L: '+pnl+' | RR: '+rrA+
+    '\n\nהערות: '+(t.TraderNotes||'ללא')+
+    candlesText+
+    '\n\nקריטריונים MNQ Engine:\nT1 BOS/CHoCH: bias+dynEMA+מבנה+מומנטום\nT2 S/R: bias+dynEMA+שבירה\nT3 Sweep: sweep+דחייה+dynEMA\nT4 Inst: reclaim נזילות+vol>1.2x\nT5 OB: OB+BOS/CHoCH\nT6 FVG: retest FVG+כיוון\nT7 FB: fake break+היפוך\nT8 S/D: זון+bias+RSI ניטרלי\nT9 EMA: פולבק EMA8+מגמה+vol\nT10 HL/LH: שבירת HL/LH+מומנטום\nT11 Engulf: בליעה+vol+מגמה\nT12 Rev: קצה 20-period+RSI+מבנה\nT13 RSI: דיברגנציה 8pt+vol+מבנה'+
+    '\n\nענה ONLY JSON:\n{"setup_valid":true,"setup_score":7,"what_was_right":"","blind_spots":["",""],"missed_confluence":["",""],"sl_assessment":"too_tight","sl_note":"","entry_timing":"correct","entry_note":"","mistake":"","lesson":"","overall_grade":"B","grade_note":""}';
+  try {
+    var userContent = hasImg ? [
+      {type:'image',source:{type:'base64',media_type:assets.imageType||'image/png',data:assets.imageB64.split(',')[1]}},
+      {type:'text',text:prompt}
+    ] : prompt;
+    var resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:model,max_tokens:1000,messages:[{role:'user',content:userContent}]})
+    });
+    if (!resp.ok) throw new Error('API '+resp.status);
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(c){return c.text||'';}).join('');
+    var j1=text.indexOf('{'),j2=text.lastIndexOf('}');
+    if (j1!==-1&&j2>j1) text=text.substring(j1,j2+1);
+    var aiRes = JSON.parse(text);
+    await jUpdateTrade(t.ID,{AIReview:JSON.stringify(aiRes),Reviewed:true});
+    t.AIReview = JSON.stringify(aiRes); t.Reviewed = true;
+    var idx = jAllTrades.findIndex(function(x){return x.ID===t.ID;});
+    if (idx>=0){jAllTrades[idx].AIReview=t.AIReview;jAllTrades[idx].Reviewed=true;}
+    jRenderDetail(t); jRenderList();
+    if (typeof showNotification === 'function') showNotification('✅ ניתוח AI הושלם ונשמר','success');
+  } catch(e) {
+    if (btn){btn.disabled=false;btn.textContent='🧠 נסה שוב';}
+    if (typeof showNotification === 'function') showNotification('שגיאה: '+e.message,'error');
+  }
+}
+
+// ── CHART ASSETS ───────────────────────────────────────────────────
+function jTriggerImg(id) { document.getElementById('jImgInput_'+id).click(); }
+function jTriggerCsv(id) { document.getElementById('jCsvInput_'+id).click(); }
+
+function jHandleImgFile(id, input) {
+  var file = input.files[0]; if (!file) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    if (!jAssets[id]) jAssets[id]={};
+    jAssets[id].imageB64 = ev.target.result; jAssets[id].imageType = file.type||'image/png';
+    jRenderDetail(jSelected);
+  };
+  r.readAsDataURL(file);
+}
+
+function jHandleCsvFile2(id, input) {
+  var file = input.files[0]; if (!file) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    var candles = jParseCandles(ev.target.result);
+    if (!candles.length) return;
+    if (!jAssets[id]) jAssets[id]={};
+    jAssets[id].candles = candles; jAssets[id].candlesSummary = jCandlesSummary(candles);
+    jRenderDetail(jSelected);
+  };
+  r.readAsText(file);
+}
+
+// Global paste → route to selected trade
+document.addEventListener('paste', function(e) {
+  var items = (e.clipboardData||window.clipboardData).items;
+  for (var i=0;i<items.length;i++) {
+    if (items[i].type.indexOf('image')!==-1) {
+      var blob = items[i].getAsFile();
+      var rd = new FileReader();
+      rd.onload = (function(b){return function(ev){
+        if (jSelected && document.getElementById('journalPanel') && document.getElementById('journalPanel').style.display!=='none') {
+          var id=jSelected.ID;
+          if (!jAssets[id]) jAssets[id]={};
+          jAssets[id].imageB64=ev.target.result; jAssets[id].imageType='image/png';
+          jRenderDetail(jSelected);
+          if (typeof showNotification==='function') showNotification('📸 גרף הודבק לעסקה','success');
+        }
+      };})(blob);
+      rd.readAsDataURL(blob); break;
+    }
+  }
+});
+
+function jParseCandles(text) {
+  var lines = text.trim().split('\n').filter(function(l){return l.trim()&&!l.startsWith('#');});
+  if (lines.length < 2) return [];
+  var hdr = lines[0].split(',').map(function(h){return h.trim().replace(/["']/g,'').toLowerCase();});
+  var fT=hdr.findIndex(function(h){return h.includes('time')||h.includes('date');}),
+      fO=hdr.findIndex(function(h){return h==='open'||h==='o';}),
+      fH=hdr.findIndex(function(h){return h==='high'||h==='h';}),
+      fL=hdr.findIndex(function(h){return h==='low'||h==='l';}),
+      fC=hdr.findIndex(function(h){return h==='close'||h==='c';}),
+      fV=hdr.findIndex(function(h){return h.includes('vol');});
+  if (fC<0) return [];
+  return lines.slice(1).map(function(l){
+    var v=l.split(',').map(function(x){return x.trim().replace(/["']/g,'');});
+    return {t:fT>=0?v[fT]:'',o:fO>=0?parseFloat(v[fO]):null,h:fH>=0?parseFloat(v[fH]):null,l:fL>=0?parseFloat(v[fL]):null,c:parseFloat(v[fC]),v:fV>=0?parseFloat(v[fV]):null};
+  }).filter(function(c){return !isNaN(c.c);});
+}
+
+function jCandlesSummary(candles) {
+  var last=candles.slice(-40);
+  var closes=last.map(function(c){return c.c;});
+  var trend=closes[closes.length-1]>closes[0]?'▲ עולה':'▼ יורד';
+  var rng=(Math.max.apply(null,last.map(function(c){return c.h||c.c;}))-Math.min.apply(null,last.map(function(c){return c.l||c.c;}))).toFixed(1);
+  return trend+' | Range: '+rng;
+}
+
+function jBuildCandlesText(candles) {
+  var last20=candles.slice(-20);
+  var rows=last20.map(function(c){return (c.t||'').substring(0,16)+' | '+(c.o||'')+'|'+(c.h||'')+'|'+(c.l||'')+'|'+c.c+'|'+Math.round(c.v||0);}).join('\n');
+  return '\n\nנרות ('+last20.length+' אחרונים) time|O|H|L|C|Vol:\n'+rows+'\nסיכום: '+jCandlesSummary(candles);
+}
+
+// ── ADD / EDIT MODAL ────────────────────────────────────────────────
+function jOpenAddModal() {
+  jEditingId = null;
+  document.getElementById('jModalTitle').textContent = '➕ הוספת עסקה';
+  jRenderForm({});
+  document.getElementById('jTradeModal').style.display = 'flex';
+}
+
+function jOpenEditModal(id) {
+  var t = jAllTrades.find(function(x){return x.ID===id;});
+  if (!t) return;
+  jEditingId = id;
+  document.getElementById('jModalTitle').textContent = '✏️ עריכת עסקה';
+  jRenderForm(t);
+  document.getElementById('jTradeModal').style.display = 'flex';
+}
+
+function jCloseModal() { document.getElementById('jTradeModal').style.display='none'; jEditingId=null; }
+
+function jRenderForm(t) {
+  var sigOpts = Object.entries(JRN_SIG).map(function(e){return '<option value="'+e[0]+'"'+(t.SignalType===e[0]?' selected':'')+'>'+e[1]+'</option>';}).join('');
+  document.getElementById('jModalBody').innerHTML =
+    '<div class="jform-row"><div class="jform-grp"><label class="jform-lbl">תאריך + שעה</label><input type="datetime-local" id="jf_date" value="'+(t.TradeDate?new Date(t.TradeDate).toISOString().slice(0,16):new Date().toISOString().slice(0,16))+'"></div>'+
+    '<div class="jform-grp"><label class="jform-lbl">כיוון</label><select id="jf_dir"><option value="LONG"'+(t.Direction==='LONG'?' selected':'')+'>▲ LONG</option><option value="SHORT"'+(t.Direction==='SHORT'?' selected':'')+'>▼ SHORT</option></select></div></div>'+
+    '<div class="jform-row"><div class="jform-grp"><label class="jform-lbl">סוג סיגנל</label><select id="jf_type">'+sigOpts+'</select></div>'+
+    '<div class="jform-grp"><label class="jform-lbl">פלטפורמה</label><select id="jf_plat"><option value="Tradovate"'+(t.Platform==='Tradovate'?' selected':'')+'>Tradovate</option><option value="TradingView"'+(t.Platform==='TradingView'?' selected':'')+'>TradingView</option><option value="ידני"'+(t.Platform==='ידני'?' selected':'')+'>ידני</option></select></div></div>'+
+    '<div class="jform-row3"><div class="jform-grp"><label class="jform-lbl">כניסה</label><input type="number" id="jf_entry" step="0.25" value="'+(t.EntryPrice||'')+'"></div>'+
+    '<div class="jform-grp"><label class="jform-lbl">Stop Loss</label><input type="number" id="jf_sl" step="0.25" value="'+(t.StopLoss||'')+'"></div>'+
+    '<div class="jform-grp"><label class="jform-lbl">יציאה</label><input type="number" id="jf_exit" step="0.25" value="'+(t.ExitPrice||'')+'"></div></div>'+
+    '<div class="jform-row3"><div class="jform-grp"><label class="jform-lbl">TP1</label><input type="number" id="jf_tp1" step="0.25" value="'+(t.TakeProfit1||'')+'"></div>'+
+    '<div class="jform-grp"><label class="jform-lbl">TP2</label><input type="number" id="jf_tp2" step="0.25" value="'+(t.TakeProfit2||'')+'"></div>'+
+    '<div class="jform-grp"><label class="jform-lbl">תוצאה</label><select id="jf_result"><option value="OPEN"'+((!t.TradeResult||t.TradeResult==='OPEN')?' selected':'')+'>פתוחה</option><option value="WIN"'+(t.TradeResult==='WIN'?' selected':'')+'>WIN ✓</option><option value="LOSS"'+(t.TradeResult==='LOSS'?' selected':'')+'>LOSS ✗</option><option value="BE"'+(t.TradeResult==='BE'?' selected':'')+'>Break Even</option><option value="PARTIAL"'+(t.TradeResult==='PARTIAL'?' selected':'')+'>Partial</option></select></div></div>'+
+    '<div class="jform-grp"><label class="jform-lbl">הערות — מה ראית, מה הרגשת</label><textarea id="jf_notes" rows="3" placeholder="פרט את ההיגיון, ספקות, מה הניע אותך...">'+(t.TraderNotes||'')+'</textarea></div>';
+}
+
+async function jSaveTrade() {
+  var date  = document.getElementById('jf_date').value;
+  var dir   = document.getElementById('jf_dir').value;
+  var type  = document.getElementById('jf_type').value;
+  var plat  = document.getElementById('jf_plat').value;
+  var entry = parseFloat(document.getElementById('jf_entry').value)||null;
+  var sl    = parseFloat(document.getElementById('jf_sl').value)||null;
+  var exit  = parseFloat(document.getElementById('jf_exit').value)||null;
+  var tp1   = parseFloat(document.getElementById('jf_tp1').value)||null;
+  var tp2   = parseFloat(document.getElementById('jf_tp2').value)||null;
+  var res   = document.getElementById('jf_result').value;
+  var notes = document.getElementById('jf_notes').value||'';
+  if (!dir||!entry) return;
+  var pnl = (exit&&entry) ? Math.round((dir==='LONG'?exit-entry:entry-exit)*100)/100 : null;
+  var data = {
+    Title:(dir||'?')+' '+(date||'').substring(0,10),
+    TradeDate:date?new Date(date).toISOString():new Date().toISOString(),
+    Direction:dir, SignalType:type, EntryPrice:entry, StopLoss:sl,
+    TakeProfit1:tp1, TakeProfit2:tp2, ExitPrice:exit, TradeResult:res,
+    PnLPoints:pnl, TraderNotes:notes, Platform:plat, Reviewed:false
+  };
+  var btn = document.querySelector('#jTradeModal .jbtn-save');
+  btn.disabled=true; btn.textContent='...';
+  try {
+    if (jEditingId) {
+      await jUpdateTrade(jEditingId, data);
+      var idx=jAllTrades.findIndex(function(t){return t.ID===jEditingId;});
+      if (idx>=0) Object.assign(jAllTrades[idx], data);
+    } else {
+      var created = await jCreateTrade(data);
+      if (created) jAllTrades.unshift(Object.assign({},data,{ID:created.ID}));
+    }
+    jCloseModal(); jApplyFilter(); jUpdateHdrStats();
+    if (jEditingId&&jSelected&&jSelected.ID===jEditingId) { jSelected=jAllTrades.find(function(t){return t.ID===jEditingId;}); jRenderDetail(jSelected); }
+  } catch(e) { btn.disabled=false; btn.textContent='💾 שמור'; }
+}
+
+async function jDeleteTrade(id) {
+  if (!confirm('למחוק?')) return;
+  try {
+    await jSpFetch("/_api/web/lists/getbytitle('"+JRN_LIST+"')/items("+id+")",{method:'POST',body:'{}',headers:{'X-HTTP-Method':'DELETE','IF-MATCH':'*'}});
+    jAllTrades = jAllTrades.filter(function(t){return t.ID!==id;});
+    if (jSelected&&jSelected.ID===id){jSelected=null;jRenderDetail(null);}
+    jApplyFilter(); jUpdateHdrStats();
+  } catch(e) {}
+}
+
+// ── CSV IMPORT ──────────────────────────────────────────────────────
+function jShowCsvModal() { document.getElementById('jCsvModal').style.display='flex'; }
+function jCloseCsvModal() { document.getElementById('jCsvModal').style.display='none'; jPendingCsv=[]; }
+
+function jHandleCsvDrop(e) {
+  e.preventDefault(); document.getElementById('jCsvDrop').classList.remove('cdrag');
+  var file=e.dataTransfer.files[0]; if (!file) return;
+  var r=new FileReader(); r.onload=function(ev){jParseCsvInput(ev.target.result);}; r.readAsText(file);
+}
+
+function jHandleCsvFile(input) {
+  var file=input.files[0]; if (!file) return;
+  var r=new FileReader(); r.onload=function(ev){jParseCsvInput(ev.target.result);}; r.readAsText(file);
+}
+
+function jParseCsvInput(text) {
+  if (!text||text.trim().length<10) return;
+  var lines=text.trim().split('\n').filter(function(l){return l.trim();});
+  if (lines.length<2) return;
+  var hdr=lines[0].split(',').map(function(h){return h.trim().replace(/"/g,'').toLowerCase();});
+  var rows=lines.slice(1).map(function(l){var v=l.split(',').map(function(x){return x.trim().replace(/"/g,'');}); var o={}; hdr.forEach(function(h,i){o[h]=v[i]||'';}); return o;});
+  var find=function(keys){return keys.find(function(k){return hdr.some(function(h){return h.includes(k);});});};
+  var dC=find(['fill date','trade date','date/time','tradedate','date']),
+      dirC=find(['b/s','direction','side','buysell']),
+      prC=find(['price','entry price','fill price']),
+      exC=find(['exit price']),
+      pnlC=find(['realized p/l','p/l','pnl','profit']);
+  jPendingCsv = rows.filter(function(r){var s=r['instrument']||r['symbol']||r['contract']||''; return s.toUpperCase().includes('MNQ')||s.toUpperCase().includes('NQ')||!s;}).map(function(r){
+    return {
+      TradeDate:dC?jParseDate(r[dC]):new Date().toISOString(),
+      Direction:dirC?(r[dirC].toUpperCase().includes('B')?'LONG':'SHORT'):'LONG',
+      EntryPrice:prC?parseFloat(r[prC])||null:null,
+      ExitPrice:exC?parseFloat(r[exC])||null:null,
+      PnLPoints:pnlC?parseFloat(r[pnlC])||null:null,
+      TradeResult:pnlC?(parseFloat(r[pnlC])>0?'WIN':parseFloat(r[pnlC])<0?'LOSS':'BE'):'OPEN',
+      Platform:'Tradovate', SignalType:'MANUAL', TraderNotes:''
+    };
+  }).slice(0,50);
+  var prev=document.getElementById('jCsvPreview'), btn=document.getElementById('jBtnImport'), cnt=document.getElementById('jCsvCount');
+  if (!jPendingCsv.length){prev.innerHTML='<div style="color:var(--red);font-size:11px;padding:6px">לא נמצאו עסקאות MNQ</div>'; btn.style.display='none'; return;}
+  prev.innerHTML='<table class="jcsv-tbl"><thead><tr><th>תאריך</th><th>כיוון</th><th>כניסה</th><th>P&L</th><th>תוצאה</th></tr></thead><tbody>'+
+    jPendingCsv.slice(0,10).map(function(t){return '<tr><td>'+(t.TradeDate?new Date(t.TradeDate).toLocaleDateString('he-IL'):'')+
+    '</td><td style="color:'+(t.Direction==='LONG'?'var(--green)':'var(--red)')+'">'+t.Direction+'</td><td>'+(t.EntryPrice||'')+
+    '</td><td style="color:'+((t.PnLPoints||0)>=0?'var(--green)':'var(--red)')+'">'+((t.PnLPoints||0)>=0?'+':'')+t.PnLPoints+
+    '</td><td>'+t.TradeResult+'</td></tr>';}).join('')+'</tbody></table>';
+  cnt.textContent = 'נמצאו '+jPendingCsv.length+' עסקאות'+(jPendingCsv.length>10?' (10 ראשונות מוצגות)':'');
+  btn.style.display='inline-block';
+}
+
+function jParseDate(s){try{return new Date(s).toISOString();}catch(e){return new Date().toISOString();}}
+
+async function jConfirmCsvImport() {
+  if (!jPendingCsv.length) return;
+  var btn=document.getElementById('jBtnImport'); btn.disabled=true; btn.textContent='מייבא...';
+  var n=0;
+  for (var i=0;i<jPendingCsv.length;i++) {
+    try {
+      var d=Object.assign({},jPendingCsv[i],{Title:(jPendingCsv[i].Direction||'?')+' '+(jPendingCsv[i].TradeDate||'').substring(0,10),Reviewed:false});
+      var r=await jCreateTrade(d); if (r) jAllTrades.unshift(Object.assign({},d,{ID:r.ID})); n++;
+    } catch(e){}
+  }
+  jApplyFilter(); jUpdateHdrStats(); jCloseCsvModal();
+  if (typeof showNotification==='function') showNotification('✅ יובאו '+n+' עסקאות','success');
+}
+
+function jEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showNotification(msg, type) {
+  var el = document.getElementById('jNotif');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'jNotif';
+    el.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:8px 16px;border-radius:6px;font-size:12px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;background:var(--surface);border:1px solid var(--border)';
+    document.body.appendChild(el);
+  }
+  var col = type==='success'?'var(--green)':type==='error'||type==='warn'?'var(--red)':'var(--blue)';
+  el.textContent = msg;
+  el.style.color = col;
+  el.style.borderColor = col;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){el.style.opacity='0';}, 3000);
+}
+
 </body>
 </html>
