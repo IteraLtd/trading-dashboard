@@ -396,7 +396,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button class="dyn-key-btn" onclick="showKeyModal()" style="padding:2px 6px;font-size:11px" title="API key">🔑</button>
         </div>
       </div>
-      <button id="askClaudeBtn" onclick="askClaudeDirectional()" style="width:100%;background:linear-gradient(90deg,var(--blue),#7aa3ff);color:#000;border:none;padding:8px 12px;font-family:var(--mono);font-size:12px;font-weight:700;border-radius:5px;cursor:pointer;margin-bottom:8px;letter-spacing:.5px">🎯 שאל את Claude עכשיו</button>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <button id="askClaudeBtn" onclick="askClaudeDirectional()" style="flex:1;background:linear-gradient(90deg,var(--blue),#7aa3ff);color:#000;border:none;padding:8px 12px;font-family:var(--mono);font-size:12px;font-weight:700;border-radius:5px;cursor:pointer;letter-spacing:.5px">🎯 שאל את Claude עכשיו</button>
+        <span id="bridgeBadge" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);padding:4px 8px;border-radius:4px;cursor:pointer;white-space:nowrap" onclick="fetchTvSnapshot();this.textContent='⟳ בודק...'" title="סטטוס חיבור ל-TradingView">⚪ TV ?</span>
+      </div>
       <div id="askClaudeResult" style="display:none;margin-bottom:8px"></div>
       <div id="dynBody" style="overflow-y:auto;max-height:180px;font-size:12px;line-height:1.5"><span style="color:var(--muted)">⟳ מאתחל...</span></div>
     </div>
@@ -2763,7 +2766,7 @@ async function askClaudeDirectional() {
   out.style.display = 'block';
   out.innerHTML = '<div style="padding:8px;color:var(--muted);font-size:11px;font-family:var(--mono)">⟳ שולח ל-Sonnet 4.6...</div>';
   try {
-    var ctx = gatherDashboardContext();
+    var ctx = await gatherDashboardContext();
     var prompt = 'אתה מנתח MNQ futures בסקאלפינג. תקבל מצב שוק עדכני ותחזיר החלטת כיוון.\n\n' +
       'מצב נוכחי:\n' + ctx + '\n\n' +
       'החזר JSON בלבד (ללא טקסט נוסף):\n' +
@@ -2841,12 +2844,106 @@ function askClaudeAboutSignal(idx) {
   }, 150);
 }
 
-// Build concise dashboard context string for Claude
-function gatherDashboardContext() {
+// Bridge connection — live TradingView data via local proxy (tv-bridge-server.js)
+var TV_BRIDGE_URL = 'http://localhost:3030';
+var _bridgeStatus = 'unknown'; // 'online' | 'offline' | 'unknown'
+
+async function fetchTvSnapshot() {
+  try {
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ ctrl.abort(); }, 3000);
+    var r = await fetch(TV_BRIDGE_URL + '/tv/snapshot', { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    var j = await r.json();
+    _bridgeStatus = 'online';
+    updateBridgeBadge();
+    return j;
+  } catch(e) {
+    _bridgeStatus = 'offline';
+    updateBridgeBadge();
+    return null;
+  }
+}
+
+function updateBridgeBadge() {
+  var b = document.getElementById('bridgeBadge');
+  if (!b) return;
+  if (_bridgeStatus === 'online') {
+    b.textContent = '🟢 TV LIVE';
+    b.style.color = 'var(--green)';
+    b.title = 'Bridge מחובר — Claude רואה את הגרף בזמן אמת';
+  } else if (_bridgeStatus === 'offline') {
+    b.textContent = '⚫ TV OFFLINE';
+    b.style.color = 'var(--muted)';
+    b.title = 'Bridge לא פעיל — הרץ start-tv-bridge.bat';
+  } else {
+    b.textContent = '⚪ TV ?';
+    b.style.color = 'var(--muted)';
+  }
+}
+
+// Format live TV snapshot into compact text for Claude prompt
+function formatTvSnapshot(snap) {
+  if (!snap || !snap.success) return '';
   var lines = [];
+  lines.push('── מצב TradingView חי ──');
+  lines.push('Symbol: ' + (snap.symbol||'?') + ' | TF: ' + (snap.timeframe||'?'));
+  var q = snap.quote;
+  if (q && !q.error) {
+    lines.push('Last: ' + q.last + ' | OHLC: ' + q.open + '/' + q.high + '/' + q.low + '/' + q.close + ' | Vol: ' + (q.volume||'?'));
+  }
+  var o = snap.ohlcv;
+  if (o && !o.error) {
+    lines.push('Range 20 bars: ' + o.low + '-' + o.high + ' (' + (o.range||'?') + 'pt) | Change: ' + (o.change_pct||'?'));
+    if (o.last_5_bars && o.last_5_bars.length) {
+      var lastBar = o.last_5_bars[o.last_5_bars.length-1];
+      lines.push('Last bar: O=' + lastBar.open + ' H=' + lastBar.high + ' L=' + lastBar.low + ' C=' + lastBar.close + ' V=' + lastBar.volume);
+    }
+  }
+  var studies = snap.studies;
+  if (studies && studies.studies && studies.studies.length) {
+    lines.push('— אינדיקטורים פעילים:');
+    studies.studies.forEach(function(s){
+      var vals = [];
+      for (var k in s.values) { if (s.values[k] !== '0.00' && s.values[k] !== 0) vals.push(k+': '+s.values[k]); }
+      if (vals.length) lines.push('  ' + s.name + ' → ' + vals.slice(0,8).join(' | '));
+    });
+  }
+  var tables = snap.tables;
+  if (tables && tables.studies && tables.studies.length) {
+    tables.studies.forEach(function(ts){
+      if (!ts.tables || !ts.tables.length) return;
+      lines.push('— טבלה מ-' + ts.name + ':');
+      ts.tables.forEach(function(tbl){
+        if (tbl.rows) tbl.rows.slice(0,4).forEach(function(row){ lines.push('  ' + row); });
+      });
+    });
+  }
+  var labels = snap.engine_labels;
+  if (labels && labels.studies && labels.studies.length) {
+    labels.studies.forEach(function(ls){
+      if (!ls.labels || !ls.labels.length) return;
+      var labelSample = ls.labels.slice(-8).map(function(l){ return l.text+'@'+l.price; }).join(', ');
+      lines.push('— תוויות אחרונות: ' + labelSample);
+    });
+  }
+  return lines.join('\n');
+}
+
+// Build concise dashboard context string for Claude (combines dashboard + live TV data)
+async function gatherDashboardContext() {
+  var lines = [];
+  // First, try to get live TV snapshot
+  var snap = await fetchTvSnapshot();
+  var tvText = formatTvSnapshot(snap);
+  if (tvText) { lines.push(tvText); lines.push(''); }
+
+  // Then dashboard stats
   try {
     var items = (typeof allSignals !== 'undefined' && allSignals) ? allSignals : [];
     var last = items[0];
+    lines.push('── נתוני דשבורד ──');
     if (last) {
       lines.push('סיגנל אחרון: ' + (last.Direction||'?') + ' @ ' + (last.Entry||'?') +
                  ' | SL ' + (last.StopLoss||'?') + ' | TP1 ' + (last.TakeProfit1||'?') + ' | TP2 ' + (last.TakeProfit2||'?') +
@@ -2859,12 +2956,17 @@ function gatherDashboardContext() {
     var short = document.getElementById('aShort')?.textContent;
     if (tot) lines.push('היום: ' + tot + ' סיגנלים | Win: ' + (rate||'?'));
     if (long || short) lines.push('LONG: ' + (long||'?') + ' | SHORT: ' + (short||'?'));
-    // Last 5 signals direction+result
     var last5 = items.slice(0,5).map(function(s){ return (s.Direction||'?')+'/'+(s.Result||'OPEN'); }).join(', ');
     if (last5) lines.push('5 אחרונים (dir/result): ' + last5);
   } catch(e) {}
-  return lines.join('\n') || 'אין נתוני סיגנלים זמינים כעת';
+
+  if (!snap) lines.push('\n⚠️ Bridge לא פעיל — הרץ start-tv-bridge.bat כדי שCloude יראה את הגרף החי.');
+  return lines.join('\n') || 'אין נתונים זמינים';
 }
+
+// Ping bridge every 30 sec to keep badge updated
+setInterval(fetchTvSnapshot, 30000);
+setTimeout(fetchTvSnapshot, 1500);
 
 // ===================== CLAUDE CHAT =====================
 // Sonnet 4.6 with prompt caching (stable system prompt cached, rolling messages fresh)
@@ -2950,7 +3052,7 @@ async function sendChatMessage() {
   sendBtn.disabled = true; sendBtn.style.opacity = '0.5';
   status.textContent = '⟳ Claude חושב...';
   try {
-    var ctx = gatherDashboardContext();
+    var ctx = await gatherDashboardContext();
     var userContent = 'הקשר נוכחי מהדשבורד:\n' + ctx + '\n\nשאלה: ' + msg;
     // Build messages from history (last 20 turns to control context)
     var hist = _chatHistory.filter(function(m){ return m.role==='user' || m.role==='assistant'; }).slice(-21, -1);
