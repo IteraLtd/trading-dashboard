@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0e14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MNQ Dashboard">
 <title>MNQ Trading Dashboard</title>
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js">
 </script>
@@ -16,9 +20,9 @@
   --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans Hebrew',sans-serif;
 }
 body.light {
-  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8eef5;--border:#c0cfdf;
-  --text:#0d1826;--muted:#425269;--green:#008855;--red:#c7203a;
-  --yellow:#b86b00;--blue:#135fa8;
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8eef5;--border:#d0dae6;
+  --text:#1a2535;--muted:#7a90a8;--green:#00a86b;--red:#e0304a;
+  --yellow:#d48000;--blue:#1a7fd4;
 }
 .theme-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:13px;padding:4px 10px;border-radius:4px;cursor:pointer;transition:all .2s}
 .theme-btn:hover{border-color:var(--blue);color:var(--blue)}
@@ -62,12 +66,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .filter-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .date-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 10px;border-radius:5px;cursor:pointer}
 .date-input:focus{outline:none;border-color:var(--blue)}
-.quick-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .2s}
+.quick-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .quick-btn:hover,.quick-btn.active{background:var(--blue);border-color:var(--blue);color:#000;font-weight:600}
 .filter-count{margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
 
 /* ANALYSIS SECTION */
-.analysis-bar{background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1.2fr 0.7fr 1.5fr;gap:1px}
+.analysis-bar{background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:1px}
 .analysis-panel{padding:14px 18px}
 .analysis-title{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:600;letter-spacing:1px;margin-bottom:10px}
 .chart-wrap{height:90px;position:relative}
@@ -113,15 +117,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .i-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
 .i-stat-value{font-family:var(--mono);font-size:16px;font-weight:600}
 
-.main{display:grid;grid-template-columns:1fr 340px;min-height:400px;direction:rtl}
-#skipStreakBanner{grid-column:1/-1}
-.panel{border-left:1px solid var(--border);min-width:0;overflow:hidden}
+.main{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 185px);overflow:hidden}
+.panel{border-left:1px solid var(--border);overflow-y:auto;height:100%}
 .panel-header{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .panel-title{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);letter-spacing:1px}
 .badge{background:var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:10px}
 
 /* SIGNAL ROW */
-.sig-row{border-bottom:1px solid var(--border);padding:10px 16px}
+.sig-row{border-bottom:1px solid var(--border);padding:10px 16px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 .sig-row:hover{background:var(--surface2)}
 .sig-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .sig-left{display:flex;align-items:center;gap:6px}
@@ -138,7 +141,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .r-win{background:rgba(0,208,132,.2);color:var(--green)}
 .r-loss{background:rgba(255,69,96,.2);color:var(--red)}
 .r-pending{background:rgba(74,96,128,.2);color:var(--muted)}
-.r-notrade{background:transparent;color:var(--muted);opacity:.55;font-style:italic}
 .sig-time{font-family:var(--mono);font-size:11px;color:var(--blue)}
 .score-txt{font-family:var(--mono);font-size:11px;color:var(--yellow)}
 
@@ -214,7 +216,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .trades-tbl td{padding:9px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);white-space:nowrap;vertical-align:middle}
 .trades-tbl tr:last-child td{border-bottom:none}
 .trades-tbl tr:hover td{background:var(--surface2)}
-.tr-win{color:var(--green);font-weight:600}.tr-loss{color:var(--red);font-weight:600}.tr-pending{color:var(--muted)}.tr-superseded{color:var(--muted);opacity:.55;font-style:italic}
+.tr-win{color:var(--green);font-weight:600}.tr-loss{color:var(--red);font-weight:600}.tr-pending{color:var(--muted)}
 .tr-long{background:rgba(0,208,132,.12);color:var(--green);border:1px solid rgba(0,208,132,.3);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
 .tr-short{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.3);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
 .tr-streak-w{width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block;margin:1px}
@@ -227,54 +229,146 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
-  /* Header */
-  header{padding:10px 12px}
-  .logo{font-size:13px;letter-spacing:1px}
-  .logout-btn{font-size:10px;padding:3px 8px}
+  /* Header — compact */
+  header { padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
+  .logo { font-size: 13px; letter-spacing: 1px; }
+  .logout-btn { font-size: 10px; padding: 3px 8px; }
+  header > div:last-child { gap: 8px; flex-wrap: wrap; }
+  #lastUpdate, #lastSeenBadge { font-size: 10px; }
+  #lastSeenBadge { display: none; }
+  #marketStatusBadge { font-size: 10px; padding: 2px 6px; }
 
-  /* Filter bar */
-  .filter-bar{padding:8px 12px;gap:6px}
-  .date-input{font-size:11px;padding:4px 8px;width:100%}
-  .quick-btn{font-size:10px;padding:4px 10px}
-  .filter-count{width:100%;margin-right:0;margin-top:2px}
+  /* Show mobile bottom nav */
+  #mobileNav { display: flex !important; }
 
-  /* Inline stats - 2x2 on mobile */
-  .inline-stats{grid-template-columns:repeat(2,1fr)}
-  .i-stat-value{font-size:14px}
+  /* Hide desktop tab buttons row */
+  .filter-bar > div:last-child { display: none !important; }
 
-  /* Analysis bar - stack vertically */
-  .analysis-bar{grid-template-columns:1fr}
-  .analysis-panel{padding:10px 12px}
-  .chart-wrap{height:80px}
-  .analysis-stats{grid-template-columns:repeat(3,1fr)}
+  /* Filter bar — scrollable, no tab row */
+  .filter-bar {
+    padding: 6px 10px;
+    gap: 5px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-label { display: none; }
+  .date-input { font-size: 11px; padding: 4px 6px; min-width: 120px; flex-shrink: 0; }
+  .quick-btn { font-size: 10px; padding: 4px 9px; white-space: nowrap; flex-shrink: 0; }
+  .filter-count { display: none; }
 
-  /* Main - stack panels vertically */
-  .main{grid-template-columns:1fr;height:auto;min-height:0}
-  .panel{border-left:none;border-top:1px solid var(--border);overflow-y:visible;max-height:none}
+  /* Add bottom padding so content isn't hidden behind nav bar */
+  #dashboard { padding-bottom: 60px; }
 
-  /* Signal rows */
-  .sig-row{padding:10px 12px}
-  .scan-row{padding:10px 12px}
+  /* Analysis bar — stack vertically, hide dynPanel */
+  .analysis-bar { grid-template-columns: 1fr; gap: 8px; padding: 8px 10px; }
+  .analysis-panel { padding: 10px 12px; }
+  .chart-wrap { height: 80px; }
+  .analysis-stats { grid-template-columns: repeat(3, 1fr); }
+  #dynPanel { display: none !important; }
 
-  /* Popup - full width on mobile */
-  .popup{width:calc(100vw - 24px);max-width:380px}
-  .overlay{align-items:flex-end;padding-bottom:0}
-  .overlay.show .popup{border-radius:12px 12px 0 0}
+  /* Main area — single column */
+  .main { grid-template-columns: 1fr; height: auto; min-height: 0; overflow: visible; }
+  .panel {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    overflow-y: visible;
+    max-height: none;
+    height: auto;
+  }
+  .panel-header { position: sticky; top: 0; z-index: 10; }
 
-  /* Panel header sticky */
-  .panel-header{position:sticky;top:0;z-index:10}
+  /* Signal / scan rows */
+  .sig-row { padding: 10px 12px; }
+  .scan-row { padding: 10px 12px; }
+
+  /* Inline stats — 2x2 */
+  .inline-stats { grid-template-columns: repeat(2, 1fr); }
+  .i-stat-value { font-size: 14px; }
+
+  /* Popup — slide up from bottom */
+  .popup { width: 100vw; max-width: 100vw; border-radius: 0; margin: 0; }
+  .overlay { align-items: flex-end; padding: 0; }
+  .overlay.show .popup { border-radius: 16px 16px 0 0; }
+  .popup-body { max-height: 65vh; overflow-y: auto; }
+
+  /* Analytics panel */
+  #analyticsPanel { padding: 10px 12px; }
+  #analyticsPanel canvas { max-height: 160px; }
+
+  /* Trades */
+  .trades-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .trades-charts-row { grid-template-columns: 1fr; }
+  .trades-table-wrap { overflow-x: auto; }
+  .trades-filter-row { flex-wrap: wrap; gap: 5px; }
+
+  /* Settings */
+  #settingsPanel { padding: 12px; }
+  #settingsPanel > div { max-width: 100% !important; }
+
+  /* Chat panel */
+  #chatPanel { height: calc(100vh - 170px); }
+  #chatMessages { padding: 10px 12px; }
+  #chatPanel textarea { font-size: 14px; }
+
+  /* Backtest */
+  #backtestPanel { padding: 10px 12px; }
+  .bt-grid { grid-template-columns: 1fr !important; }
+
+  /* Skip streak banner */
+  #skipStreakBanner { padding: 8px 12px; font-size: 11px; }
 }
 
 @media (max-width: 480px) {
-  .logo{font-size:12px}
-  .i-stat-value{font-size:13px}
-  .i-stat-label{font-size:8px}
-  .quick-btn{font-size:10px;padding:4px 8px}
-  .analysis-title{font-size:10px}
-  .a-stat-val{font-size:12px}
+  .logo { font-size: 11px; }
+  .sys-btn { font-size: 10px; padding: 4px 8px; }
+  .i-stat-value { font-size: 13px; }
+  .i-stat-label { font-size: 8px; }
+  .analysis-title { font-size: 10px; }
+  .a-stat-val { font-size: 12px; }
+  .sig-row { font-size: 11px; }
+  /* Stack header buttons */
+  header > div:last-child { gap: 5px; }
+  .theme-btn { font-size: 14px; padding: 3px 5px; }
 }
+/* Mobile bottom nav bar */
+#mobileNav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: none;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: stretch;
+  height: 60px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mnav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 2px;
+  color: var(--muted);
+  font-family: var(--sans);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .15s;
+}
+.mnav-btn.active { color: var(--blue); }
+.mnav-icon { font-size: 18px; line-height: 1; }
+.mnav-label { font-size: 9px; font-family: var(--mono); letter-spacing: 0.3px; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .setting-row{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
-.setting-label{font-size:12px;color:var(--muted)}
 .setting-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue)}
 .setting-slider{width:100%;accent-color:var(--blue);cursor:pointer}
 .preset-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:12px;color:var(--fg);cursor:pointer;transition:all .15s}
@@ -297,13 +391,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <div id="dashboard">
   <header>
-    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/04 2026-04-14 10:00</span></div>
+    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v17/03 07:45</span></div>
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
         <span class="dot" id="statusDot"></span>
         <span id="statusText">טוען...</span>
-        <span id="updateHealth" style="margin-right:8px;padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:600;display:inline-flex;align-items:center;gap:4px" title="סטטוס עדכון אחרון מ-SharePoint"></span>
-        <span id="lastUpdate" style="margin-right:4px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--blue)"></span>
+        <span id="lastUpdate" style="margin-right:8px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--blue)"></span>
+        <span id="lastSignalBadge" style="margin-right:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:600;display:none"></span>
         <span id="marketStatusBadge" style="padding:2px 10px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:600"></span>
         <span id="lastSeenBadge" style="font-size:10px;color:var(--muted)"></span>
       </span>
@@ -354,6 +448,23 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
   </div>
 
+  <!-- MOBILE BOTTOM NAV BAR (only visible on mobile) -->
+  <nav id="mobileNav" style="display:none">
+    <button class="mnav-btn active" id="mTabSignals"   onclick="switchTab('signals')">  <span class="mnav-icon">📡</span><span class="mnav-label">סיגנלים</span></button>
+    <button class="mnav-btn"        id="mTabAnalytics" onclick="switchTab('analytics')"><span class="mnav-icon">📈</span><span class="mnav-label">אנליטיקס</span></button>
+    <button class="mnav-btn"        id="mTabTrades"    onclick="switchTab('trades')">   <span class="mnav-icon">📋</span><span class="mnav-label">עסקאות</span></button>
+    <button class="mnav-btn"        id="mTabChat"      onclick="switchTab('chat')">     <span class="mnav-icon">💬</span><span class="mnav-label">צ'אט</span></button>
+    <button class="mnav-btn"        id="mTabRefresh"   onclick="mobileRefresh(this)">   <span class="mnav-icon" id="mRefreshIcon">🔄</span><span class="mnav-label">רענן</span></button>
+    <button class="mnav-btn"        id="mTabMore"      onclick="toggleMobileMore()">    <span class="mnav-icon">⋯</span><span class="mnav-label">עוד</span></button>
+  </nav>
+
+  <!-- MOBILE MORE MENU -->
+  <div id="mobileMore" style="display:none;position:fixed;bottom:65px;left:0;right:0;z-index:1100;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;flex-wrap:wrap;gap:8px;justify-content:center">
+    <button class="quick-btn" id="mTabBacktest" onclick="switchTab('backtest');closeMobileMore()">🔬 Backtest</button>
+    <button class="quick-btn" id="mTabLegend"   onclick="switchTab('legend');closeMobileMore()">📖 מקרא</button>
+    <button class="quick-btn" id="mTabSettings" onclick="switchTab('settings');closeMobileMore()">⚙️ כיוונון</button>
+  </div>
+
 
 
   <!-- ANALYSIS BAR -->
@@ -392,16 +503,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div style="display:flex;gap:4px;align-items:center">
           <span class="dyn-timer-lbl" id="dynTimer" style="font-size:10px;color:var(--muted)"></span>
           <span id="dynSpinner" style="display:none" class="dyn-spin">⟳</span>
-          <button class="dyn-refresh-btn" onclick="runDynamicAnalysis(true)" style="padding:2px 6px;font-size:11px" title="רענן ניתוח דינמי">↺</button>
-          <button class="dyn-key-btn" onclick="showKeyModal()" style="padding:2px 6px;font-size:11px" title="API key">🔑</button>
+          <button class="dyn-refresh-btn" onclick="runDynamicAnalysis(true)" style="padding:2px 6px;font-size:11px">↺</button>
+          <button class="dyn-key-btn" onclick="showKeyModal()" style="padding:2px 6px;font-size:11px">🔑</button>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-        <button id="askClaudeBtn" onclick="askClaudeDirectional()" style="flex:1;background:linear-gradient(90deg,var(--blue),#7aa3ff);color:#000;border:none;padding:8px 12px;font-family:var(--mono);font-size:12px;font-weight:700;border-radius:5px;cursor:pointer;letter-spacing:.5px">🎯 שאל את Claude עכשיו</button>
-        <span id="bridgeBadge" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);padding:4px 8px;border-radius:4px;cursor:pointer;white-space:nowrap" onclick="fetchTvSnapshot();this.textContent='⟳ בודק...'" title="סטטוס חיבור ל-TradingView">⚪ TV ?</span>
-      </div>
-      <div id="askClaudeResult" style="display:none;margin-bottom:8px"></div>
-      <div id="dynBody" style="overflow-y:auto;max-height:180px;font-size:12px;line-height:1.5"><span style="color:var(--muted)">⟳ מאתחל...</span></div>
+      <div id="dynBody" style="overflow-y:auto;max-height:160px;font-size:11px"><span style="color:var(--muted)">⟳ מאתחל...</span></div>
     </div>
   </div>
 
@@ -412,12 +518,37 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <div id="dynKeyModal" class="dyn-key-modal" style="display:none">
     <div class="dyn-key-box">
       <div style="font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:8px;color:var(--blue)">🔑 Anthropic API Key</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">המפתח נשמר ב-localStorage בלבד (לא נשלח לשרת)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">המפתח נשמר ב-SharePoint — זמין מכל מחשב</div>
       <input type="password" id="dynKeyInput" placeholder="sk-ant-..." />
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
         <button onclick="saveApiKey()" style="background:var(--blue);color:#000">שמור</button>
         <button onclick="document.getElementById('dynKeyModal').style.display='none'" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">ביטול</button>
       </div>
+    </div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div id="chatPanel" style="display:none;height:calc(100vh - 185px);direction:rtl;display:none;flex-direction:column;background:var(--bg)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue);letter-spacing:1px">💬 CLAUDE AI — צ'אט</span>
+        <span id="chatModelBadge" style="font-family:var(--mono);font-size:10px;background:rgba(77,166,255,.12);color:var(--blue);border:1px solid rgba(77,166,255,.3);padding:1px 8px;border-radius:10px">Sonnet 4</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="chatClearHistory()" style="font-size:11px;padding:3px 10px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:4px;cursor:pointer">🗑 נקה שיחה</button>
+        <button onclick="chatInjectContext()" style="font-size:11px;padding:3px 10px;background:rgba(0,208,132,.1);color:var(--green);border:1px solid rgba(0,208,132,.3);border-radius:4px;cursor:pointer">📊 הזרק נתוני שוק</button>
+      </div>
+    </div>
+    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;min-height:0"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
+      <div style="display:flex;gap:8px;align-items:flex-end;max-width:900px;margin:0 auto">
+        <textarea id="chatInput" placeholder="שאל אותי על הסיגנלים, השוק, או כל שאלה אחרת..." rows="2"
+          style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-family:var(--sans);font-size:13px;resize:none;direction:rtl;outline:none"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"></textarea>
+        <button onclick="chatSend()" id="chatSendBtn"
+          style="padding:8px 18px;background:var(--blue);color:#000;font-weight:700;border:none;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap;flex-shrink:0">שלח ↩</button>
+      </div>
+      <div style="text-align:center;margin-top:6px;font-size:10px;color:var(--muted)">Enter לשליחה · Shift+Enter לשורה חדשה</div>
     </div>
   </div>
 
@@ -649,6 +780,34 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="saveCustomConfig()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;white-space:nowrap">💾 שמור תצורה</button>
         </div>
       </div>
+      <!-- REFRESH INTERVALS SECTION -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">⏱ מרווחי רענון</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span class="setting-label">🔄 רענון נתונים (שניות)</span>
+              <span class="setting-val" id="val-data-refresh">30s</span>
+            </div>
+            <input type="range" min="10" max="60" step="5" value="30" id="data-refresh-slider"
+              oninput="applyDataRefresh(this.value)" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>10s</span><span>30s</span><span>60s</span></div>
+          </div>
+          <div class="setting-row">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span class="setting-label">🤖 ניתוח Claude AI (דקות)</span>
+              <span class="setting-val" id="val-claude-refresh">5m</span>
+            </div>
+            <input type="range" min="1" max="10" step="1" value="5" id="claude-refresh-slider"
+              oninput="applyClaudeRefresh(this.value)" class="setting-slider">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>1m</span><span>5m</span><span>10m</span></div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted);font-family:var(--mono)">
+          ⚠️ רענון מהיר מאוד עלול לגרום לעומס על SharePoint · מומלץ לא לרדת מ-10s לנתונים
+        </div>
+      </div>
+
       <!-- APPEARANCE SECTION -->
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">🎨 מראה ועיצוב</div>
@@ -938,7 +1097,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   </div>
 
   <div class="main" id="mainPanel">
-    <div id="skipStreakBanner" style="display:none;margin:0 0 10px 0;padding:10px 14px;background:rgba(255,69,96,0.08);border:1px solid rgba(255,69,96,0.3);border-radius:6px;align-items:center;gap:10px;max-height:60px;overflow:hidden">
+    <div id="skipStreakBanner" style="display:none;grid-column:1/-1;margin:0 0 0 0;padding:10px 14px;background:rgba(255,69,96,0.08);border-bottom:1px solid rgba(255,69,96,0.3);align-items:center;gap:10px;max-height:60px;overflow:hidden">
       <span style="font-size:20px">⚠️</span>
       <div>
         <div style="font-weight:700;color:#ff4560;font-size:13px" id="skipStreakTitle">רצף SKIP</div>
@@ -1029,36 +1188,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
   </div>
 
-  <!-- CHAT PANEL -->
-  <div id="chatPanel" style="display:none;padding:0;overflow:hidden;height:calc(100vh - 185px);direction:rtl;flex-direction:column">
-    <div style="padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue);letter-spacing:1px">💬 CLAUDE CHAT</span>
-        <span id="chatModelBadge" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:3px">Sonnet 4.6</span>
-        <span id="chatCacheBadge" style="font-family:var(--mono);font-size:10px;color:var(--green);display:none">⚡ cached</span>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button onclick="clearChatHistory()" class="theme-btn" style="font-size:11px" title="נקה שיחה">🗑️</button>
-        <button onclick="exportChatHistory()" class="theme-btn" style="font-size:11px" title="ייצא JSON">📤</button>
-      </div>
-    </div>
-    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px 20px;background:var(--bg);display:flex;flex-direction:column;gap:10px"></div>
-    <div style="padding:10px 20px 14px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
-      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-        <button class="quick-btn" onclick="chatQuickAsk('/analyze')" style="font-size:10px">/analyze — ניתוח כיוון</button>
-        <button class="quick-btn" onclick="chatQuickAsk('/bias')" style="font-size:10px">/bias — מגמה</button>
-        <button class="quick-btn" onclick="chatQuickAsk('/risk')" style="font-size:10px">/risk — סיכון</button>
-        <button class="quick-btn" onclick="chatQuickAsk('/stats')" style="font-size:10px">/stats — סטטיסטיקה</button>
-        <button class="quick-btn" onclick="chatQuickAsk('/review last')" style="font-size:10px">/review last — סיגנל אחרון</button>
-      </div>
-      <div style="display:flex;gap:8px;align-items:flex-end">
-        <textarea id="chatInput" placeholder="שאל את Claude... (Enter לשליחה, Shift+Enter לשורה חדשה)" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:5px;font-family:var(--sans);font-size:13px;resize:none;min-height:38px;max-height:120px" rows="1" onkeydown="chatHandleKeydown(event)"></textarea>
-        <button id="chatSendBtn" onclick="sendChatMessage()" style="background:var(--blue);color:#000;border:none;padding:8px 14px;font-family:var(--mono);font-size:12px;font-weight:700;border-radius:5px;cursor:pointer;height:38px">שלח ▶</button>
-      </div>
-      <div id="chatStatus" style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)"></div>
-    </div>
-  </div>
-
 <div class="overlay" id="overlay">
   <div class="popup">
     <div class="popup-hdr" id="popupHdr">
@@ -1073,7 +1202,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 const CLIENT_ID = '75028ce6-328d-432a-a595-5bc41fe2399a';
 const SITE = 'https://iteracoil.sharepoint.com/sites/Trading';
 const SCOPES = ['https://iteracoil.sharepoint.com/AllSites.Manage'];
-const REFRESH = 30000;
+var REFRESH = parseInt(localStorage.getItem('dataRefreshMs') || '30000');
+var refreshTimer = null;
 
 const FLOW_URL = 'https://default091d179c539f49e5ad857c8399ab46.36.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/988b25a359b9420d9d848fcfaf77ee56/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=73_fdguSWBqZYPcCrtjP_OVr6V979i3MXRtX8d9VSHs';
 
@@ -1196,9 +1326,9 @@ function startDash() {
   initSoundBtn();
   loadSystemStatus();
   loadAppearanceSettings();
+  loadApiKey().then(function(){ startDynamicAnalysis(); });
   refresh();
-  setInterval(refresh, REFRESH);
-  startDynamicAnalysis();
+  refreshTimer = setInterval(refresh, REFRESH);
   startResolver();
 }
 
@@ -1358,36 +1488,23 @@ function renderSignals(items) {
   var el = document.getElementById('sigList');
   if (!items.length) { el.innerHTML = '<div class="empty">אין סיגנלים עדיין</div>'; return; }
 
-  if (!isFirst && lastSigId && items[0].ID !== lastSigId) {
-    var _newVerdict = (items[0].ClaudeVerdict||'').toUpperCase();
-    // Only TAKE signals trigger popup + sound + browser notification.
-    // SKIP/WAIT/NEUTRAL are informational only — no interruption.
-    if (_newVerdict === 'TAKE') {
-      showPopup(items[0]);
-      playSignalSound(items[0].Direction, items[0].ClaudeVerdict);
+  // Alert logic: always track against allSignals[0], not filtered items[0]
+  var latestSig = (allSignals && allSignals.length) ? allSignals[0] : null;
+  if (!isFirst && latestSig && lastSigId && latestSig.ID !== lastSigId) {
+    var isTake = (latestSig.ClaudeVerdict||'').toUpperCase() === 'TAKE';
+    if (isTake) {
+      showPopup(latestSig);
+      playSignalSound(latestSig.Direction, latestSig.ClaudeVerdict);
       if (Notification.permission === 'granted') {
-        new Notification('🎯 TAKE: ' + (items[0].Direction||'') + ' ' + (items[0].Ticker||''), {
-          body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'')
+        var dir = (latestSig.Direction||'').toUpperCase();
+        var icon = dir === 'LONG' ? '🟢' : '🔴';
+        new Notification(icon + ' TAKE: ' + dir + ' ' + (latestSig.Ticker||''), {
+          body: 'כניסה: ' + (latestSig.Entry||'') + ' | SL: ' + (latestSig.SL||'') + ' | ציון: ' + (latestSig.ClaudeScore||'')
         });
       }
     }
   }
-  lastSigId = items[0].ID;
-
-  // === ONE PENDING AT A TIME ===
-  // Real trading can't hold two concurrent positions. Find the newest TAKE
-  // that is still PENDING — that's the only "live" trade. Any older PENDING
-  // TAKE is displayed as "SUPERSEDED" (closed by newer signal). Non-TAKE
-  // verdicts (SKIP/WAIT/NEUTRAL) never represent real trades.
-  var _latestActivePendingTakeId = null;
-  for (var _i = 0; _i < items.length; _i++) {
-    var _v = (items[_i].ClaudeVerdict||'').toUpperCase();
-    var _r = (items[_i].Result||'PENDING').toUpperCase();
-    if (_v === 'TAKE' && _r === 'PENDING') {
-      _latestActivePendingTakeId = items[_i].ID;
-      break;  // items[] is sorted newest-first, so first match = latest
-    }
-  }
+  if (latestSig) lastSigId = latestSig.ID;
 
   // Calculate max total range across all signals for proportional bar scaling
   var maxRange = 0;
@@ -1411,17 +1528,8 @@ function renderSignals(items) {
     var tp2 = it['OData__x0054_P2'] || '';
     var entry = it.Entry || '';
     var sl = it.SL || '';
-    // Apply "one pending at a time" display overrides — data in SharePoint
-    // stays intact, only the UI shows the real trading state.
-    if (r === 'PENDING') {
-      if (v !== 'take') {
-        r = 'NO_TRADE';  // non-TAKE verdicts are analysis only, never real trades
-      } else if (it.ID !== _latestActivePendingTakeId) {
-        r = 'SUPERSEDED';  // older TAKE pending — closed by a newer signal
-      }
-    }
     var vClass = v === 'take' ? 'v-take' : v === 'skip' ? 'v-skip' : v === 'wait' ? 'v-wait' : 'v-neutral';
-    var rClass = isWin(r) ? 'r-win' : isLoss(r) ? 'r-loss' : (r === 'NO_TRADE' || r === 'SUPERSEDED') ? 'r-notrade' : 'r-pending';
+    var rClass = isWin(r) ? 'r-win' : isLoss(r) ? 'r-loss' : 'r-pending';
     var dClass = d === 'long' ? 'dir-long' : 'dir-short';
 
     // Extract signal type and reason from ClaudeAnalysis JSON
@@ -1432,21 +1540,16 @@ function renderSignals(items) {
 
     html += '<div class="sig-row" onclick="showPopupById(' + i + ')">';
 
-    // === HEADER — two groups separated by justify-content:space-between ===
-    // RTL right group: time → bars → direction → score → sigType
-    // RTL left group: verdict → result
-    html += '<div class="sig-top" style="flex-wrap:wrap;gap:6px">';
-    html += '<div class="sig-right" style="flex-wrap:wrap;gap:6px;min-width:0">';
-    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap">' + fmtTime(it.SignalTime) + '</span>';
-    if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px;white-space:nowrap" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
-    html += '<span class="dir-badge ' + dClass + '" style="white-space:nowrap">' + (d === 'long' ? '▲' : '▼') + ' ' + (it.Direction||'') + '</span>';
-    html += '<span class="score-txt" style="font-size:12px;white-space:nowrap">⭐' + (it.ClaudeScore||'—') + '</span>';
-    if (sigType) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);padding:1px 6px;border-radius:3px;white-space:nowrap" title="' + sigReason + '">' + sigType + '</span>';
-    html += '</div>';
-    html += '<div class="sig-left" style="flex-wrap:wrap;gap:6px">';
-    html += '<span class="verdict-badge ' + vClass + '" style="white-space:nowrap">' + (it.ClaudeVerdict||'NEUTRAL') + '</span>';
-    html += '<span class="res-badge ' + rClass + '" style="white-space:nowrap">' + resultLabel(r) + '</span>';
-    html += '<button onclick="event.stopPropagation();askClaudeAboutSignal(' + i + ')" title="שאל את Claude על הסיגנל הזה" style="background:var(--surface2);border:1px solid var(--border);color:var(--blue);font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:3px;cursor:pointer">💬</button>';
+    // === SINGLE HEADER ROW — time left, badges center ===
+    html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">';
+    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">' + fmtTime(it.SignalTime) + '</span>';
+    if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
+    html += '<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">';
+    if (sigType) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);padding:1px 6px;border-radius:3px" title="' + sigReason + '">' + sigType + '</span>';
+    html += '<span class="score-txt" style="font-size:12px">⭐' + (it.ClaudeScore||'—') + '</span>';
+    html += '<span class="res-badge ' + rClass + '">' + resultLabel(r) + '</span>';
+    html += '<span class="verdict-badge ' + vClass + '">' + (it.ClaudeVerdict||'NEUTRAL') + '</span>';
+    html += '<span class="dir-badge ' + dClass + '">' + (d === 'long' ? '▲' : '▼') + ' ' + (it.Direction||'') + '</span>';
     html += '</div>';
     html += '</div>';
 
@@ -1561,7 +1664,7 @@ function showPopup(item) {
   document.getElementById('overlay').classList.add('show');
 }
 
-var allSignals = [], dirChart = null;
+var allSignals = [], filteredSignals = [], dirChart = null;
 var verdictFilter = null;
 var dirFilter = null;
 
@@ -1569,16 +1672,14 @@ function isWin(r) { return r === 'WIN' || r === 'TP1_HIT' || r === 'TP2_HIT'; }
 function isLoss(r) { return r === 'LOSS' || r === 'SL_HIT'; }
 function isBE(r) { return r === 'BE'; }
 function resultLabel(r) {
-  if (r === 'TP1_HIT')   return '✅ TP1';
-  if (r === 'TP2_HIT')   return '✅ TP2';
-  if (r === 'SL_HIT')    return '❌ SL';
-  if (r === 'BE')        return '↔ BE';
-  if (r === 'WIN')       return '✅ WIN';
-  if (r === 'LOSS')      return '❌ LOSS';
-  if (r === 'PENDING')   return '⏳ PENDING';
-  if (r === 'NO_TRADE')  return '—';
-  if (r === 'SUPERSEDED') return '⊘ הוחלף';
-  if (r === 'SIGNAL')    return '📡';
+  if (r === 'TP1_HIT') return '✅ TP1';
+  if (r === 'TP2_HIT') return '✅ TP2';
+  if (r === 'SL_HIT')  return '❌ SL';
+  if (r === 'BE')      return '↔ BE';
+  if (r === 'WIN')     return '✅ WIN';
+  if (r === 'LOSS')    return '❌ LOSS';
+  if (r === 'PENDING') return '⏳ PENDING';
+  if (r === 'SIGNAL')  return '📡';
   return r;
 }
 
@@ -1646,9 +1747,12 @@ function applyFilter() {
     filtered = filtered.filter(function(it){ return (it.Direction||'').toLowerCase() === dirFilter; });
   }
   document.getElementById('filterCount').textContent = filtered.length + ' סיגנלים';
+  filteredSignals = filtered;
   renderSignals(filtered);
   updateStats(filtered);
   updateAnalysis(filtered);
+  if (currentTab === 'analytics') updateAnalytics(filtered);
+  if (currentTab === 'trades')    renderTradesDashboard(filtered);
 }
 
 function updateAnalysis(items) {
@@ -1706,19 +1810,54 @@ function updateAnalysis(items) {
 }
 
 // ── Dynamic Analysis (Claude AI every 5 min) ─────────────────────────────────
-var DYN_INTERVAL   = 5 * 60 * 1000;
+var DYN_INTERVAL = parseInt(localStorage.getItem('claudeRefreshMs') || String(5 * 60 * 1000));
 var dynNextRun     = 0;
 var dynTimerTick   = null;
+var cachedApiKey   = '';  // loaded from SharePoint on startup
+
+async function loadApiKey() {
+  try {
+    var items = await fetchList('TradingSettings', "$filter=Title eq 'AnthropicApiKey'&$top=1");
+    if (items && items.length > 0 && items[0].StatsJSON) {
+      cachedApiKey = items[0].StatsJSON.trim();
+    }
+  } catch(e) {
+    // fallback to localStorage for backward compatibility
+    cachedApiKey = localStorage.getItem('claude_api_key') || '';
+  }
+}
 
 function showKeyModal() {
-  var k = localStorage.getItem('claude_api_key') || '';
-  document.getElementById('dynKeyInput').value = k;
+  document.getElementById('dynKeyInput').value = cachedApiKey;
   document.getElementById('dynKeyModal').style.display = 'flex';
 }
-function saveApiKey() {
+async function saveApiKey() {
   var k = document.getElementById('dynKeyInput').value.trim();
-  if (k) { localStorage.setItem('claude_api_key', k); }
   document.getElementById('dynKeyModal').style.display = 'none';
+  if (!k) return;
+  cachedApiKey = k;
+  try {
+    var items = await fetchList('TradingSettings', "$filter=Title eq 'AnthropicApiKey'&$top=1");
+    var token = await getToken();
+    if (items && items.length > 0) {
+      await fetch(SITE + "/_api/web/lists/getbytitle('TradingSettings')/items(" + items[0].ID + ")", {
+        method: 'POST',
+        headers: { Authorization:'Bearer '+token, Accept:'application/json;odata=verbose',
+          'Content-Type':'application/json;odata=verbose','X-HTTP-Method':'MERGE','IF-MATCH':'*' },
+        body: JSON.stringify({ '__metadata':{'type':'SP.Data.TradingSettingsListItem'}, 'StatsJSON': k })
+      });
+    } else {
+      await fetch(SITE + "/_api/web/lists/getbytitle('TradingSettings')/items", {
+        method: 'POST',
+        headers: { Authorization:'Bearer '+token, Accept:'application/json;odata=verbose',
+          'Content-Type':'application/json;odata=verbose' },
+        body: JSON.stringify({ '__metadata':{'type':'SP.Data.TradingSettingsListItem'}, 'Title':'AnthropicApiKey', 'StatsJSON': k })
+      });
+    }
+  } catch(e) {
+    // fallback: save to localStorage as backup
+    localStorage.setItem('claude_api_key', k);
+  }
   runDynamicAnalysis(true);
 }
 
@@ -1813,17 +1952,18 @@ function yahooToCandles(result) {
 async function resolveResults(manual) {
   if (!allSignals || !allSignals.length) return;
 
-  // Find PENDING signals with valid price levels (Entry OR SL+TP1 sufficient)
+  // Find PENDING signals with valid price levels
   var pending = allSignals.filter(function(it) {
     var r = (it.Result||'').toUpperCase();
     if (isWin(r) || isLoss(r) || r === 'BE') return false;
+    var entry = parseFloat(it.Entry);
     var sl = parseFloat(it.SL);
     var tp1 = parseFloat(it['OData__x0054_P1'] || it.TP1);
-    return !isNaN(sl) && !isNaN(tp1) && sl > 0 && tp1 > 0;
+    return !isNaN(entry) && !isNaN(sl) && !isNaN(tp1) && entry > 0;
   });
 
   if (!pending.length) {
-    if (manual) { var el=document.getElementById('resolverLastRun'); if(el) el.textContent='אין סיגנלים PENDING עם SL+TP1'; }
+    if (manual) { var el=document.getElementById('resolverLastRun'); if(el) el.textContent='אין סיגנלים PENDING עם מחירים'; }
     resolveNextRun = Date.now() + RESOLVE_INTERVAL;
     return;
   }
@@ -1858,11 +1998,6 @@ async function resolveResults(manual) {
       var tp1 = parseFloat(sig['OData__x0054_P1'] || sig.TP1);
       var tp2 = parseFloat(sig['OData__x0054_P2'] || sig.TP2);
       if (isNaN(tp2)) tp2 = 0;
-      // If Entry is missing, estimate from SL+TP1 (SL is 1.5*ATR away, TP1 is 1*RR away)
-      // For LONG: entry is above SL, below TP1. For SHORT: entry is below SL, above TP1.
-      if (isNaN(entry) || entry <= 0) {
-        entry = (sl + tp1) / 2;  // rough midpoint — good enough for BE trailing
-      }
 
       var tp1Hit = false;
       var result = null;
@@ -1957,7 +2092,7 @@ function updateDynTimer() {
 }
 
 async function runDynamicAnalysis(manual) {
-  var apiKey = localStorage.getItem('claude_api_key');
+  var apiKey = cachedApiKey;
   var panel  = document.getElementById('dynPanel');
   var body   = document.getElementById('dynBody');
   var spin   = document.getElementById('dynSpinner');
@@ -2175,65 +2310,47 @@ async function refresh() {
     var scans = await fetchList('TradingScans', '$orderby=ScanTime%20desc&$top=10');
     loadTradingStats();
     loadSystemSettings();
-    if (scans.length > 0) { console.log('SCAN KEYS:', JSON.stringify(Object.keys(scans[0]))); console.log('SCAN DATA:', JSON.stringify(scans[0])); }
-    if (allSignals.length > 0) console.log('SignalTime raw:', allSignals[0].SignalTime);
-    if (allSignals.length > 0) console.log('SIGNAL KEYS:', JSON.stringify(Object.keys(allSignals[0])));
-    if (allSignals.length > 0) console.log('SIGNAL TP1:', allSignals[0].TP1, '| TP2:', allSignals[0].TP2, '| Entry:', allSignals[0].Entry, '| SL:', allSignals[0].SL);
     applyFilter();
     renderScans(scans);
     dot.className = 'dot';
     document.getElementById('statusText').textContent = 'מחובר';
     var now = new Date();
-    document.getElementById('lastUpdate').textContent = 'עדכון: ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('lastUpdate').textContent = 'עדכון: ' + timeStr;
+    // Last signal badge — color-coded by age
+    if (allSignals.length > 0) {
+      var lastSigTime = new Date(allSignals[0].SignalTime);
+      var diffMin = Math.round((now - lastSigTime) / 60000);
+      var sigStr = diffMin < 60 ? diffMin + ' דק\'' : Math.round(diffMin/60) + 'שע\'';
+      var badge = document.getElementById('lastSignalBadge');
+      if (badge) {
+        badge.style.display = 'inline';
+        badge.textContent = '📡 קריאה: לפני ' + sigStr;
+        // Green < 10min, Yellow 10-30min, Red > 30min
+        if (diffMin < 10) {
+          badge.style.background = 'rgba(0,208,132,0.15)';
+          badge.style.border = '1px solid rgba(0,208,132,0.4)';
+          badge.style.color = 'var(--green)';
+        } else if (diffMin < 30) {
+          badge.style.background = 'rgba(255,165,0,0.15)';
+          badge.style.border = '1px solid rgba(255,165,0,0.4)';
+          badge.style.color = 'var(--yellow)';
+        } else {
+          badge.style.background = 'rgba(255,69,96,0.15)';
+          badge.style.border = '1px solid rgba(255,69,96,0.4)';
+          badge.style.color = 'var(--red)';
+        }
+      }
+    }
     window._lastDataTime = now.toISOString();
-    window._lastRefreshOk = true;
-    window._lastRefreshTime = now.toISOString();
-    updateHealthBadge();
     updateMarketStatus();
     isFirst = false;
   } catch(e) {
     dot.className = 'dot err';
-    document.getElementById('statusText').textContent = 'שגיאה';
-    window._lastRefreshOk = false;
-    updateHealthBadge();
-    console.error(e);
+    document.getElementById('statusText').textContent = 'שגיאה: ' + (e.message || e.errorCode || 'לא ידוע');
+    console.error('refresh error:', e);
   }
 }
-
-// === UPDATE HEALTH BADGE ===
-function updateHealthBadge() {
-  var el = document.getElementById('updateHealth');
-  if (!el) return;
-  if (!window._lastRefreshTime) {
-    el.textContent = '';
-    el.style.display = 'none';
-    return;
-  }
-  el.style.display = 'inline-flex';
-  var diffSec = Math.floor((new Date() - new Date(window._lastRefreshTime))/1000);
-  var ok = window._lastRefreshOk === true;
-  var ageStr = diffSec < 60 ? diffSec + 'ש׳' : Math.floor(diffSec/60) + 'ד׳';
-  // Healthy = OK refresh within 90 seconds (expected every 30s)
-  var healthy = ok && diffSec < 90;
-  var warn = ok && diffSec >= 90 && diffSec < 300;
-  if (healthy) {
-    el.textContent = '✓ ' + ageStr;
-    el.style.background = 'rgba(0,208,132,.15)';
-    el.style.color = 'var(--green)';
-    el.style.border = '1px solid rgba(0,208,132,.35)';
-  } else if (warn) {
-    el.textContent = '⚠ ' + ageStr;
-    el.style.background = 'rgba(255,165,0,.15)';
-    el.style.color = 'var(--yellow)';
-    el.style.border = '1px solid rgba(255,165,0,.35)';
-  } else {
-    el.textContent = '✗ ' + (ok ? ageStr : 'שגיאה');
-    el.style.background = 'rgba(255,69,96,.15)';
-    el.style.color = 'var(--red)';
-    el.style.border = '1px solid rgba(255,69,96,.35)';
-  }
-}
-setInterval(updateHealthBadge, 5000);
 
 var pnlChart = null;
 setTimeout(updateMarketStatus, 500);
@@ -2285,7 +2402,7 @@ function toggleTheme() {
     var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     return document.getElementById('btnWeek').classList.contains('active') ? ds >= dateVal : ds === dateVal;
   }));
-  if (currentTab === 'analytics') updateAnalytics(allSignals);
+  if (currentTab === 'analytics') updateAnalytics(filteredSignals.length ? filteredSignals : allSignals);
 }
 
 function switchTab(tab) {
@@ -2295,20 +2412,22 @@ function switchTab(tab) {
   document.getElementById('backtestPanel').style.display  = tab === 'backtest'  ? '' : 'none';
   document.getElementById('legendPanel').style.display    = tab === 'legend'    ? '' : 'none';
   document.getElementById('settingsPanel').style.display  = tab === 'settings'  ? '' : 'none';
-  document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
-  var cp = document.getElementById('chatPanel'); if (cp) cp.style.display = tab === 'chat' ? 'flex' : 'none';
   document.getElementById('tabSignals').classList.toggle('active',  tab === 'signals');
   document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
   document.getElementById('tabBacktest').classList.toggle('active',  tab === 'backtest');
   document.getElementById('tabLegend').classList.toggle('active',   tab === 'legend');
   document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
+  document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
-  var tc = document.getElementById('tabChat'); if (tc) tc.classList.toggle('active', tab === 'chat');
-  if (tab === 'analytics') updateAnalytics(allSignals);
+  var cp = document.getElementById('chatPanel');
+  if (cp) cp.style.display = tab === 'chat' ? 'flex' : 'none';
+  document.getElementById('tabChat').classList.toggle('active', tab === 'chat');
+  if (tab === 'analytics') updateAnalytics(filteredSignals.length ? filteredSignals : allSignals);
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
-  if (tab === 'trades')    renderTradesDashboard(allSignals);
-  if (tab === 'chat')      initChatPanel();
+  if (tab === 'trades')    renderTradesDashboard(filteredSignals.length ? filteredSignals : allSignals);
+  syncMobileNav(tab);
+  closeMobileMore();
 }
 
 function updateAnalytics(items) {
@@ -2437,6 +2556,13 @@ var customConfigs = JSON.parse(localStorage.getItem('customConfigs') || '[]');
 function initSettingsPanel() {
   applySettingsToUI(currentSettings);
   renderCustomConfigs();
+  // Load saved refresh intervals
+  var savedData   = parseInt(localStorage.getItem('dataRefreshMs')   || '30000') / 1000;
+  var savedClaude = parseInt(localStorage.getItem('claudeRefreshMs') || String(5*60*1000)) / 60000;
+  var drSlider = document.getElementById('data-refresh-slider');
+  var crSlider = document.getElementById('claude-refresh-slider');
+  if (drSlider) { drSlider.value = savedData;   document.getElementById('val-data-refresh').textContent  = savedData + 's'; }
+  if (crSlider) { crSlider.value = savedClaude; document.getElementById('val-claude-refresh').textContent = savedClaude + 'm'; }
 }
 
 function applySettingsToUI(s) {
@@ -2603,52 +2729,22 @@ function setTradeFilter(f) {
   });
   var btnId = !f?'trAll':f==='win'?'trWin':f==='loss'?'trLoss':f==='pending'?'trPend':f==='long'?'trLong2':'trShort2';
   var btn=document.getElementById(btnId); if(btn) btn.classList.add('active');
-  renderTradesDashboard(allSignals);
+  renderTradesDashboard(filteredSignals.length ? filteredSignals : allSignals);
 }
 
 function renderTradesDashboard(items) {
   if (!items || !items.length) return;
+  var filtered = items;
+  if (tradeFilter==='win')     filtered=items.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  else if (tradeFilter==='loss')    filtered=items.filter(function(it){return isLoss((it.Result||'').toUpperCase());});
+  else if (tradeFilter==='pending') filtered=items.filter(function(it){var r=(it.Result||'').toUpperCase();return !isWin(r)&&!isLoss(r);});
+  else if (tradeFilter==='long')    filtered=items.filter(function(it){return (it.Direction||'').toUpperCase()==='LONG';});
+  else if (tradeFilter==='short')   filtered=items.filter(function(it){return (it.Direction||'').toUpperCase()==='SHORT';});
 
-  // === ONE PENDING AT A TIME ===
-  // Compute the effective result for each signal:
-  //  - verdict !== TAKE  → 'NO_TRADE' (signal was skipped, never a real trade)
-  //  - verdict === TAKE but a newer TAKE still-PENDING exists → 'SUPERSEDED'
-  //  - only the single newest TAKE with Result=PENDING stays PENDING
-  var _latestTakePendId=null;
-  for (var _i=0;_i<items.length;_i++) {
-    var _v=(items[_i].ClaudeVerdict||'').toUpperCase();
-    var _r=(items[_i].Result||'PENDING').toUpperCase();
-    if (_v==='TAKE' && _r==='PENDING') { _latestTakePendId=items[_i].ID; break; }
-  }
-  function effResult(it){
-    var r=(it.Result||'PENDING').toUpperCase();
-    var v=(it.ClaudeVerdict||'').toUpperCase();
-    if (r==='PENDING') {
-      if (v!=='TAKE') return 'NO_TRADE';
-      if (it.ID!==_latestTakePendId) return 'SUPERSEDED';
-    }
-    return r;
-  }
-  function isActivePending(it){ return effResult(it)==='PENDING'; }
-
-  // "Trades" = actual executed/planned trades = only TAKE verdicts.
-  // SKIP/WAIT/NEUTRAL were never trades; they shouldn't distort stats.
-  var tradeItems=items.filter(function(it){
-    var er=effResult(it);
-    return er!=='NO_TRADE';  // keep TAKE signals (pending, win, loss) + superseded for visibility
-  });
-
-  var filtered = tradeItems;
-  if (tradeFilter==='win')     filtered=tradeItems.filter(function(it){return isWin(effResult(it));});
-  else if (tradeFilter==='loss')    filtered=tradeItems.filter(function(it){return isLoss(effResult(it));});
-  else if (tradeFilter==='pending') filtered=tradeItems.filter(isActivePending);
-  else if (tradeFilter==='long')    filtered=tradeItems.filter(function(it){return (it.Direction||'').toUpperCase()==='LONG';});
-  else if (tradeFilter==='short')   filtered=tradeItems.filter(function(it){return (it.Direction||'').toUpperCase()==='SHORT';});
-
-  var closed=tradeItems.filter(function(it){var r=effResult(it);return isWin(r)||isLoss(r);});
-  var wins=tradeItems.filter(function(it){return isWin(effResult(it));});
-  var losses=tradeItems.filter(function(it){return isLoss(effResult(it));});
-  var pending=tradeItems.filter(isActivePending);
+  var closed=items.filter(function(it){var r=(it.Result||'').toUpperCase();return isWin(r)||isLoss(r);});
+  var wins=items.filter(function(it){return isWin((it.Result||'').toUpperCase());});
+  var losses=items.filter(function(it){return isLoss((it.Result||'').toUpperCase());});
+  var pending=items.filter(function(it){var r=(it.Result||'').toUpperCase();return !isWin(r)&&!isLoss(r);});
   var winRate=closed.length?Math.round(wins.length/closed.length*100):0;
   var wrColor=winRate>=60?'var(--green)':winRate>=40?'var(--yellow)':'var(--red)';
 
@@ -2656,17 +2752,17 @@ function renderTradesDashboard(items) {
   var sortedClosed=closed.slice().sort(function(a,b){return new Date(a.SignalTime)-new Date(b.SignalTime);});
   sortedClosed.forEach(function(it){
     var rr=parseFloat(it.RiskReward||it.PnLR||1.5);
-    if(isWin(effResult(it))) cumPnl+=(rr>0?rr:1.5); else cumPnl-=1;
+    if(isWin((it.Result||'').toUpperCase())) cumPnl+=(rr>0?rr:1.5); else cumPnl-=1;
   });
   var avgRR=sortedClosed.length?(sortedClosed.reduce(function(s,it){return s+(parseFloat(it.RiskReward||it.PnLR||0)||0);},0)/sortedClosed.length).toFixed(2):'—';
 
   var maxW=0,maxL=0,cW=0,cL=0,streakType='',streakCount=0;
   sortedClosed.forEach(function(it){
-    if(isWin(effResult(it))){cW++;cL=0;if(cW>maxW)maxW=cW;}
+    if(isWin((it.Result||'').toUpperCase())){cW++;cL=0;if(cW>maxW)maxW=cW;}
     else{cL++;cW=0;if(cL>maxL)maxL=cL;}
   });
   for(var si=closed.length-1;si>=0;si--){
-    var r=effResult(closed[si]);
+    var r=(closed[si].Result||'').toUpperCase();
     var isW=isWin(r),isL=isLoss(r);
     if(!streakType) streakType=isW?'W':'L';
     if((streakType==='W'&&isW)||(streakType==='L'&&isL)) streakCount++;
@@ -2675,12 +2771,12 @@ function renderTradesDashboard(items) {
 
   var streakHtml='<div style="display:flex;align-items:center;gap:3px;flex-wrap:wrap">';
   closed.slice(-10).forEach(function(it){
-    streakHtml+='<span class="'+(isWin(effResult(it))?'tr-streak-w':'tr-streak-l')+'"></span>';
+    streakHtml+='<span class="'+(isWin((it.Result||'').toUpperCase())?'tr-streak-w':'tr-streak-l')+'"></span>';
   });
   streakHtml+='<span style="font-family:var(--mono);font-size:12px;color:'+(streakType==='W'?'var(--green)':'var(--red)')+';margin-right:4px">'+streakCount+(streakType==='W'?'W':'L')+'</span></div>';
 
   var el;
-  el=document.getElementById('tr-total');     if(el) el.textContent=tradeItems.length;
+  el=document.getElementById('tr-total');     if(el) el.textContent=items.length;
   el=document.getElementById('tr-winrate');   if(el){el.textContent=winRate+'%';el.style.color=wrColor;}
   el=document.getElementById('tr-pnl');       if(el){el.textContent=(cumPnl>=0?'+':'')+cumPnl.toFixed(2)+'R';el.style.color=cumPnl>=0?'var(--green)':'var(--red)';}
   el=document.getElementById('tr-avgrr');     if(el) el.textContent=avgRR==='—'?'—':'1:'+avgRR;
@@ -2693,7 +2789,7 @@ function renderTradesDashboard(items) {
   var cumData=[],cumLabels=[],cum=0;
   sortedClosed.forEach(function(it){
     var rr=parseFloat(it.RiskReward||it.PnLR||1.5);
-    if(isWin(effResult(it))) cum+=rr>0?rr:1.5; else cum-=1;
+    if(isWin((it.Result||'').toUpperCase())) cum+=rr>0?rr:1.5; else cum-=1;
     var dt=new Date(it.SignalTime);
     cumLabels.push(dt.getDate()+'/'+(dt.getMonth()+1));
     cumData.push(parseFloat(cum.toFixed(2)));
@@ -2717,7 +2813,7 @@ function renderTradesDashboard(items) {
   closed.forEach(function(it){
     var d=dayNames[new Date(it.SignalTime).getDay()];
     if(!byDay[d]) byDay[d]={w:0,l:0};
-    if(isWin(effResult(it))) byDay[d].w++; else byDay[d].l++;
+    if(isWin((it.Result||'').toUpperCase())) byDay[d].w++; else byDay[d].l++;
   });
   var dayHtml=Object.keys(byDay).slice(-7).map(function(d){
     var s=byDay[d],tot=s.w+s.l,rate=tot?Math.round(s.w/tot*100):0;
@@ -2738,12 +2834,12 @@ function renderTradesDashboard(items) {
   var rows='';
   for(var i=0;i<filtered.length;i++){
     var it=filtered[i];
-    var r=effResult(it);
+    var r=(it.Result||'PENDING').toUpperCase();
     var d=(it.Direction||'').toUpperCase();
     var v=(it.ClaudeVerdict||'').toUpperCase();
     var rr=parseFloat(it.RiskReward||it.PnLR||0);
-    var rClass=isWin(r)?'tr-win':isLoss(r)?'tr-loss':(r==='SUPERSEDED'?'tr-superseded':'tr-pending');
-    var rTxt=isWin(r)?'✅ '+r:isLoss(r)?'❌ '+r:(r==='SUPERSEDED'?'⊘ הוחלף':'⏳ PENDING');
+    var rClass=isWin(r)?'tr-win':isLoss(r)?'tr-loss':'tr-pending';
+    var rTxt=isWin(r)?'✅ '+r:isLoss(r)?'❌ '+r:'⏳ '+r;
     var dBadge=d==='LONG'?'<span class="tr-long">▲ LONG</span>':'<span class="tr-short">▼ SHORT</span>';
     var rrTxt=rr>0?(isWin(r)?'<span style="color:var(--green)">+'+rr.toFixed(2)+'R</span>':'<span style="color:var(--red)">-1R</span>'):'—';
     var vColor=v==='TAKE'?'var(--green)':v==='SKIP'?'var(--red)':v==='WAIT'?'var(--yellow)':'var(--muted)';
@@ -2754,366 +2850,9 @@ function renderTradesDashboard(items) {
   tbody.innerHTML=rows;
 }
 
-// ===================== ASK CLAUDE DIRECTIONAL =====================
-// Uses Sonnet 4.6 (no cache — single-shot) for high-quality directional call
-async function askClaudeDirectional() {
-  var apiKey = localStorage.getItem('claude_api_key');
-  var btn = document.getElementById('askClaudeBtn');
-  var out = document.getElementById('askClaudeResult');
-  if (!apiKey) { showKeyModal(); return; }
-  btn.disabled = true; btn.style.opacity = '0.6';
-  btn.textContent = '⟳ Claude מנתח...';
-  out.style.display = 'block';
-  out.innerHTML = '<div style="padding:8px;color:var(--muted);font-size:11px;font-family:var(--mono)">⟳ שולח ל-Sonnet 4.6...</div>';
-  try {
-    var ctx = await gatherDashboardContext();
-    var prompt = 'אתה מנתח MNQ futures בסקאלפינג. תקבל מצב שוק עדכני ותחזיר החלטת כיוון.\n\n' +
-      'מצב נוכחי:\n' + ctx + '\n\n' +
-      'החזר JSON בלבד (ללא טקסט נוסף):\n' +
-      '{"long":<0-100>,"short":<0-100>,"skip":<0-100>,"verdict":"LONG|SHORT|SKIP","confidence":"high|medium|low","reason":"סיבה קצרה בעברית","risk_pts":<מספר>,"rr_target":<מספר>,"invalidation":"תנאי ביטול"}\n' +
-      'החלטה: LONG אם long>=60, SHORT אם short>=60, אחרת SKIP. סכום long+short+skip=100.';
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 400,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    var data = await resp.json();
-    var text = (data.content && data.content[0]) ? data.content[0].text : '';
-    var j1 = text.indexOf('{'); var j2 = text.lastIndexOf('}');
-    if (j1 !== -1 && j2 > j1) text = text.substring(j1, j2+1);
-    var pj = JSON.parse(text);
-    var l = parseInt(pj.long)||0, s = parseInt(pj.short)||0, k = parseInt(pj.skip)||0;
-    var verdictColor = pj.verdict === 'LONG' ? 'var(--green)' : pj.verdict === 'SHORT' ? 'var(--red)' : 'var(--yellow)';
-    var verdictIcon = pj.verdict === 'LONG' ? '▲' : pj.verdict === 'SHORT' ? '▼' : '⏳';
-    var html = '';
-    html += '<div style="background:var(--surface2);border:1px solid var(--border);border-right:3px solid '+verdictColor+';border-radius:6px;padding:10px 12px">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
-    html += '<span style="font-family:var(--mono);font-size:14px;font-weight:700;color:'+verdictColor+'">'+verdictIcon+' '+(pj.verdict||'?')+'</span>';
-    html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">confidence: '+(pj.confidence||'?')+'</span>';
-    html += '</div>';
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;font-family:var(--mono);font-size:10px">';
-    html += '<div><div style="color:var(--green)">LONG '+l+'%</div><div style="height:4px;background:rgba(0,208,132,.2);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+l+'%;background:var(--green)"></div></div></div>';
-    html += '<div><div style="color:var(--red)">SHORT '+s+'%</div><div style="height:4px;background:rgba(255,69,96,.2);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+s+'%;background:var(--red)"></div></div></div>';
-    html += '<div><div style="color:var(--yellow)">SKIP '+k+'%</div><div style="height:4px;background:rgba(255,165,0,.2);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+k+'%;background:var(--yellow)"></div></div></div>';
-    html += '</div>';
-    if (pj.reason) html += '<div style="font-size:11px;color:var(--text);margin-bottom:4px">📝 '+pj.reason+'</div>';
-    if (pj.risk_pts || pj.rr_target) html += '<div style="font-family:var(--mono);font-size:10px;color:var(--muted)">🛡 Risk: '+(pj.risk_pts||'?')+' pt · RR: '+(pj.rr_target||'?')+'</div>';
-    if (pj.invalidation) html += '<div style="font-family:var(--mono);font-size:10px;color:var(--red);margin-top:4px">⚠️ Invalid: '+pj.invalidation+'</div>';
-    html += '</div>';
-    out.innerHTML = html;
-  } catch(e) {
-    out.innerHTML = '<div style="background:rgba(255,69,96,0.1);border:1px solid rgba(255,69,96,0.3);border-radius:5px;padding:8px;font-size:11px;color:var(--red)">⚠️ '+e.message+'</div>';
-  }
-  btn.disabled = false; btn.style.opacity = '1';
-  btn.textContent = '🎯 שאל את Claude עכשיו';
-}
-
-// Open chat tab with context of a specific signal and pre-asked analysis
-function askClaudeAboutSignal(idx) {
-  var sig = window._sigItems && window._sigItems[idx];
-  if (!sig) return;
-  switchTab('chat');
-  setTimeout(function(){
-    var i = document.getElementById('chatInput');
-    if (!i) return;
-    var _ca = {};
-    try { _ca = JSON.parse(sig.ClaudeAnalysis||'{}'); } catch(e){}
-    var parts = [];
-    parts.push('נתח לי את הסיגנל הזה:');
-    parts.push('— זמן: ' + (sig.SignalTime||'?'));
-    parts.push('— כיוון: ' + (sig.Direction||'?'));
-    parts.push('— Entry: ' + (sig.Entry||'?') + ' | SL: ' + (sig.SL||'?') + ' | TP1: ' + (sig['OData__x0054_P1']||'?') + ' | TP2: ' + (sig['OData__x0054_P2']||'?'));
-    parts.push('— Claude: ' + (sig.ClaudeVerdict||'?') + ' (' + (sig.ClaudeScore||'?') + '/10)');
-    if (_ca.signal_type) parts.push('— סוג: ' + _ca.signal_type);
-    if (_ca.reason) parts.push('— סיבה: ' + _ca.reason);
-    parts.push('— תוצאה: ' + (sig.Result||'PENDING'));
-    parts.push('');
-    parts.push('מה דעתך? האם כדאי היה להיכנס? ולמה/למה לא?');
-    i.value = parts.join('\n');
-    i.focus();
-  }, 150);
-}
-
-// Bridge connection — live TradingView data via local proxy (tv-bridge-server.js)
-var TV_BRIDGE_URL = 'http://localhost:3030';
-var _bridgeStatus = 'unknown'; // 'online' | 'offline' | 'unknown'
-
-async function fetchTvSnapshot() {
-  try {
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){ ctrl.abort(); }, 3000);
-    var r = await fetch(TV_BRIDGE_URL + '/tv/snapshot', { signal: ctrl.signal });
-    clearTimeout(t);
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    var j = await r.json();
-    _bridgeStatus = 'online';
-    updateBridgeBadge();
-    return j;
-  } catch(e) {
-    _bridgeStatus = 'offline';
-    updateBridgeBadge();
-    return null;
-  }
-}
-
-function updateBridgeBadge() {
-  var b = document.getElementById('bridgeBadge');
-  if (!b) return;
-  if (_bridgeStatus === 'online') {
-    b.textContent = '🟢 TV LIVE';
-    b.style.color = 'var(--green)';
-    b.title = 'Bridge מחובר — Claude רואה את הגרף בזמן אמת';
-  } else if (_bridgeStatus === 'offline') {
-    b.textContent = '⚫ TV OFFLINE';
-    b.style.color = 'var(--muted)';
-    b.title = 'Bridge לא פעיל — הרץ start-tv-bridge.bat';
-  } else {
-    b.textContent = '⚪ TV ?';
-    b.style.color = 'var(--muted)';
-  }
-}
-
-// Format live TV snapshot into compact text for Claude prompt
-function formatTvSnapshot(snap) {
-  if (!snap || !snap.success) return '';
-  var lines = [];
-  lines.push('── מצב TradingView חי ──');
-  lines.push('Symbol: ' + (snap.symbol||'?') + ' | TF: ' + (snap.timeframe||'?'));
-  var q = snap.quote;
-  if (q && !q.error) {
-    lines.push('Last: ' + q.last + ' | OHLC: ' + q.open + '/' + q.high + '/' + q.low + '/' + q.close + ' | Vol: ' + (q.volume||'?'));
-  }
-  var o = snap.ohlcv;
-  if (o && !o.error) {
-    lines.push('Range 20 bars: ' + o.low + '-' + o.high + ' (' + (o.range||'?') + 'pt) | Change: ' + (o.change_pct||'?'));
-    if (o.last_5_bars && o.last_5_bars.length) {
-      var lastBar = o.last_5_bars[o.last_5_bars.length-1];
-      lines.push('Last bar: O=' + lastBar.open + ' H=' + lastBar.high + ' L=' + lastBar.low + ' C=' + lastBar.close + ' V=' + lastBar.volume);
-    }
-  }
-  var studies = snap.studies;
-  if (studies && studies.studies && studies.studies.length) {
-    lines.push('— אינדיקטורים פעילים:');
-    studies.studies.forEach(function(s){
-      var vals = [];
-      for (var k in s.values) { if (s.values[k] !== '0.00' && s.values[k] !== 0) vals.push(k+': '+s.values[k]); }
-      if (vals.length) lines.push('  ' + s.name + ' → ' + vals.slice(0,8).join(' | '));
-    });
-  }
-  var tables = snap.tables;
-  if (tables && tables.studies && tables.studies.length) {
-    tables.studies.forEach(function(ts){
-      if (!ts.tables || !ts.tables.length) return;
-      lines.push('— טבלה מ-' + ts.name + ':');
-      ts.tables.forEach(function(tbl){
-        if (tbl.rows) tbl.rows.slice(0,4).forEach(function(row){ lines.push('  ' + row); });
-      });
-    });
-  }
-  var labels = snap.engine_labels;
-  if (labels && labels.studies && labels.studies.length) {
-    labels.studies.forEach(function(ls){
-      if (!ls.labels || !ls.labels.length) return;
-      var labelSample = ls.labels.slice(-8).map(function(l){ return l.text+'@'+l.price; }).join(', ');
-      lines.push('— תוויות אחרונות: ' + labelSample);
-    });
-  }
-  return lines.join('\n');
-}
-
-// Build concise dashboard context string for Claude (combines dashboard + live TV data)
-async function gatherDashboardContext() {
-  var lines = [];
-  // First, try to get live TV snapshot
-  var snap = await fetchTvSnapshot();
-  var tvText = formatTvSnapshot(snap);
-  if (tvText) { lines.push(tvText); lines.push(''); }
-
-  // Then dashboard stats
-  try {
-    var items = (typeof allSignals !== 'undefined' && allSignals) ? allSignals : [];
-    var last = items[0];
-    lines.push('── נתוני דשבורד ──');
-    if (last) {
-      lines.push('סיגנל אחרון: ' + (last.Direction||'?') + ' @ ' + (last.Entry||'?') +
-                 ' | SL ' + (last.StopLoss||'?') + ' | TP1 ' + (last.TakeProfit1||'?') + ' | TP2 ' + (last.TakeProfit2||'?') +
-                 ' | Claude: ' + (last.ClaudeVerdict||'?') + ' (' + (last.ClaudeScore||'?') + '/10)');
-      if (last.SignalType) lines.push('סוג: ' + last.SignalType);
-    }
-    var tot = document.getElementById('statTotal')?.textContent;
-    var rate = document.getElementById('statRate')?.textContent;
-    var long = document.getElementById('aLong')?.textContent;
-    var short = document.getElementById('aShort')?.textContent;
-    if (tot) lines.push('היום: ' + tot + ' סיגנלים | Win: ' + (rate||'?'));
-    if (long || short) lines.push('LONG: ' + (long||'?') + ' | SHORT: ' + (short||'?'));
-    var last5 = items.slice(0,5).map(function(s){ return (s.Direction||'?')+'/'+(s.Result||'OPEN'); }).join(', ');
-    if (last5) lines.push('5 אחרונים (dir/result): ' + last5);
-  } catch(e) {}
-
-  if (!snap) lines.push('\n⚠️ Bridge לא פעיל — הרץ start-tv-bridge.bat כדי שCloude יראה את הגרף החי.');
-  return lines.join('\n') || 'אין נתונים זמינים';
-}
-
-// Ping bridge every 30 sec to keep badge updated
-setInterval(fetchTvSnapshot, 30000);
-setTimeout(fetchTvSnapshot, 1500);
-
-// ===================== CLAUDE CHAT =====================
-// Sonnet 4.6 with prompt caching (stable system prompt cached, rolling messages fresh)
-var _chatHistory = [];
-var _chatSystemPrompt = '';
-
-function initChatPanel() {
-  if (_chatSystemPrompt) return; // already initialized
-  try { _chatHistory = JSON.parse(localStorage.getItem('claude_chat_history')||'[]'); } catch(e) { _chatHistory = []; }
-  _chatSystemPrompt =
-    'אתה Claude, עוזר אישי של סוחר MNQ futures בסקאלפינג. אתה משולב במערכת דשבורד בזמן אמת.\n\n' +
-    'יכולות:\n' +
-    '- מנתח סיגנלים ומצב שוק\n' +
-    '- עונה בעברית בלבד, ברור ותמציתי\n' +
-    '- מספק המלצות LONG/SHORT/SKIP עם נימוק\n' +
-    '- זוכר הקשר השיחה\n\n' +
-    'פקודות מיוחדות:\n' +
-    '/analyze — ניתוח מלא של מצב השוק הנוכחי עם המלצת כיוון ואחוזי הסתברות\n' +
-    '/bias — הערכת Bias קצר טווח ואמצע יום\n' +
-    '/risk — ניתוח סיכון בכניסה פוטנציאלית\n' +
-    '/stats — סיכום ביצועי היום\n' +
-    '/review last — ניתוח של הסיגנל האחרון\n\n' +
-    'כללים:\n' +
-    '- ענה תמיד בעברית\n' +
-    '- השתמש ב-emoji בצמצום\n' +
-    '- אם יש JSON מתבקש בפקודה, החזר רק JSON\n' +
-    '- שמור על מענה תמציתי (≤100 מילים אלא אם התבקש אחרת)';
-  renderChatMessages();
-  if (!_chatHistory.length) {
-    addChatMessage('assistant', 'שלום! אני Claude. אני רואה את מצב הדשבורד שלך בזמן אמת. שאל אותי כל דבר על השוק, סיגנלים או אסטרטגיה.\n\nהקלד `/` לפקודות מיוחדות.', false);
-  }
-  setTimeout(function(){ var i=document.getElementById('chatInput'); if(i) i.focus(); }, 100);
-}
-
-function renderChatMessages() {
-  var c = document.getElementById('chatMessages'); if (!c) return;
-  c.innerHTML = '';
-  _chatHistory.forEach(function(m){ appendChatBubble(m.role, m.content); });
-  c.scrollTop = c.scrollHeight;
-}
-
-function appendChatBubble(role, content) {
-  var c = document.getElementById('chatMessages'); if (!c) return;
-  var isUser = role === 'user';
-  var bubble = document.createElement('div');
-  bubble.style.cssText = 'max-width:80%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;'+
-    (isUser
-      ? 'align-self:flex-start;background:var(--blue);color:#000;border-bottom-right-radius:3px'
-      : 'align-self:flex-end;background:var(--surface);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px');
-  bubble.textContent = content;
-  c.appendChild(bubble);
-  c.scrollTop = c.scrollHeight;
-}
-
-function addChatMessage(role, content, persist) {
-  _chatHistory.push({role: role, content: content, ts: Date.now()});
-  if (persist !== false) { try { localStorage.setItem('claude_chat_history', JSON.stringify(_chatHistory.slice(-100))); } catch(e){} }
-  appendChatBubble(role, content);
-}
-
-function chatHandleKeydown(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
-}
-
-function chatQuickAsk(cmd) {
-  var i = document.getElementById('chatInput'); if (!i) return;
-  i.value = cmd;
-  sendChatMessage();
-}
-
-async function sendChatMessage() {
-  var input = document.getElementById('chatInput');
-  var sendBtn = document.getElementById('chatSendBtn');
-  var status = document.getElementById('chatStatus');
-  var cacheBadge = document.getElementById('chatCacheBadge');
-  var apiKey = localStorage.getItem('claude_api_key');
-  if (!apiKey) { showKeyModal(); return; }
-  var msg = (input.value||'').trim();
-  if (!msg) return;
-  input.value = '';
-  input.style.height = 'auto';
-  addChatMessage('user', msg);
-  sendBtn.disabled = true; sendBtn.style.opacity = '0.5';
-  status.textContent = '⟳ Claude חושב...';
-  try {
-    var ctx = await gatherDashboardContext();
-    var userContent = 'הקשר נוכחי מהדשבורד:\n' + ctx + '\n\nשאלה: ' + msg;
-    // Build messages from history (last 20 turns to control context)
-    var hist = _chatHistory.filter(function(m){ return m.role==='user' || m.role==='assistant'; }).slice(-21, -1);
-    var messages = hist.map(function(m){ return {role:m.role, content:m.content}; });
-    messages.push({role:'user', content: userContent});
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 800,
-        system: [{type:'text', text:_chatSystemPrompt, cache_control:{type:'ephemeral'}}],
-        messages: messages
-      })
-    });
-    if (!resp.ok) { var errTxt = await resp.text(); throw new Error('HTTP '+resp.status+' '+errTxt.slice(0,120)); }
-    var data = await resp.json();
-    var reply = (data.content && data.content[0]) ? data.content[0].text : '(אין תגובה)';
-    var usage = data.usage || {};
-    var cacheRead = usage.cache_read_input_tokens || 0;
-    var cacheCreate = usage.cache_creation_input_tokens || 0;
-    addChatMessage('assistant', reply);
-    // Cache badge
-    if (cacheRead > 0) { cacheBadge.style.display = 'inline'; cacheBadge.textContent = '⚡ cached ('+cacheRead+'t)'; }
-    status.textContent = 'in:'+(usage.input_tokens||0)+'t | out:'+(usage.output_tokens||0)+'t' +
-      (cacheRead ? ' | ✅cache read:'+cacheRead : '') +
-      (cacheCreate ? ' | 📝cache write:'+cacheCreate : '');
-  } catch(e) {
-    addChatMessage('assistant', '⚠️ שגיאה: '+e.message);
-    status.textContent = 'error: '+e.message.slice(0,80);
-  }
-  sendBtn.disabled = false; sendBtn.style.opacity = '1';
-  input.focus();
-}
-
-function clearChatHistory() {
-  if (!confirm('לנקות את היסטוריית השיחה?')) return;
-  _chatHistory = [];
-  localStorage.removeItem('claude_chat_history');
-  renderChatMessages();
-  addChatMessage('assistant', 'היסטוריית השיחה נמחקה. במה אעזור?', false);
-}
-
-function exportChatHistory() {
-  var blob = new Blob([JSON.stringify(_chatHistory, null, 2)], {type:'application/json'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'claude-chat-'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 // ===================== CLAUDE TRADE ANALYSIS =====================
 async function runTradeAnalysis() {
-  var apiKey=localStorage.getItem('claude_api_key');
+  var apiKey=cachedApiKey;
   var body=document.getElementById('tradeAnalysisBody');
   var spin=document.getElementById('tradeAnalysisSpin');
   var status=document.getElementById('tradeAnalysisStatus');
@@ -3163,7 +2902,7 @@ async function runTradeAnalysis() {
   closed.forEach(function(it){
     var d=dayNames[new Date(it.SignalTime).getDay()];
     if(!byDay[d]) byDay[d]={w:0,l:0};
-    if(isWin(effResult(it))) byDay[d].w++; else byDay[d].l++;
+    if(isWin((it.Result||'').toUpperCase())) byDay[d].w++; else byDay[d].l++;
   });
   var dayStats=Object.keys(byDay).map(function(d){var s=byDay[d],tot=s.w+s.l;return d+':'+s.w+'W/'+s.l+'L('+(tot?Math.round(s.w/tot*100):0)+'%)';}).join(', ');
 
@@ -3702,6 +3441,279 @@ function btUpdate(){
   });
 }
 // ═══════════════════════════════════════════════════════════════════
+
+// ── CHAT WITH CLAUDE ─────────────────────────────────────────────
+var chatHistory = [];
+
+// Local TradingView bridge (tv-bridge-server.js running on the user's PC).
+// Used to give Claude live chart state (symbol, indicators, Pine drawings)
+// while chatting. If the bridge is offline, chat falls back gracefully.
+var TV_BRIDGE = (localStorage.getItem('tvBridgeUrl') || 'http://127.0.0.1:3030').replace(/\/$/, '');
+
+async function tvBridgeGet(path, timeoutMs) {
+  timeoutMs = timeoutMs || 2500;
+  var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var t = ctl ? setTimeout(function(){ ctl.abort(); }, timeoutMs) : null;
+  try {
+    var r = await fetch(TV_BRIDGE + path, { signal: ctl ? ctl.signal : undefined, cache: 'no-store' });
+    if (t) clearTimeout(t);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) {
+    if (t) clearTimeout(t);
+    return null;
+  }
+}
+
+// Pull live TradingView state and format it as a compact text block
+// suitable for appending to Claude's system prompt.
+async function fetchTVContext() {
+  var state, quote, studies, tables, labels, lines, boxes;
+  try {
+    var all = await Promise.all([
+      tvBridgeGet('/tv/state'),
+      tvBridgeGet('/tv/quote'),
+      tvBridgeGet('/tv/study-values'),
+      tvBridgeGet('/tv/pine-tables'),
+      tvBridgeGet('/tv/pine-labels'),
+      tvBridgeGet('/tv/pine-lines'),
+      tvBridgeGet('/tv/pine-boxes')
+    ]);
+    state = all[0]; quote = all[1]; studies = all[2];
+    tables = all[3]; labels = all[4]; lines = all[5]; boxes = all[6];
+  } catch(e) { return ''; }
+
+  // Bridge offline / nothing usable -> return empty so system prompt stays clean.
+  if (!state && !quote) return '';
+
+  var lines_out = [];
+  lines_out.push('--- LIVE TRADINGVIEW STATE (from local bridge) ---');
+  if (state && state.success !== false) {
+    var sym = state.chart_symbol || state.symbol || '?';
+    var tf  = state.chart_resolution || state.resolution || '?';
+    lines_out.push('Symbol: ' + sym + ' | Timeframe: ' + tf);
+    if (state.indicators && state.indicators.length) {
+      lines_out.push('Indicators on chart: ' + state.indicators.map(function(i){ return i.name || i.title || i; }).join(', '));
+    }
+  }
+  if (quote && (quote.last || quote.price)) {
+    var last = quote.last || quote.price;
+    var bits = ['Last: ' + last];
+    if (quote.open  != null) bits.push('O:' + quote.open);
+    if (quote.high  != null) bits.push('H:' + quote.high);
+    if (quote.low   != null) bits.push('L:' + quote.low);
+    if (quote.close != null) bits.push('C:' + quote.close);
+    if (quote.volume != null) bits.push('Vol:' + quote.volume);
+    lines_out.push('Quote: ' + bits.join(' '));
+  }
+  if (studies && studies.values) {
+    var sv = [];
+    Object.keys(studies.values).slice(0, 20).forEach(function(k){
+      var v = studies.values[k];
+      if (v && typeof v === 'object') v = JSON.stringify(v);
+      sv.push(k + '=' + v);
+    });
+    if (sv.length) lines_out.push('Study values: ' + sv.join(' | '));
+  }
+  if (tables && tables.tables && tables.tables.length) {
+    lines_out.push('Pine tables:');
+    tables.tables.slice(0, 3).forEach(function(t){
+      lines_out.push('  [' + (t.study || '?') + '] ' + JSON.stringify(t.rows || t.data || t).slice(0, 800));
+    });
+  }
+  if (labels && labels.labels && labels.labels.length) {
+    var labText = labels.labels.slice(0, 25).map(function(l){
+      var txt = (l.text || '').toString().slice(0, 60);
+      var pr  = (l.price != null) ? (' @' + l.price) : '';
+      return txt + pr;
+    }).join(' | ');
+    lines_out.push('Pine labels: ' + labText);
+  }
+  if (lines && lines.lines && lines.lines.length) {
+    var lv = lines.lines.slice(0, 15).map(function(x){ return (x.name || '?') + ':' + x.price; }).join(' | ');
+    lines_out.push('Pine lines: ' + lv);
+  }
+  if (boxes && boxes.boxes && boxes.boxes.length) {
+    var bv = boxes.boxes.slice(0, 10).map(function(x){ return (x.name || 'box') + ' ' + x.low + '-' + x.high; }).join(' | ');
+    lines_out.push('Pine boxes: ' + bv);
+  }
+  lines_out.push('--- END LIVE STATE ---');
+  return lines_out.join('\n');
+}
+
+function chatRender() {
+  var el = document.getElementById('chatMessages');
+  if (!el) return;
+  if (chatHistory.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:40px">👋 שלום! אני Claude.<br>שאל אותי על הסיגנלים, השוק, או כל שאלה אחרת.</div>';
+    return;
+  }
+  el.innerHTML = chatHistory.map(function(m) {
+    var isUser = m.role === 'user';
+    var bg  = isUser ? 'rgba(77,166,255,0.12)' : 'var(--surface)';
+    var bc  = isUser ? 'rgba(77,166,255,0.3)'  : 'var(--border)';
+    var align = isUser ? 'flex-end' : 'flex-start';
+    var label = isUser ? '👤 אתה' : '🤖 Claude';
+    var color = isUser ? 'var(--blue)' : 'var(--green)';
+    var text = m.content.replace(/\n/g, '<br>');
+    return '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:85%;align-self:' + align + '">'
+         + '<div style="font-size:10px;color:' + color + ';margin-bottom:3px;font-family:var(--mono)">' + label + '</div>'
+         + '<div style="background:' + bg + ';border:1px solid ' + bc + ';border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.6;color:var(--text);white-space:pre-wrap;direction:auto">' + text + '</div>'
+         + '</div>';
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function chatBuildSystemPrompt() {
+  var recent = (allSignals || []).slice(0, 10);
+  var longs  = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='LONG'; }).length;
+  var shorts = recent.filter(function(s){ return (s.Direction||'').toUpperCase()==='SHORT'; }).length;
+  var takes  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='TAKE'; }).length;
+  var skips  = recent.filter(function(s){ return (s.ClaudeVerdict||'').toUpperCase()==='SKIP'; }).length;
+  var avgScore = recent.length ? (recent.reduce(function(a,s){ return a + parseFloat(s.ClaudeScore||0); }, 0) / recent.length).toFixed(1) : 'N/A';
+  return 'אתה עוזר מסחר חכם המשולב בדשבורד MNQ של המשתמש.'
+    + ' הדשבורד מציג סיגנלים אוטומטיים על MNQ (Micro E-mini Nasdaq-100 Futures).'
+    + ' סיגנלים מגיעים מ-TradingView ומנותחים ע"י Claude Haiku.'
+    + '\n\nנתוני שוק עדכניים (10 סיגנלים אחרונים):'
+    + '\n- LONG: ' + longs + ' | SHORT: ' + shorts
+    + '\n- TAKE: ' + takes + ' | SKIP: ' + skips
+    + '\n- ציון ממוצע: ' + avgScore
+    + '\n\nענה בעברית אלא אם המשתמש שואל באנגלית. היה תמציתי וממוקד.';
+}
+
+function chatInjectContext() {
+  var recent = (allSignals || []).slice(0, 5);
+  var summary = recent.map(function(s, i) {
+    return (i+1) + '. ' + (s.Direction||'?') + ' | ציון:' + (s.ClaudeScore||'?') + ' | Verdict:' + (s.ClaudeVerdict||'?') + ' | ' + (s.SignalTime||'').substring(0,16);
+  }).join('\n');
+  var msg = '📊 נתוני שוק נוכחיים (5 סיגנלים אחרונים):\n' + summary;
+  document.getElementById('chatInput').value = msg;
+  document.getElementById('chatInput').focus();
+}
+
+function chatClearHistory() {
+  chatHistory = [];
+  chatRender();
+}
+
+async function chatSend() {
+  var input = document.getElementById('chatInput');
+  var btn   = document.getElementById('chatSendBtn');
+  var text  = (input.value || '').trim();
+  if (!text) return;
+  if (!cachedApiKey) {
+    showKeyModal();
+    return;
+  }
+  input.value = '';
+  chatHistory.push({ role: 'user', content: text });
+  chatRender();
+  btn.disabled = true;
+  btn.textContent = '⟳';
+
+  // Add typing indicator
+  var el = document.getElementById('chatMessages');
+  var typingDiv = document.createElement('div');
+  typingDiv.id = 'chatTyping';
+  typingDiv.style.cssText = 'color:var(--muted);font-size:12px;font-family:var(--mono);padding:4px 8px';
+  typingDiv.textContent = '🤖 Claude מקליד...';
+  el.appendChild(typingDiv);
+  el.scrollTop = el.scrollHeight;
+
+  try {
+    // Pull live TradingView state from the local bridge (best-effort).
+    var tvCtx = '';
+    try { tvCtx = await fetchTVContext(); } catch(_e) { tvCtx = ''; }
+    var sysPrompt = chatBuildSystemPrompt();
+    if (tvCtx) {
+      sysPrompt += '\n\n' + tvCtx
+        + '\n\nHere is the live chart state as the user currently sees it. Use it when answering questions about price, indicators, levels, bias, or the current setup. If the user asks about something not in this snapshot, say so explicitly.';
+    } else {
+      sysPrompt += '\n\n(Live TradingView bridge is not reachable right now, so you can only reason from SharePoint signal history. If the user asks about the current chart, tell them the bridge is offline.)';
+    }
+
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': cachedApiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: sysPrompt,
+        messages: chatHistory
+      })
+    });
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    var reply = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '⚠️ תשובה ריקה';
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    chatHistory.push({ role: 'assistant', content: '⚠️ שגיאת חיבור: ' + e.message });
+  }
+
+  var td = document.getElementById('chatTyping');
+  if (td) td.remove();
+  btn.disabled = false;
+  btn.textContent = 'שלח ↩';
+  chatRender();
+}
+
+function applyDataRefresh(val) {
+  val = parseInt(val);
+  REFRESH = val * 1000;
+  localStorage.setItem('dataRefreshMs', REFRESH);
+  document.getElementById('val-data-refresh').textContent = val + 's';
+  // Restart interval with new rate
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(refresh, REFRESH);
+}
+
+function applyClaudeRefresh(val) {
+  val = parseInt(val);
+  DYN_INTERVAL = val * 60 * 1000;
+  localStorage.setItem('claudeRefreshMs', DYN_INTERVAL);
+  document.getElementById('val-claude-refresh').textContent = val + 'm';
+  dynNextRun = 0; // trigger immediate re-run on next tick
+}
+
+function toggleMobileMore() {
+  var m = document.getElementById('mobileMore');
+  m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+}
+function closeMobileMore() {
+  document.getElementById('mobileMore').style.display = 'none';
+}
+async function mobileRefresh(btn) {
+  var icon = document.getElementById('mRefreshIcon');
+  if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+  try { await refresh(); } catch(e) {}
+  if (icon) icon.style.animation = '';
+}
+
+function syncMobileNav(tab) {
+  var map = { signals:'mTabSignals', analytics:'mTabAnalytics', trades:'mTabTrades', chat:'mTabChat' };
+  ['mTabSignals','mTabAnalytics','mTabTrades','mTabChat','mTabMore'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  var activeId = map[tab];
+  if (activeId) {
+    var el = document.getElementById(activeId);
+    if (el) el.classList.add('active');
+  } else {
+    // backtest / legend / settings → highlight "עוד"
+    var more = document.getElementById('mTabMore');
+    if (more) more.classList.add('active');
+  }
+}
+
+// Initialize chat panel on first view
+document.addEventListener('DOMContentLoaded', function(){ chatRender(); });
+// ─────────────────────────────────────────────────────────────────
 
 </script>
 </body>
