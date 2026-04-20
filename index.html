@@ -1859,6 +1859,28 @@ function showPopup(item) {
   body += '<div class="pr"><div class="pr-label">TP2</div><div class="pr-val" style="color:var(--green);opacity:.8">' + tp2 + '</div></div>';
   body += '<div class="pr"><div class="pr-label">ציון</div><div class="pr-val" style="color:var(--yellow)">' + (item.ClaudeScore||'—') + '/10</div></div>';
   body += '<div class="pr"><div class="pr-label">החלטה</div><div class="pr-val" style="font-family:var(--sans);font-size:11px;font-weight:400;color:var(--text)">' + (item.VerdictNote||'—') + '</div></div>';
+
+  // V3: show filter_blocked + version if present in ClaudeAnalysis JSON
+  try {
+    var _ca = item.ClaudeAnalysis ? JSON.parse(item.ClaudeAnalysis) : {};
+    if (_ca.v3_version) {
+      var _badgeV = '<span style="background:var(--blue-soft);color:var(--blue);border:1px solid var(--blue-line);padding:1px 7px;border-radius:10px;font-size:10px;font-family:var(--mono)">' + _ca.v3_version + '</span>';
+      body += '<div class="pr"><div class="pr-label">V3 גרסה</div><div class="pr-val">' + _badgeV + '</div></div>';
+    }
+    if (_ca.v3_filter_blocked) {
+      var _blockLabel = {
+        'no_pattern':     '🚫 אין תבנית',
+        'strength':       '💪 חוזק נמוך',
+        'trend':          '📉 מנוגד למגמה',
+        'rsi_overbought': '🔴 RSI Overbought',
+        'rsi_oversold':   '🟢 RSI Oversold',
+        'session':        '🕐 מחוץ לסשן',
+        'chop':           '↔️ שוק צידי (chop)'
+      }[_ca.v3_filter_blocked] || _ca.v3_filter_blocked;
+      body += '<div class="pr"><div class="pr-label">V3 פילטר</div><div class="pr-val" style="color:var(--yellow)">' + _blockLabel + '</div></div>';
+    }
+  } catch(e) {}
+
   // Result display + manual update buttons
   var res = (item.Result||'PENDING').toUpperCase();
   body += '<div class="pr"><div class="pr-label">תוצאה</div><div class="pr-val">' + resultLabel(res) + '</div></div>';
@@ -2335,19 +2357,35 @@ async function runDynamicAnalysis(manual) {
     var takeWR = (takeWins+takeLosses) > 0 ? Math.round(takeWins/(takeWins+takeLosses)*100) : '—';
     var skipWR = (skipWins+skipLosses) > 0 ? Math.round(skipWins/(skipWins+skipLosses)*100) : '—';
 
+    // V3: aggregate v3_filter_blocked counts from recent signals
+    var filterCounts = {};
+    var v3Count = 0;
+    recent.forEach(function(s) {
+      try {
+        var a = JSON.parse(s.ClaudeAnalysis||'{}');
+        if (a.v3_version) v3Count++;
+        if (a.v3_filter_blocked) filterCounts[a.v3_filter_blocked] = (filterCounts[a.v3_filter_blocked]||0) + 1;
+      } catch(e){}
+    });
+    var topFilters = Object.keys(filterCounts).sort(function(a,b){return filterCounts[b]-filterCounts[a];})
+                           .slice(0,3).map(function(k){ return k+':'+filterCounts[k]; }).join(', ');
+
     var prompt = 'אתה מנתח MNQ Futures מקצועי. החזר JSON בלבד — אל תשאל שאלות.\n' +
       'שעה: ' + timeIL + '\n\n' +
       'SIGNALS (20 אחרונים):\n' +
       '  LONG: ' + longs + ' | SHORT: ' + shorts + '\n' +
       '  WR כללי: ' + wr + '% | AvgScore: ' + avgScore + '/10\n' +
       '  TAKE WR: ' + takeWR + '% | SKIP WR: ' + skipWR + '%\n' +
-      '  SKIP_STREAK: ' + skipStreak + '\n\n' +
+      '  SKIP_STREAK: ' + skipStreak + '\n' +
+      '  V3 signals: ' + v3Count + '/20' + (topFilters ? ' | filters blocked: ' + topFilters : '') + '\n\n' +
       '5 אחרונים (Dir|Verdict|Result): ' + (last5 || 'אין נתונים') + '\n' +
       'סוגי סיגנלים תכופים: ' + (topTypes || 'אין') + '\n\n' +
       'כללי ניתוח:\n' +
       '- אם SKIP_STREAK >= 3 — ציין סיבה אפשרית ב-skip_alert\n' +
       '- אם TAKE WR < 40% — ציין ב-market_state שאיכות הסיגנלים ירודה\n' +
       '- אם SKIP WR > 60% — ציין שה-SKIP filter אגרסיבי מדי (דוחה סיגנלים שהיו מרוויחים)\n' +
+      '- אם יש "chop" > 5 בפילטרים של V3 — ציין שהשוק צידי ו-V3 חוסם נכון\n' +
+      '- אם יש "rsi_overbought" > 3 — ציין שמומלץ לחכות לתיקון\n' +
       '- התמקד בניתוח bias (LONG vs SHORT) ורמות מפתח\n\n' +
       'FORMAT (JSON בלבד):\n' +
       '{"market_state":["מגמה","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"],"skip_alert":"","quality_note":""}\n' +
