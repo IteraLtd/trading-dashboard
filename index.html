@@ -990,78 +990,16 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
             </div>
           </div>
 
-          <!-- Text Color -->
-          <div class="setting-row">
-            <div style="margin-bottom:8px"><span class="setting-label">✏️ צבע טקסט ראשי</span></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap" id="textColorBtns">
-              <button onclick="setTextColor('#c8d4e8','ברירת מחדל',this)" class="txt-color-btn active" id="tc-default" style="background:rgba(200,212,232,0.15);border:1px solid #c8d4e8;color:#c8d4e8">ברירת מחדל</button>
-              <button onclick="setTextColor('#ffffff','לבן',this)"          class="txt-color-btn" id="tc-white"   style="background:rgba(255,255,255,0.1);border:1px solid #fff;color:#fff">לבן</button>
-              <button onclick="setTextColor('#e2e8f0','בהיר',this)"         class="txt-color-btn" id="tc-light"   style="background:rgba(226,232,240,0.1);border:1px solid #e2e8f0;color:#e2e8f0">בהיר</button>
-              <button onclick="setTextColor('#94a3b8','עמום',this)"          class="txt-color-btn" id="tc-muted"   style="background:rgba(148,163,184,0.1);border:1px solid #94a3b8;color:#94a3b8">עמום</button>
-              <button onclick="setTextColor('#fbbf24','זהב',this)"           class="txt-color-btn" id="tc-amber"   style="background:rgba(251,191,36,0.1);border:1px solid #fbbf24;color:#fbbf24">זהב</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
-              <span class="setting-label" style="font-size:11px">מותאם אישית:</span>
-              <input type="color" id="textColorPicker" value="#c8d4e8"
-                oninput="setTextColor(this.value,'מותאם',null)"
-                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
-              <span id="textColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#c8d4e8</span>
-            </div>
-          </div>
-
-          <!-- Muted text color -->
-          <div class="setting-row">
-            <div style="margin-bottom:8px"><span class="setting-label">🔅 צבע טקסט משני (labels)</span></div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <input type="color" id="mutedColorPicker" value="#4a6080"
-                oninput="setCssVar('--muted',this.value,'mutedColorHex')"
-                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
-              <span id="mutedColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#4a6080</span>
-              <button onclick="setCssVar('--muted','#4a6080','mutedColorHex');document.getElementById('mutedColorPicker').value='#4a6080'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
-            </div>
-          </div>
-
-          <!-- Green (WIN/LONG) -->
-          <div class="setting-row">
-            <div style="margin-bottom:8px"><span class="setting-label">🟢 צבע WIN / LONG</span></div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <input type="color" id="greenColorPicker" value="#00d084"
-                oninput="setCssVar('--green',this.value,'greenColorHex')"
-                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
-              <span id="greenColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#00d084</span>
-              <button onclick="setCssVar('--green','#00d084','greenColorHex');document.getElementById('greenColorPicker').value='#00d084'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
-            </div>
-          </div>
-
-          <!-- Red (LOSS/SHORT) -->
-          <div class="setting-row">
-            <div style="margin-bottom:8px"><span class="setting-label">🔴 צבע LOSS / SHORT</span></div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <input type="color" id="redColorPicker" value="#ff4560"
-                oninput="setCssVar('--red',this.value,'redColorHex')"
-                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
-              <span id="redColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#ff4560</span>
-              <button onclick="setCssVar('--red','#ff4560','redColorHex');document.getElementById('redColorPicker').value='#ff4560'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
-            </div>
-          </div>
-
-          <!-- Surface/card bg -->
-          <div class="setting-row">
-            <div style="margin-bottom:8px"><span class="setting-label">🗃 צבע רקע כרטיסים</span></div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <input type="color" id="surfaceColorPicker" value="#0f1520"
-                oninput="setCssVar('--surface',this.value,'surfaceColorHex')"
-                style="width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);cursor:pointer;padding:2px">
-              <span id="surfaceColorHex" style="font-family:var(--mono);font-size:11px;color:var(--muted)">#0f1520</span>
-              <button onclick="setCssVar('--surface','#0f1520','surfaceColorHex');document.getElementById('surfaceColorPicker').value='#0f1520'" class="vol-btn" style="font-size:10px;padding:3px 8px">איפוס</button>
-            </div>
-          </div>
-
-          <!-- Reset all -->
+          <!-- Appearance customization disabled — v2 theme system handles this automatically per light/dark mode -->
           <div class="setting-row" style="grid-column:1/-1">
-            <button onclick="resetAllColors()" style="background:rgba(255,69,96,0.15);border:1px solid rgba(255,69,96,0.4);color:var(--red);border-radius:6px;padding:7px 16px;font-size:12px;font-family:var(--mono);cursor:pointer">
-              ↺ איפוס כל הצבעים לברירת מחדל
-            </button>
+            <div style="padding:12px;background:var(--blue-soft);border:1px solid var(--blue-line);border-radius:var(--r-sm)">
+              <div style="font-weight:700;color:var(--blue);font-size:13px;margin-bottom:6px">🎨 צבעים</div>
+              <div style="font-size:12px;color:var(--text);line-height:1.6">
+                הצבעים כעת נקבעים אוטומטית לפי ערכת הצבעים (כהה/בהיר). זה מבטיח ניגוד תקין בכל המצבים.
+                <br>
+                להחלפת ערכת צבעים — לחץ על <kbd>⚙️</kbd> בראש העמוד → "ערכת צבעים".
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1399,18 +1337,23 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 </div>
 
 <script>
-// Run appearance migration FIRST THING, before any other code might apply overrides.
-// This nukes legacy localStorage keys that were causing dark-on-dark text in the new palette.
-(function earlyAppearanceMigration() {
+// Legacy "appearance customization" is disabled because it wrote theme-agnostic hex
+// colors (e.g. user picks "gold" text → stays gold in both themes → unreadable on one).
+// Every page load we nuke the saved overrides and strip inline style.setProperty values,
+// so text/accent colors always follow the current theme (dark or light).
+(function nukeLegacyAppearance() {
   try {
-    var v = 'v3-2026-04-20-contrast';
-    if (localStorage.getItem('appearanceMigration') !== v) {
-      ['accentColor','textColor','appFontSize'].forEach(function(k){ localStorage.removeItem(k); });
-      localStorage.setItem('appearanceMigration', v);
-      // Clear any inline overrides that may already have been applied
-      document.documentElement.style.removeProperty('--blue');
-      document.documentElement.style.removeProperty('--text');
-    }
+    // Named legacy keys
+    ['accentColor','textColor','mutedColor','greenColor','redColor','yellowColor','surfaceColor','appFontSize']
+      .forEach(function(k){ localStorage.removeItem(k); });
+    // cssvar_* pattern used by the settings tab color pickers
+    Object.keys(localStorage).forEach(function(k){
+      if (k.indexOf('cssvar_') === 0) localStorage.removeItem(k);
+    });
+    // Clear any inline CSS var overrides already applied to the root element
+    ['--blue','--text','--text-dim','--muted','--green','--red','--yellow','--surface','--surface2','--bg','--fg']
+      .forEach(function(v){ document.documentElement.style.removeProperty(v); });
+    if (document.body && document.body.style) document.body.style.removeProperty('font-size');
   } catch(e) {}
 })();
 
@@ -4231,6 +4174,9 @@ function setDensity(mode, btn) {
 }
 
 function loadAppearanceSettings() {
+  // Legacy appearance overrides are disabled; colors follow theme automatically.
+  // Kept as a no-op shim so existing call sites don't throw.
+  return;
   var fs = localStorage.getItem('appFontSize');
   if(fs) {
     document.body.style.fontSize = fs + 'px';
