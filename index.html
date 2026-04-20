@@ -297,7 +297,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <div id="dashboard">
   <header>
-    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v20/04 2026-04-20 12:42</span></div>
+    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v20/04 2026-04-20 13:00 (vision)</span></div>
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
         <span class="dot" id="statusDot"></span>
@@ -2868,6 +2868,24 @@ async function fetchTvSnapshot() {
   }
 }
 
+// Grab a live PNG of the chart as base64 so Claude can actually SEE it
+// (not just text). Returns null on failure so callers can proceed without
+// a screenshot.
+async function fetchTvScreenshotBase64() {
+  try {
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ ctrl.abort(); }, 6000);
+    var r = await fetch(TV_BRIDGE_URL + '/tv/screenshot?region=chart&include_base64=1&skip_file=1', { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    var j = await r.json();
+    if (j && j.success && j.image_base64) {
+      return { data: j.image_base64, media_type: j.media_type || 'image/png' };
+    }
+    return null;
+  } catch(e) { return null; }
+}
+
 function updateBridgeBadge() {
   var b = document.getElementById('bridgeBadge');
   if (!b) return;
@@ -2983,10 +3001,11 @@ function initChatPanel() {
   try { _chatHistory = JSON.parse(localStorage.getItem('claude_chat_history')||'[]'); } catch(e) { _chatHistory = []; }
   _chatSystemPrompt =
     'אתה Claude, עוזר אישי של סוחר MNQ futures בסקאלפינג. אתה משולב במערכת דשבורד בזמן אמת.\n\n' +
+    'חשוב: בכל הודעה מהמשתמש מצורפים (א) מצב טקסטואלי חי של TradingView (Symbol, TF, OHLC, אינדיקטורים, תוויות AI_Webhook), ו-(ב) תמונת PNG חיה של הגרף. אתה רואה את הגרף ויזואלית — התייחס למה שאתה רואה (נרות, רמות, קווים, תיבות, תוויות). אל תגיד שאתה לא רואה את המסך.\n\n' +
     'יכולות:\n' +
-    '- מנתח סיגנלים ומצב שוק\n' +
+    '- מנתח את הגרף החי של TradingView + סיגנלים מהדשבורד\n' +
     '- עונה בעברית בלבד, ברור ותמציתי\n' +
-    '- מספק המלצות LONG/SHORT/SKIP עם נימוק\n' +
+    '- מספק המלצות LONG/SHORT/SKIP עם נימוק מבוסס על הגרף והנתונים\n' +
     '- זוכר הקשר השיחה\n\n' +
     'פקודות מיוחדות:\n' +
     '/analyze — ניתוח מלא של מצב השוק הנוכחי עם המלצת כיוון ואחוזי הסתברות\n' +
@@ -3058,11 +3077,24 @@ async function sendChatMessage() {
   status.textContent = '⟳ Claude חושב...';
   try {
     var ctx = await gatherDashboardContext();
-    var userContent = 'הקשר נוכחי מהדשבורד:\n' + ctx + '\n\nשאלה: ' + msg;
-    // Build messages from history (last 20 turns to control context)
+    // Fetch a live chart screenshot in parallel (best-effort — null if bridge down)
+    var shot = await fetchTvScreenshotBase64();
+    var userText = 'הקשר נוכחי מהדשבורד:\n' + ctx + '\n\n'
+                 + (shot ? 'הצטרפה תמונה חיה של הגרף ב-TradingView (ראה מעל). התייחס למה שאתה רואה בתמונה.\n\n' : '')
+                 + 'שאלה: ' + msg;
+    // Build messages from history (last 20 turns to control context).
+    // History is stored as plain strings; only the current turn may carry an image.
     var hist = _chatHistory.filter(function(m){ return m.role==='user' || m.role==='assistant'; }).slice(-21, -1);
     var messages = hist.map(function(m){ return {role:m.role, content:m.content}; });
-    messages.push({role:'user', content: userContent});
+    var currentContent = [];
+    if (shot) {
+      currentContent.push({
+        type: 'image',
+        source: { type: 'base64', media_type: shot.media_type, data: shot.data }
+      });
+    }
+    currentContent.push({ type: 'text', text: userText });
+    messages.push({ role: 'user', content: shot ? currentContent : userText });
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
