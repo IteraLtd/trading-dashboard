@@ -615,13 +615,13 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
     <span style="width:1px;background:var(--border);height:18px;margin:0 4px"></span>
     <span class="filter-label">🎯 פסיקה:</span>
     <button class="quick-btn active" id="vfAll"  onclick="setVerdictFilter(null)">הכל</button>
-    <button class="quick-btn" id="vfTake" onclick="setVerdictFilter('take')" style="color:#00d084;border-color:#00d08440">TAKE</button>
-    <button class="quick-btn" id="vfSkip" onclick="setVerdictFilter('skip')" style="color:#ff4560;border-color:#ff456040">SKIP</button>
-    <button class="quick-btn" id="vfWait" onclick="setVerdictFilter('wait')" style="color:#ffa500;border-color:#ffa50040">WAIT</button>
+    <button class="quick-btn" id="vfTake" onclick="setVerdictFilter('take')" style="color:var(--green);border-color:var(--green-line)">TAKE</button>
+    <button class="quick-btn" id="vfSkip" onclick="setVerdictFilter('skip')" style="color:var(--red);border-color:var(--red-line)">SKIP</button>
+    <button class="quick-btn" id="vfWait" onclick="setVerdictFilter('wait')" style="color:var(--yellow);border-color:var(--yellow-line)">WAIT</button>
     <span style="width:1px;background:var(--border);height:18px;margin:0 4px"></span>
     <button class="quick-btn" id="dfAll"   onclick="setDirFilter(null)" style="font-weight:700">↕</button>
-    <button class="quick-btn" id="dfLong"  onclick="setDirFilter('long')"  style="color:#00d084">▲ LONG</button>
-    <button class="quick-btn" id="dfShort" onclick="setDirFilter('short')" style="color:#ff4560">▼ SHORT</button>
+    <button class="quick-btn" id="dfLong"  onclick="setDirFilter('long')"  style="color:var(--green);border-color:var(--green-line)">▲ LONG</button>
+    <button class="quick-btn" id="dfShort" onclick="setDirFilter('short')" style="color:var(--red);border-color:var(--red-line)">▼ SHORT</button>
     <span class="filter-count" id="filterCount"></span>
     <div style="margin-right:auto;display:flex;gap:4px">
   <!-- OFFLINE/CLOSED BANNER -->
@@ -703,7 +703,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">המפתח נשמר ב-localStorage בלבד (לא נשלח לשרת)</div>
       <input type="password" id="dynKeyInput" placeholder="sk-ant-..." />
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-        <button onclick="saveApiKey()" style="background:var(--blue);color:#000">שמור</button>
+        <button onclick="saveApiKey()" style="background:var(--blue);color:#fff">שמור</button>
         <button onclick="document.getElementById('dynKeyModal').style.display='none'" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">ביטול</button>
       </div>
     </div>
@@ -761,9 +761,9 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">⭐ ציון קלוד (Score)</div>
         <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--muted)">
-          <div><b style="color:#00d084">8–10</b> — ביטחון גבוה מאוד</div>
-          <div><b style="color:#ffd700">6–7</b> — ביטחון בינוני</div>
-          <div><b style="color:#ff4560">1–5</b> — ביטחון נמוך</div>
+          <div><b style="color:var(--green)">8–10</b> — ביטחון גבוה מאוד</div>
+          <div><b style="color:var(--yellow)">6–7</b> — ביטחון בינוני</div>
+          <div><b style="color:var(--red)">1–5</b> — ביטחון נמוך</div>
         </div>
       </div>
 
@@ -1229,7 +1229,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
     <div id="skipStreakBanner" style="display:none;margin:0 0 10px 0;padding:10px 14px;background:rgba(255,69,96,0.08);border:1px solid rgba(255,69,96,0.3);border-radius:6px;align-items:center;gap:10px;max-height:60px;overflow:hidden">
       <span style="font-size:20px">⚠️</span>
       <div>
-        <div style="font-weight:700;color:#ff4560;font-size:13px" id="skipStreakTitle">רצף SKIP</div>
+        <div style="font-weight:700;color:var(--red);font-size:13px" id="skipStreakTitle">רצף SKIP</div>
         <div style="font-size:11px;color:var(--muted)" id="skipStreakMsg"></div>
       </div>
     </div>
@@ -1624,8 +1624,8 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var rightBdr = isLong ? withAlpha(_pb.green,parseFloat(greenBdr))   : withAlpha(_pb.red,parseFloat(redBdr));
   var leftPrice  = isLong ? s  : (t2||t1);
   var rightPrice = isLong ? (t2||t1) : s;
-  var leftColor  = isLong ? '#ff4560' : '#00d084';
-  var rightColor = isLong ? '#00d084' : '#ff4560';
+  var leftColor  = isLong ? _pb.red   : _pb.green;
+  var rightColor = isLong ? _pb.green : _pb.red;
 
   var html = '<div style="margin:4px 0;padding-top:20px">';
 
@@ -1850,11 +1850,11 @@ function renderScans(items) {
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
     html += '<div style="display:flex;align-items:center;gap:6px">';
     html += '<span class="bias-badge ' + bClass + '">' + (b === 'long' ? '▲' : b === 'short' ? '▼' : '◆') + ' ' + (it.Bias||'NEUTRAL') + '</span>';
-    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">' + (it.Ticker||'') + ' ' + (it.Timeframe||'') + 'm</span>';
+    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--text)">' + (it.Ticker||'') + ' ' + (it.Timeframe||'') + 'm</span>';
     html += '</div>';
     html += '<span class="risk-txt ' + rkClass + '">⚠ ' + (it.Risk||'') + '</span>';
     html += '</div>';
-    html += '<div style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-bottom:4px">🕐 ' + fmtTime(it.ScanTime) + '</div>';
+    html += '<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-bottom:4px">🕐 ' + fmtTime(it.ScanTime) + '</div>';
     html += '<div class="scan-reason">' + (it.BiasReason||'') + '</div>';
     html += '</div>';
   }
@@ -2441,24 +2441,26 @@ async function runDynamicAnalysis(manual) {
 
       // skip_alert — מוצג ראשון אם קיים
       if (pj.skip_alert && pj.skip_alert.trim().length > 3) {
-        html += '<div style="background:rgba(255,69,96,0.08);border-right:3px solid #ff4560;border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:#ff4560">⛔ ' + pj.skip_alert + '</div>';
+        html += '<div style="background:var(--red-soft);border-right:3px solid var(--red);border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:var(--red)">⛔ ' + pj.skip_alert + '</div>';
       }
       // quality_note — הערה על איכות הסיגנלים
       if (pj.quality_note && pj.quality_note.trim().length > 3) {
-        html += '<div style="background:rgba(255,165,0,0.08);border-right:3px solid #ffa500;border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:#ffa500">📋 ' + pj.quality_note + '</div>';
+        html += '<div style="background:var(--yellow-soft);border-right:3px solid var(--yellow);border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:var(--yellow)">📋 ' + pj.quality_note + '</div>';
       }
 
+      // Reads palette at runtime so light/dark and future token changes apply
+      var _dc = typeof chartColors === 'function' ? chartColors() : {blue:'#5fb2ff',green:'#10d48b',yellow:'#ffb547',purple:'#b08cff'};
       var defs = [
-        {k:'market_state', icon:'📊', t:'מצב שוק',   c:'#5b9cf6'},
-        {k:'key_levels',   icon:'📏', t:'רמות מפתח', c:'#00d084'},
-        {k:'forecast',     icon:'🔭', t:'צפי',        c:'#f0b429'},
-        {k:'patterns',     icon:'🔍', t:'תבניות',     c:'#b794f4'}
+        {k:'market_state', icon:'📊', t:'מצב שוק',   c:_dc.blue,   soft:'var(--blue-soft)'},
+        {k:'key_levels',   icon:'📏', t:'רמות מפתח', c:_dc.green,  soft:'var(--green-soft)'},
+        {k:'forecast',     icon:'🔭', t:'צפי',        c:_dc.yellow, soft:'var(--yellow-soft)'},
+        {k:'patterns',     icon:'🔍', t:'תבניות',     c:_dc.purple || '#b08cff', soft:'rgba(176,140,255,0.12)'}
       ];
       defs.forEach(function(d) {
         var arr = Array.isArray(pj[d.k]) ? pj[d.k] : (pj[d.k] ? [pj[d.k]] : []);
         arr = arr.filter(function(x){ return x && String(x).trim().length > 2; });
         if (!arr.length) return;
-        html += '<div style="background:'+d.c+'12;border-right:3px solid '+d.c+';border-radius:5px;padding:6px 10px;margin-bottom:6px;display:flex;gap:8px;align-items:baseline">';
+        html += '<div style="background:'+d.soft+';border-right:3px solid '+d.c+';border-radius:5px;padding:6px 10px;margin-bottom:6px;display:flex;gap:8px;align-items:baseline">';
         html += '<span style="font-weight:700;font-size:11px;color:'+d.c+';white-space:nowrap;min-width:70px">'+d.icon+' '+d.t+'</span>';
         html += '<span style="font-size:11px;line-height:1.5;color:var(--text)">'+arr.join(' · ')+'</span>';
         html += '</div>';
@@ -2590,19 +2592,19 @@ function updateHealthBadge() {
   var warn = ok && diffSec >= 90 && diffSec < 300;
   if (healthy) {
     el.textContent = '✓ ' + ageStr;
-    el.style.background = 'rgba(0,208,132,.15)';
+    el.style.background = 'var(--green-soft)';
     el.style.color = 'var(--green)';
-    el.style.border = '1px solid rgba(0,208,132,.35)';
+    el.style.border = '1px solid var(--green-line)';
   } else if (warn) {
     el.textContent = '⚠ ' + ageStr;
-    el.style.background = 'rgba(255,165,0,.15)';
+    el.style.background = 'var(--yellow-soft)';
     el.style.color = 'var(--yellow)';
-    el.style.border = '1px solid rgba(255,165,0,.35)';
+    el.style.border = '1px solid var(--yellow-line)';
   } else {
     el.textContent = '✗ ' + (ok ? ageStr : 'שגיאה');
-    el.style.background = 'rgba(255,69,96,.15)';
+    el.style.background = 'var(--red-soft)';
     el.style.color = 'var(--red)';
-    el.style.border = '1px solid rgba(255,69,96,.35)';
+    el.style.border = '1px solid var(--red-line)';
   }
 }
 setInterval(updateHealthBadge, 5000);
@@ -3490,13 +3492,14 @@ function renderTradesDashboard(items) {
   var tCtx=document.getElementById('tradesTimeChart');
   if(tCtx && typeof Chart!=='undefined'){
     if(tradesTimeChart) tradesTimeChart.destroy();
-    var lc=cum>=0?'rgba(0,208,132,0.9)':'rgba(255,69,96,0.9)';
+    var _tch = chartColors();
+    var lc=cum>=0?withAlpha(_tch.green,0.9):withAlpha(_tch.red,0.9);
     tradesTimeChart=new Chart(tCtx.getContext('2d'),{
       type:'line',
-      data:{labels:cumLabels,datasets:[{data:cumData,borderColor:lc,backgroundColor:cum>=0?'rgba(0,208,132,0.08)':'rgba(255,69,96,0.08)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:lc,borderWidth:2}]},
+      data:{labels:cumLabels,datasets:[{data:cumData,borderColor:lc,backgroundColor:cum>=0?withAlpha(_tch.green,.1):withAlpha(_tch.red,.1),fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:lc,borderWidth:2}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{x:{ticks:{color:'#4a6080',font:{size:9},maxTicksLimit:8},grid:{color:'rgba(255,255,255,0.03)'}},
-                y:{ticks:{color:'#4a6080',font:{size:9}},grid:{color:'rgba(255,255,255,0.05)'},borderDash:[3,3]}}}
+        scales:{x:{ticks:{color:_tch.muted,font:{size:9},maxTicksLimit:8},grid:{color:withAlpha(_tch.grid,.3),drawBorder:false}},
+                y:{ticks:{color:_tch.muted,font:{size:9}},grid:{color:withAlpha(_tch.grid,.3),drawBorder:false},borderDash:[3,3]}}}
     });
   }
 
@@ -4089,13 +4092,14 @@ async function runTradeAnalysis() {
     var clean=text.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(clean);
 
+    var _tc = typeof chartColors === 'function' ? chartColors() : {green:'#10d48b',red:'#ff5773',yellow:'#ffb547',blue:'#5fb2ff',purple:'#b08cff'};
     var sections=[
-      {key:'strengths',        icon:'💪', title:'חוזקות',              color:'#00d084', bg:'rgba(0,208,132,.07)',   border:'rgba(0,208,132,.25)'},
-      {key:'weaknesses',       icon:'⚠️', title:'חולשות',              color:'#ffa500', bg:'rgba(255,165,0,.07)',  border:'rgba(255,165,0,.25)'},
-      {key:'best_patterns',    icon:'🎯', title:'דפוסי כניסה מנצחים',  color:'#4da6ff', bg:'rgba(77,166,255,.07)', border:'rgba(77,166,255,.25)'},
-      {key:'verdict_accuracy', icon:'🤖', title:'דיוק Verdict',        color:'#d2a8ff', bg:'rgba(210,168,255,.07)',border:'rgba(210,168,255,.25)'},
-      {key:'risk_management',    icon:'⚖️', title:'ניהול סיכון',         color:'#79c0ff', bg:'rgba(121,192,255,.07)',border:'rgba(121,192,255,.25)'},
-      {key:'recommendations',  icon:'📋', title:'המלצות לשיפור',       color:'#fff',    bg:'rgba(255,255,255,.04)',border:'rgba(255,255,255,.15)'}
+      {key:'strengths',        icon:'💪', title:'חוזקות',              color:_tc.green,  bg:'var(--green-soft)',  border:'var(--green-line)'},
+      {key:'weaknesses',       icon:'⚠️', title:'חולשות',              color:_tc.yellow, bg:'var(--yellow-soft)', border:'var(--yellow-line)'},
+      {key:'best_patterns',    icon:'🎯', title:'דפוסי כניסה מנצחים',  color:_tc.blue,   bg:'var(--blue-soft)',   border:'var(--blue-line)'},
+      {key:'verdict_accuracy', icon:'🤖', title:'דיוק Verdict',        color:_tc.purple||'#b08cff', bg:'rgba(176,140,255,.08)', border:'rgba(176,140,255,.28)'},
+      {key:'risk_management',  icon:'⚖️', title:'ניהול סיכון',         color:_tc.blue,   bg:'var(--blue-soft)',   border:'var(--blue-line)'},
+      {key:'recommendations',  icon:'📋', title:'המלצות לשיפור',       color:'var(--text)', bg:'var(--surface2)',  border:'var(--border)'}
     ];
     var html='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">';
     sections.forEach(function(s){
@@ -4108,18 +4112,18 @@ async function runTradeAnalysis() {
       html+='</div>';
     });
     html+='</div>';
-    var pnlColor=cumPnl>=0?'#00d084':'#ff4560';
+    var pnlColor=cumPnl>=0?'var(--green)':'var(--red)';
     html+='<div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border)">';
-    html+='<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">Claude Haiku · '+new Date().toLocaleTimeString('he-IL')+' · '+closed.length+' עסקאות</span>';
+    html+='<span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">Claude Haiku · '+new Date().toLocaleTimeString('he-IL')+' · '+closed.length+' עסקאות</span>';
     html+='<div style="display:flex;gap:14px">';
-    html+='<span style="font-family:var(--mono);font-size:11px;color:'+(winRate>=60?'#00d084':winRate>=40?'#ffa500':'#ff4560')+'">Win: '+winRate+'%</span>';
+    html+='<span style="font-family:var(--mono);font-size:11px;color:'+(winRate>=60?'var(--green)':winRate>=40?'var(--yellow)':'var(--red)')+'">Win: '+winRate+'%</span>';
     html+='<span style="font-family:var(--mono);font-size:11px;color:'+pnlColor+'">'+(cumPnl>=0?'+':'')+cumPnl.toFixed(1)+'R</span>';
     html+='</div></div>';
     body.innerHTML=html;
     badge.style.display='inline';
     status.textContent='';
   } catch(e) {
-    body.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px;background:rgba(255,69,96,.08);border-radius:6px;border:1px solid rgba(255,69,96,.3)">שגיאה: '+e.message+'</div>';
+    body.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px;background:var(--red-soft);border-radius:6px;border:1px solid var(--red-line)">שגיאה: '+e.message+'</div>';
     status.textContent='שגיאה';
   }
   btn.disabled=false;
@@ -4470,10 +4474,11 @@ function btUpdate(){
   const btEqEl = document.getElementById('btEquity');
   if(btEquityChart){ btEquityChart.destroy(); btEquityChart=null; }
   if(!btEqEl){ return; }
+  var _bc = typeof chartColors === 'function' ? chartColors() : {green:'#10d48b',red:'#ff5773',blue:'#5fb2ff',muted:'#a2b3cc',grid:'#1f2a3d'};
   btEquityChart=new Chart(btEqEl,{
     type:'line',
-    data:{labels:data.map((_,i)=>i),datasets:[{data:eq,borderColor:pnl>=0?'#00d084':'#ff4560',borderWidth:1.5,pointRadius:0,fill:{target:'origin',above:'rgba(0,208,132,0.07)',below:'rgba(255,69,96,0.07)'}}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{ticks:{color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+    data:{labels:data.map((_,i)=>i),datasets:[{data:eq,borderColor:pnl>=0?_bc.green:_bc.red,borderWidth:1.5,pointRadius:0,fill:{target:'origin',above:withAlpha(_bc.green,.1),below:withAlpha(_bc.red,.1)}}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{ticks:{color:_bc.muted,font:{size:10}},grid:{color:withAlpha(_bc.grid,.35),drawBorder:false}}}}
   });
 
   // Hour stats
@@ -4493,8 +4498,8 @@ function btUpdate(){
   if(!btWREl) return;
   btHourWRChart=new Chart(btWREl,{
     type:'bar',
-    data:{labels:hL,datasets:[{data:hWR,backgroundColor:hWR.map(v=>v>=60?'#00d084':v>=50?'#4da6ff':'#ff4560'),borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},x:{ticks:{color:'#4a6080',font:{size:10}},grid:{display:false}}}}
+    data:{labels:hL,datasets:[{data:hWR,backgroundColor:hWR.map(v=>v>=60?_bc.green:v>=50?_bc.blue:_bc.red),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',color:_bc.muted,font:{size:10}},grid:{color:withAlpha(_bc.grid,.35),drawBorder:false}},x:{ticks:{color:_bc.muted,font:{size:10}},grid:{display:false}}}}
   });
 
   const btPnLEl = document.getElementById('btHourPnL');
@@ -4502,8 +4507,8 @@ function btUpdate(){
   if(!btPnLEl) return;
   btHourPnLChart=new Chart(btPnLEl,{
     type:'bar',
-    data:{labels:hL,datasets:[{data:hPnL,backgroundColor:hPnL.map(v=>v>=0?'#00d084':'#ff4560'),borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},x:{ticks:{color:'#4a6080',font:{size:10}},grid:{display:false}}}}
+    data:{labels:hL,datasets:[{data:hPnL,backgroundColor:hPnL.map(v=>v>=0?_bc.green:_bc.red),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:_bc.muted,font:{size:10}},grid:{color:withAlpha(_bc.grid,.35),drawBorder:false}},x:{ticks:{color:_bc.muted,font:{size:10}},grid:{display:false}}}}
   });
 
   // Dir table
