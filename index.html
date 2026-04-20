@@ -287,10 +287,10 @@ button .ic,.menu-item .ic{margin-left:2px}
 .analysis-title{font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted);font-weight:600;letter-spacing:1.2px;margin-bottom:var(--sp-3);text-transform:uppercase;display:flex;align-items:center;gap:var(--sp-2)}
 .chart-wrap{height:90px;position:relative}
 .analysis-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.a-stat{background:var(--bg-soft);border:1px solid var(--border-soft);border-radius:var(--r-sm);padding:var(--sp-2);text-align:center;transition:all var(--dur-base) var(--ease)}
+.a-stat{background:var(--bg-soft);border:1px solid var(--border-soft);border-radius:var(--r-sm);padding:6px 8px;text-align:center;transition:all var(--dur-base) var(--ease);min-width:0;overflow:hidden}
 .a-stat:hover{background:var(--surface2);border-color:var(--border)}
-.a-stat-label{font-size:9px;color:var(--muted);margin-bottom:var(--sp-1);text-transform:uppercase;letter-spacing:.6px;font-weight:500}
-.a-stat-val{font-family:var(--mono);font-size:var(--fs-md);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.a-stat-label{font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-stat-val{font-family:var(--mono);font-size:var(--fs-base);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .analysis-text{font-size:var(--fs-sm);color:var(--text);line-height:1.6}
 .analysis-text .insight{display:flex;align-items:flex-start;gap:var(--sp-2);margin-bottom:var(--sp-2);padding:var(--sp-2) var(--sp-3);background:var(--bg-soft);border-radius:var(--r-sm);border-right:2px solid var(--blue);transition:background var(--dur-base) var(--ease)}
 .analysis-text .insight:hover{background:var(--surface2)}
@@ -328,12 +328,12 @@ button .ic,.menu-item .ic{margin-left:2px}
 
 /* Inline stats row inside long/short panel */
 .inline-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.i-stat{background:var(--bg-soft);border:1px solid var(--border-soft);border-radius:var(--r-sm);padding:var(--sp-2) var(--sp-3);text-align:center;transition:all var(--dur-base) var(--ease);position:relative;overflow:hidden}
+.i-stat{background:var(--bg-soft);border:1px solid var(--border-soft);border-radius:var(--r-sm);padding:6px 8px;text-align:center;transition:all var(--dur-base) var(--ease);position:relative;overflow:hidden;min-width:0}
 .i-stat::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent,color-mix(in srgb,currentColor 6%,transparent));opacity:0;transition:opacity var(--dur-base) var(--ease);pointer-events:none}
 .i-stat:hover{border-color:var(--border);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 .i-stat:hover::before{opacity:1}
-.i-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-1);font-weight:500}
-.i-stat-value{font-family:var(--mono);font-size:var(--fs-xl);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1;letter-spacing:-.02em}
+.i-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.i-stat-value{font-family:var(--mono);font-size:var(--fs-lg);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .main{display:grid;grid-template-columns:1fr 340px;min-height:400px;direction:rtl}
 #skipStreakBanner{grid-column:1/-1}
@@ -2742,8 +2742,22 @@ function _getCommands() {
     { id:'density-s',     icon:'▦',  title:'צפיפות: רחב',        sub:'תצוגה', action:function(){ setDensity('spacious'); } },
     { id:'system',        icon:'⏻',  title:'הפעל/כבה מערכת',     sub:'סיגנלים חיים', action:function(){ if (typeof toggleSystem === 'function') toggleSystem(); } },
     { id:'api-key',       icon:'🔑', title:'ערוך API Key',       sub:'Anthropic', action:function(){ if (typeof showKeyModal === 'function') showKeyModal(); } },
-    { id:'clear-chat',    icon:'🗑',  title:'נקה היסטוריית צ׳אט', sub:'Claude Chat', action:function(){ if (typeof clearChatHistory === 'function') { switchTab('chat'); clearChatHistory(); } } }
+    { id:'clear-chat',    icon:'🗑',  title:'נקה היסטוריית צ׳אט', sub:'Claude Chat', action:function(){ if (typeof clearChatHistory === 'function') { switchTab('chat'); clearChatHistory(); } } },
+    { id:'reset-appearance', icon:'🎨', title:'אפס צבעי מראה', sub:'החזר ברירת מחדל (מנקה accent/text custom)', action:resetAppearance }
   ];
+}
+function resetAppearance() {
+  try {
+    localStorage.removeItem('accentColor');
+    localStorage.removeItem('textColor');
+    document.documentElement.style.removeProperty('--blue');
+    document.documentElement.style.removeProperty('--text');
+    document.body.style.removeProperty('font-size');
+    localStorage.removeItem('appFontSize');
+    showToast({type:'success', title:'מראה אופס', message:'הצבעים חזרו לברירת המחדל'});
+  } catch(e) {
+    showToast({type:'error', title:'שגיאה באיפוס', message:e.message});
+  }
 }
 function openCommandPalette() {
   _cmdCommands = _getCommands();
@@ -3786,10 +3800,19 @@ function appendChatBubble(role, content) {
   var c = document.getElementById('chatMessages'); if (!c) return;
   var isUser = role === 'user';
   var bubble = document.createElement('div');
-  bubble.style.cssText = 'max-width:80%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;'+
-    (isUser
-      ? 'align-self:flex-start;background:var(--blue);color:#000;border-bottom-right-radius:3px'
-      : 'align-self:flex-end;background:var(--surface);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px');
+  // Use explicit colors that guarantee contrast regardless of user-custom --blue/--text overrides
+  var common = 'max-width:80%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;';
+  if (isUser) {
+    // Fixed blue with white text for guaranteed AA contrast
+    bubble.style.cssText = common + 'align-self:flex-start;background:#2d7dd2;color:#ffffff;border-bottom-right-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.2)';
+  } else {
+    // Assistant: high-contrast surface with explicit light text (survives user --text override)
+    var isLight = document.body.classList.contains('light');
+    var bg     = isLight ? '#ffffff' : '#1a2233';
+    var fg     = isLight ? '#0d1826' : '#e4ebf7';
+    var bdr    = isLight ? '#d2dce8' : '#2a3a55';
+    bubble.style.cssText = common + 'align-self:flex-end;background:' + bg + ';border:1px solid ' + bdr + ';color:' + fg + ';border-bottom-left-radius:3px';
+  }
   bubble.textContent = content;
   c.appendChild(bubble);
   c.scrollTop = c.scrollHeight;
