@@ -18,10 +18,10 @@
   --surface3:#242e44;
   --border:#1f2a3d;
   --border-soft:#17202f;
-  --text:#edf1f8;
-  --text-dim:#b4c0d4;
-  --muted:#8396b0;
-  --fg:#edf1f8;
+  --text:#f5f8ff;
+  --text-dim:#c8d1e1;
+  --muted:#a2b3cc;
+  --fg:#f5f8ff;
   --green:#10d48b;
   --green-soft:rgba(16,212,139,.12);
   --green-line:rgba(16,212,139,.35);
@@ -272,15 +272,15 @@ button .ic,.menu-item .ic{margin-left:2px}
 
 /* FILTER BAR */
 .filter-bar{background:var(--bg-soft);border-bottom:1px solid var(--border);padding:var(--sp-2) var(--sp-5);display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;position:sticky;top:48px;z-index:var(--z-sticky)}
-.filter-label{font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.filter-label{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
 .date-input{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:var(--fs-sm);padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;transition:border-color var(--dur-base) var(--ease),box-shadow var(--dur-base) var(--ease);font-variant-numeric:tabular-nums}
 .date-input:hover{border-color:var(--surface3)}
 .date-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
-.quick-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:var(--fs-xs);padding:6px 12px;border-radius:var(--r-sm);cursor:pointer;transition:all var(--dur-base) var(--ease);font-weight:500;line-height:1.2;min-height:28px;display:inline-flex;align-items:center;gap:4px}
-.quick-btn:hover{background:var(--surface2);border-color:var(--surface3);color:var(--text)}
+.quick-btn{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:var(--fs-xs);padding:6px 12px;border-radius:var(--r-sm);cursor:pointer;transition:all var(--dur-base) var(--ease);font-weight:600;line-height:1.2;min-height:28px;display:inline-flex;align-items:center;gap:4px}
+.quick-btn:hover{background:var(--surface2);border-color:var(--blue);color:var(--text)}
 .quick-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;box-shadow:var(--shadow-glow-blue)}
 .quick-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.filter-count{margin-right:auto;font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted);font-variant-numeric:tabular-nums}
+.filter-count{margin-right:auto;font-family:var(--mono);font-size:var(--fs-xs);color:var(--text-dim);font-variant-numeric:tabular-nums;font-weight:500}
 
 /* ANALYSIS SECTION */
 .analysis-bar{background:var(--bg);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1.2fr 0.7fr 1.5fr;gap:var(--sp-3);padding:var(--sp-3) var(--sp-3)}
@@ -389,7 +389,7 @@ button .ic,.menu-item .ic{margin-left:2px}
 .b-neutral{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 .risk-txt{font-family:var(--mono);font-size:var(--fs-xs);font-weight:600;font-variant-numeric:tabular-nums}
 .risk-high{color:var(--red)}.risk-medium{color:var(--yellow)}.risk-low{color:var(--green)}
-.scan-reason{font-size:var(--fs-xs);color:var(--text-dim);margin-top:var(--sp-1);line-height:1.5}
+.scan-reason{font-size:var(--fs-xs);color:var(--text);margin-top:var(--sp-1);line-height:1.5;opacity:.9}
 
 /* POPUP */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity var(--dur-slow) var(--ease)}
@@ -628,10 +628,10 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
   <div id="offlineBanner" style="display:none;padding:8px 20px;background:rgba(74,96,128,0.12);border-bottom:1px solid var(--border);align-items:center;gap:10px">
     <span style="font-size:16px">💤</span>
     <div>
-      <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--muted)">שוק סגור — </span>
-      <span id="offlineMsg" style="font-family:var(--mono);font-size:12px;color:var(--muted)"></span>
+      <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)">שוק סגור — </span>
+      <span id="offlineMsg" style="font-family:var(--mono);font-size:12px;color:var(--text-dim)"></span>
     </div>
-    <span style="margin-right:auto;font-size:11px;color:var(--muted)">הנתונים האחרונים מוצגים | רענון אוטומטי עם פתיחת השוק</span>
+    <span style="margin-right:auto;font-size:11px;color:var(--text-dim)">הנתונים האחרונים מוצגים | רענון אוטומטי עם פתיחת השוק</span>
   </div>
 
       <div role="tablist" aria-label="טאבי ניווט" style="display:contents">
@@ -1399,6 +1399,21 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 </div>
 
 <script>
+// Run appearance migration FIRST THING, before any other code might apply overrides.
+// This nukes legacy localStorage keys that were causing dark-on-dark text in the new palette.
+(function earlyAppearanceMigration() {
+  try {
+    var v = 'v3-2026-04-20-contrast';
+    if (localStorage.getItem('appearanceMigration') !== v) {
+      ['accentColor','textColor','appFontSize'].forEach(function(k){ localStorage.removeItem(k); });
+      localStorage.setItem('appearanceMigration', v);
+      // Clear any inline overrides that may already have been applied
+      document.documentElement.style.removeProperty('--blue');
+      document.documentElement.style.removeProperty('--text');
+    }
+  } catch(e) {}
+})();
+
 const CLIENT_ID = '75028ce6-328d-432a-a595-5bc41fe2399a';
 const SITE = 'https://iteracoil.sharepoint.com/sites/Trading';
 const SCOPES = ['https://iteracoil.sharepoint.com/AllSites.Manage'];
@@ -1786,8 +1801,8 @@ function renderSignals(items) {
     // RTL left group: verdict → result
     html += '<div class="sig-top" style="flex-wrap:wrap;gap:6px">';
     html += '<div class="sig-right" style="flex-wrap:wrap;gap:6px;min-width:0">';
-    html += '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap">' + fmtTime(it.SignalTime) + '</span>';
-    if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px;white-space:nowrap" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
+    html += '<span class="sig-time" style="white-space:nowrap">' + fmtTime(it.SignalTime) + '</span>';
+    if (it.BarsToResult) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--text);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px;white-space:nowrap" title="נרות עד תוצאה">🕯 ' + it.BarsToResult + '</span>';
     html += '<span class="dir-badge ' + dClass + '" style="white-space:nowrap">' + (d === 'long' ? '▲' : '▼') + ' ' + (it.Direction||'') + '</span>';
     html += '<span class="score-txt" style="font-size:12px;white-space:nowrap">⭐' + (it.ClaudeScore||'—') + '</span>';
     if (sigType) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);padding:1px 6px;border-radius:3px;white-space:nowrap" title="' + sigReason + '">' + sigType + '</span>';
