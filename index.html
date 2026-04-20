@@ -112,9 +112,135 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .login-sub{color:var(--muted);font-size:var(--fs-base)}
 #loginError{color:var(--red);font-size:var(--fs-base);display:none;padding:var(--sp-2) var(--sp-4);background:var(--red-soft);border:1px solid var(--red-line);border-radius:var(--r-sm)}
 
-header{background:linear-gradient(180deg,var(--surface) 0%,color-mix(in srgb,var(--surface) 92%,transparent) 100%);backdrop-filter:saturate(140%) blur(8px);-webkit-backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--border);padding:var(--sp-3) var(--sp-5);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:var(--z-header);gap:var(--sp-3)}
-.logo{font-family:var(--mono);font-size:var(--fs-lg);font-weight:600;color:var(--blue);letter-spacing:1.5px;display:inline-flex;align-items:center;gap:var(--sp-2)}
-.logo span{color:var(--muted);font-weight:400}
+header{background:linear-gradient(180deg,var(--surface) 0%,color-mix(in srgb,var(--surface) 92%,transparent) 100%);backdrop-filter:saturate(140%) blur(8px);-webkit-backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--border);padding:var(--sp-3) var(--sp-5);display:flex;align-items:center;gap:var(--sp-4);position:sticky;top:0;z-index:var(--z-header)}
+.logo{font-family:var(--mono);font-size:var(--fs-lg);font-weight:600;color:var(--blue);letter-spacing:1.5px;display:inline-flex;align-items:center;gap:var(--sp-2);flex-shrink:0}
+.logo > span:first-child{color:var(--blue)}
+.version-tag{font-size:10px;font-weight:400;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:2px 6px;border-radius:var(--r-xs);letter-spacing:.3px}
+
+/* Status cluster — unified status chip */
+.status-cluster{display:flex;align-items:center;gap:var(--sp-2);padding:6px 12px;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--r-full);font-family:var(--mono);font-size:var(--fs-xs);cursor:pointer;transition:all var(--dur-base) var(--ease);min-height:32px}
+.status-cluster:hover{background:var(--surface2);border-color:var(--surface3)}
+.status-cluster:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.status-text{color:var(--text-dim);font-weight:500}
+.status-pill{font-family:var(--mono);font-size:var(--fs-xs);padding:2px 8px;border-radius:var(--r-full);font-weight:500;line-height:1.4}
+.status-pill:empty{display:none}
+
+/* Header actions */
+.header-actions{display:flex;align-items:center;gap:var(--sp-2);margin-right:auto}
+.icon-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-size:var(--fs-md);width:32px;height:32px;border-radius:var(--r-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all var(--dur-base) var(--ease)}
+.icon-btn:hover{background:var(--surface2);border-color:var(--surface3);color:var(--text)}
+.icon-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* Dropdown menu */
+.header-menu{position:relative}
+.header-menu-list{position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--shadow-lg);padding:var(--sp-1);min-width:220px;display:none;z-index:var(--z-header);flex-direction:column;gap:2px;animation:menu-enter var(--dur-base) var(--ease-out)}
+.header-menu-list.open{display:flex}
+@keyframes menu-enter{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.menu-item{display:flex;align-items:center;gap:var(--sp-2);padding:8px 12px;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:var(--fs-sm);cursor:pointer;border-radius:var(--r-sm);text-align:right;transition:background var(--dur-fast) var(--ease);width:100%}
+.menu-item:hover{background:var(--surface2)}
+.menu-item.danger{color:var(--red)}
+.menu-item.danger:hover{background:var(--red-soft)}
+.menu-icon{width:20px;display:inline-flex;justify-content:center;color:var(--muted);font-size:var(--fs-md)}
+.menu-state{margin-right:auto;color:var(--muted);font-size:var(--fs-xs);font-family:var(--mono)}
+.menu-divider{height:1px;background:var(--border);margin:var(--sp-1) 0}
+kbd{font-family:var(--mono);font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:1px 6px;border-radius:var(--r-xs);color:var(--muted)}
+
+/* === TOAST NOTIFICATIONS === */
+#toastHost{position:fixed;top:64px;left:var(--sp-4);z-index:var(--z-modal);display:flex;flex-direction:column;gap:var(--sp-2);pointer-events:none;max-width:380px;direction:rtl}
+.toast{pointer-events:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--shadow-lg);padding:var(--sp-3) var(--sp-4);display:flex;align-items:flex-start;gap:var(--sp-3);min-width:280px;animation:toast-enter var(--dur-slow) var(--ease-out);position:relative;overflow:hidden}
+.toast.toast-exit{animation:toast-exit var(--dur-base) var(--ease) forwards}
+.toast::before{content:"";position:absolute;inset:0 auto 0 0;width:3px}
+.toast.success::before{background:var(--green)}
+.toast.error::before{background:var(--red)}
+.toast.warn::before{background:var(--yellow)}
+.toast.info::before{background:var(--blue)}
+.toast-icon{font-size:18px;line-height:1;flex-shrink:0}
+.toast.success .toast-icon{color:var(--green)}
+.toast.error .toast-icon{color:var(--red)}
+.toast.warn .toast-icon{color:var(--yellow)}
+.toast.info .toast-icon{color:var(--blue)}
+.toast-body{flex:1;min-width:0}
+.toast-title{font-family:var(--sans);font-size:var(--fs-base);font-weight:600;color:var(--text);line-height:1.3;margin-bottom:2px}
+.toast-msg{font-family:var(--sans);font-size:var(--fs-sm);color:var(--text-dim);line-height:1.4;word-wrap:break-word}
+.toast-close{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-xs);transition:background var(--dur-fast) var(--ease);flex-shrink:0}
+.toast-close:hover{background:var(--surface2);color:var(--text)}
+.toast-progress{position:absolute;bottom:0;right:0;height:2px;background:currentColor;opacity:.4;animation:toast-progress linear forwards}
+@keyframes toast-enter{from{opacity:0;transform:translateX(-20px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes toast-exit{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-20px);height:0;padding:0;margin:0}}
+@keyframes toast-progress{from{width:100%}to{width:0%}}
+
+/* === SKELETON LOADERS === */
+.skeleton-wrap{display:flex;flex-direction:column}
+.skel-row{padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border-soft);display:flex;flex-direction:column;gap:var(--sp-2)}
+.skel-line{height:12px;background:linear-gradient(90deg,var(--surface2) 0%,var(--surface3) 50%,var(--surface2) 100%);background-size:200% 100%;border-radius:var(--r-xs);animation:skel-shimmer 1.4s ease-in-out infinite}
+.skel-line.sm{height:8px;width:40%}
+.skel-line.md{height:12px;width:70%}
+.skel-line.lg{height:16px;width:90%}
+.skel-line.bar{height:28px;width:100%}
+@keyframes skel-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* === EMPTY STATES === */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--sp-10) var(--sp-5);text-align:center;gap:var(--sp-3);min-height:200px}
+.empty-state-icon{font-size:44px;opacity:.6;animation:empty-float 3s ease-in-out infinite}
+.empty-state-title{font-family:var(--sans);font-size:var(--fs-md);font-weight:600;color:var(--text);margin-bottom:var(--sp-1)}
+.empty-state-msg{font-family:var(--sans);font-size:var(--fs-sm);color:var(--text-dim);line-height:1.6;max-width:320px}
+.empty-state-action{margin-top:var(--sp-3)}
+@keyframes empty-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.empty{display:flex;align-items:center;justify-content:center;padding:var(--sp-10);color:var(--muted);font-family:var(--mono);font-size:var(--fs-sm);text-align:center}
+
+/* === DATA DENSITY MODES === */
+/* Default (comfortable) already set above. These classes override. */
+body.density-compact .sig-row{padding:6px 12px}
+body.density-compact .scan-row{padding:6px 12px}
+body.density-compact .sig-top{margin-bottom:4px}
+body.density-compact .analysis-panel{padding:var(--sp-3)}
+body.density-compact .panel-header{padding:6px 12px}
+body.density-compact .filter-bar{padding:4px var(--sp-4)}
+body.density-compact header{padding:6px var(--sp-4)}
+body.density-compact .i-stat{padding:4px 6px}
+body.density-compact .i-stat-value{font-size:var(--fs-md)}
+body.density-compact .dyn-card{padding:6px 10px}
+
+body.density-spacious .sig-row{padding:var(--sp-5) var(--sp-5)}
+body.density-spacious .scan-row{padding:var(--sp-5) var(--sp-5)}
+body.density-spacious .sig-top{margin-bottom:var(--sp-3)}
+body.density-spacious .analysis-panel{padding:var(--sp-5) var(--sp-6)}
+body.density-spacious .i-stat-value{font-size:var(--fs-2xl)}
+
+/* Density toggle control (in header menu or settings) */
+.density-seg{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:2px;gap:2px}
+.density-seg button{background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:var(--fs-xs);padding:4px 10px;border-radius:var(--r-xs);cursor:pointer;transition:all var(--dur-base) var(--ease)}
+.density-seg button.active{background:var(--blue);color:#fff;font-weight:600}
+
+/* === COMMAND PALETTE === */
+#cmdPaletteOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:var(--z-modal);display:none;align-items:flex-start;justify-content:center;padding-top:12vh}
+#cmdPaletteOverlay.open{display:flex;animation:fade-in var(--dur-base) var(--ease-out)}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+#commandPalette{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);width:min(560px,calc(100vw - 32px));max-height:60vh;overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;direction:rtl;animation:palette-enter var(--dur-slow) var(--ease-out)}
+@keyframes palette-enter{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.cmd-search{padding:var(--sp-4);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:var(--sp-3)}
+.cmd-search-icon{color:var(--muted);font-size:var(--fs-lg)}
+#cmdInput{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:var(--fs-md);font-weight:500}
+#cmdInput::placeholder{color:var(--muted)}
+.cmd-hint{font-size:var(--fs-xs);color:var(--muted);font-family:var(--mono)}
+#cmdList{flex:1;overflow-y:auto;padding:var(--sp-2)}
+.cmd-item{display:flex;align-items:center;gap:var(--sp-3);padding:10px 14px;border-radius:var(--r-sm);cursor:pointer;transition:background var(--dur-fast) var(--ease)}
+.cmd-item:hover,.cmd-item.selected{background:var(--surface2)}
+.cmd-item.selected{outline:1px solid var(--blue-line)}
+.cmd-item-icon{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:var(--blue);font-size:var(--fs-lg);flex-shrink:0}
+.cmd-item-body{flex:1;min-width:0}
+.cmd-item-title{font-family:var(--sans);font-size:var(--fs-sm);font-weight:500;color:var(--text);line-height:1.3}
+.cmd-item-sub{font-family:var(--sans);font-size:var(--fs-xs);color:var(--muted);margin-top:2px}
+.cmd-item-shortcut{color:var(--muted);font-family:var(--mono)}
+.cmd-empty{padding:var(--sp-6);text-align:center;color:var(--muted);font-size:var(--fs-sm)}
+.cmd-footer{padding:var(--sp-2) var(--sp-4);border-top:1px solid var(--border);display:flex;gap:var(--sp-4);font-size:var(--fs-xs);color:var(--muted);font-family:var(--mono);background:var(--bg-soft)}
+
+/* === SVG ICON SYSTEM === */
+.ic{display:inline-block;width:1em;height:1em;vertical-align:-2px;flex-shrink:0}
+.ic svg{width:100%;height:100%;display:block}
+.quick-btn .ic,.menu-item .ic,.filter-label .ic,.analysis-title .ic{width:14px;height:14px;vertical-align:-2px}
+.icon-btn .ic{width:16px;height:16px}
+button .ic,.menu-item .ic{margin-left:2px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-left:6px;position:relative;box-shadow:0 0 8px var(--green)}
 .dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:var(--green);opacity:.35;animation:pulse-ring 2s ease-out infinite}
 .dot.err{background:var(--red);box-shadow:0 0 8px var(--red)}
@@ -431,21 +557,50 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 
 <div id="dashboard">
   <header>
-    <div class="logo">MNQ <span>//</span> DASHBOARD<span style="font-size:10px;color:var(--muted);font-family:var(--mono);font-weight:400;margin-right:8px"> v20/04 2026-04-20 13:10 (vision+fix)</span></div>
-    <div style="display:flex;align-items:center;gap:14px">
-      <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
-        <span class="dot" id="statusDot"></span>
-        <span id="statusText">טוען...</span>
-        <span id="updateHealth" style="margin-right:8px;padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:600;display:inline-flex;align-items:center;gap:4px" title="סטטוס עדכון אחרון מ-SharePoint"></span>
-        <span id="lastUpdate" style="margin-right:4px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--blue)"></span>
-        <span id="marketStatusBadge" style="padding:2px 10px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:600"></span>
-        <span id="lastSeenBadge" style="font-size:10px;color:var(--muted)"></span>
-      </span>
-      <button class="sys-btn" id="sysBtn" onclick="toggleSystem()">⏳ טוען...</button>
-      <button class="theme-btn" id="soundBtn" onclick="toggleSound()" title="התראות קוליות">🔇</button>
-      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="החלף ערכת צבעים">🌙</button>
-      <button class="logout-btn" id="logoutBtn">יציאה</button>
+    <div class="logo" aria-label="MNQ Dashboard">
+      <span>MNQ</span>
+      <span style="color:var(--muted);font-weight:400">//</span>
+      <span>DASHBOARD</span>
+      <span class="version-tag" title="גרסה">v20/04</span>
     </div>
+    <div class="status-cluster" id="statusCluster" title="סטטוס מערכת — לחץ לפרטים" role="button" tabindex="0" aria-label="סטטוס מערכת">
+      <span class="dot" id="statusDot" aria-hidden="true"></span>
+      <span id="statusText" class="status-text">טוען...</span>
+      <span id="marketStatusBadge" class="status-pill"></span>
+      <span id="updateHealth" class="status-pill" title="סטטוס עדכון אחרון מ-SharePoint"></span>
+    </div>
+    <div class="header-actions">
+      <button class="sys-btn" id="sysBtn" onclick="toggleSystem()" aria-label="הפעלה/כיבוי מערכת">⏳ טוען...</button>
+      <div class="header-menu" id="headerMenu">
+        <button class="icon-btn" id="headerMenuBtn" onclick="toggleHeaderMenu()" aria-label="תפריט הגדרות" aria-haspopup="true" aria-expanded="false">⚙️</button>
+        <div class="header-menu-list" id="headerMenuList" role="menu">
+          <button class="menu-item" onclick="toggleSound();updateHeaderMenuLabels()" role="menuitem">
+            <span class="menu-icon" id="soundIcon">🔇</span><span>התראות קוליות</span><span class="menu-state" id="soundState"></span>
+          </button>
+          <button class="menu-item" onclick="toggleTheme();updateHeaderMenuLabels()" role="menuitem">
+            <span class="menu-icon" id="themeIcon">🌙</span><span>ערכת צבעים</span><span class="menu-state" id="themeState"></span>
+          </button>
+          <div class="menu-item" style="cursor:default" role="menuitem" aria-label="צפיפות תצוגה">
+            <span class="menu-icon">▦</span><span>צפיפות</span>
+            <div class="density-seg" style="margin-right:auto" role="group" aria-label="צפיפות תצוגה">
+              <button onclick="setDensity('compact')" data-d="compact" title="דחוסה">צפוף</button>
+              <button onclick="setDensity('comfortable')" data-d="comfortable" class="active" title="רגילה">רגיל</button>
+              <button onclick="setDensity('spacious')" data-d="spacious" title="מרווחת">רחב</button>
+            </div>
+          </div>
+          <button class="menu-item" onclick="openCommandPalette()" role="menuitem">
+            <span class="menu-icon">⌘</span><span>פעולות מהירות</span><span class="menu-state"><kbd>Ctrl K</kbd></span>
+          </button>
+          <div class="menu-divider"></div>
+          <button class="menu-item danger" id="logoutBtn" role="menuitem">
+            <span class="menu-icon">⏻</span><span>יציאה</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Hidden legacy refs so JS that writes to them still works -->
+    <span id="lastUpdate" style="display:none"></span>
+    <span id="lastSeenBadge" style="display:none"></span>
   </header>
 
   <!-- FILTER BAR -->
@@ -478,13 +633,15 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
     <span style="margin-right:auto;font-size:11px;color:var(--muted)">הנתונים האחרונים מוצגים | רענון אוטומטי עם פתיחת השוק</span>
   </div>
 
-      <button class="quick-btn active" id="tabSignals" onclick="switchTab('signals')">📡 סיגנלים</button>
-      <button class="quick-btn" id="tabAnalytics" onclick="switchTab('analytics')">📈 אנליטיקס</button>
-      <button class="quick-btn" id="tabBacktest" onclick="switchTab('backtest')">🔬 Backtest</button>
-      <button class="quick-btn" id="tabLegend" onclick="switchTab('legend')">📖 מקרא</button>
-      <button class="quick-btn" id="tabSettings" onclick="switchTab('settings')">⚙️ כיוונון</button>
-      <button class="quick-btn" id="tabTrades" onclick="switchTab('trades')">📋 עסקאות</button>
-      <button class="quick-btn" id="tabChat" onclick="switchTab('chat')">💬 צ'אט</button>
+      <div role="tablist" aria-label="טאבי ניווט" style="display:contents">
+      <button class="quick-btn active" id="tabSignals"   role="tab" aria-selected="true"  aria-controls="mainPanel"      onclick="switchTab('signals')"   title="סיגנלים">📡 סיגנלים</button>
+      <button class="quick-btn"        id="tabAnalytics" role="tab" aria-selected="false" aria-controls="analyticsPanel" onclick="switchTab('analytics')" title="אנליטיקס">📈 אנליטיקס</button>
+      <button class="quick-btn"        id="tabBacktest"  role="tab" aria-selected="false" aria-controls="backtestPanel"  onclick="switchTab('backtest')"  title="Backtest">🔬 Backtest</button>
+      <button class="quick-btn"        id="tabLegend"    role="tab" aria-selected="false" aria-controls="legendPanel"    onclick="switchTab('legend')"    title="מקרא">📖 מקרא</button>
+      <button class="quick-btn"        id="tabSettings"  role="tab" aria-selected="false" aria-controls="settingsPanel"  onclick="switchTab('settings')"  title="כיוונון">⚙️ כיוונון</button>
+      <button class="quick-btn"        id="tabTrades"    role="tab" aria-selected="false" aria-controls="tradesPanel"    onclick="switchTab('trades')"    title="עסקאות">📋 עסקאות</button>
+      <button class="quick-btn"        id="tabChat"      role="tab" aria-selected="false" aria-controls="chatPanel"      onclick="switchTab('chat')"      title="צ'אט Claude">💬 צ'אט</button>
+      </div>
     </div>
   </div>
 
@@ -552,7 +709,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
   </div>
 
   <!-- ANALYTICS PANEL -->
-  <div id="legendPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
+  <div id="legendPanel" role="tabpanel" aria-labelledby="tabLegend" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
 
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;max-width:1100px;margin:0 auto">
 
@@ -723,7 +880,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 
 
   <!-- SETTINGS PANEL -->
-  <div id="settingsPanel" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
+  <div id="settingsPanel" role="tabpanel" aria-labelledby="tabSettings" style="display:none;padding:20px 28px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
     <div style="max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">🎛 פרסטים מובנים</div>
@@ -930,7 +1087,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 
 
   <!-- BACKTEST PANEL -->
-  <div id="backtestPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
+  <div id="backtestPanel" role="tabpanel" aria-labelledby="tabBacktest" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
       <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">פרסט:</span>
@@ -1028,7 +1185,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
     </div>
   </div>
 
-  <div id="analyticsPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
+  <div id="analyticsPanel" role="tabpanel" aria-labelledby="tabAnalytics" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px)">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <!-- P&L Chart -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
@@ -1067,7 +1224,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
     </div>
   </div>
 
-  <div class="main" id="mainPanel">
+  <div class="main" id="mainPanel" role="tabpanel" aria-labelledby="tabSignals">
     <div id="skipStreakBanner" style="display:none;margin:0 0 10px 0;padding:10px 14px;background:rgba(255,69,96,0.08);border:1px solid rgba(255,69,96,0.3);border-radius:6px;align-items:center;gap:10px;max-height:60px;overflow:hidden">
       <span style="font-size:20px">⚠️</span>
       <div>
@@ -1080,20 +1237,31 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         <div class="panel-title">📡 סיגנלים אחרונים</div>
         <div class="badge" id="sigCount">0</div>
       </div>
-      <div id="sigList"><div class="loading"><div class="spinner"></div>טוען...</div></div>
+      <div id="sigList">
+        <div class="skeleton-wrap" aria-label="טוען סיגנלים" aria-busy="true">
+          <div class="skel-row"><div style="display:flex;justify-content:space-between;align-items:center"><div class="skel-line sm"></div><div class="skel-line sm" style="width:25%"></div></div><div class="skel-line md"></div><div class="skel-line bar"></div></div>
+          <div class="skel-row"><div style="display:flex;justify-content:space-between;align-items:center"><div class="skel-line sm"></div><div class="skel-line sm" style="width:25%"></div></div><div class="skel-line md"></div><div class="skel-line bar"></div></div>
+          <div class="skel-row"><div style="display:flex;justify-content:space-between;align-items:center"><div class="skel-line sm"></div><div class="skel-line sm" style="width:25%"></div></div><div class="skel-line md"></div><div class="skel-line bar"></div></div>
+        </div>
+      </div>
     </div>
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">🔍 סקירות אחרונות</div>
         <div class="badge" id="scanCount">0</div>
       </div>
-      <div id="scanList"><div class="loading"><div class="spinner"></div>טוען...</div></div>
+      <div id="scanList">
+        <div class="skeleton-wrap" aria-label="טוען סקירות" aria-busy="true">
+          <div class="skel-row"><div class="skel-line md"></div><div class="skel-line sm"></div></div>
+          <div class="skel-row"><div class="skel-line md"></div><div class="skel-line sm"></div></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
   <!-- TRADES PANEL -->
-  <div id="tradesPanel" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
+  <div id="tradesPanel" role="tabpanel" aria-labelledby="tabTrades" style="display:none;padding:16px 20px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl">
     <div style="max-width:1300px;margin:0 auto">
       <div class="trades-stats-grid">
         <div class="trade-stat-card"><div class="trade-stat-label">סה"כ עסקאות</div><div class="trade-stat-value c-blue" id="tr-total">—</div></div>
@@ -1162,7 +1330,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
   <!-- CHAT PANEL -->
   <!-- height uses dvh (dynamic viewport height) so mobile browser chrome
        doesn't push the input row off-screen; falls back to vh on older engines. -->
-  <div id="chatPanel" style="display:none;padding:0;overflow:hidden;height:calc(100vh - 160px);height:calc(100dvh - 160px);direction:rtl;flex-direction:column">
+  <div id="chatPanel" role="tabpanel" aria-labelledby="tabChat" style="display:none;padding:0;overflow:hidden;height:calc(100vh - 160px);height:calc(100dvh - 160px);direction:rtl;flex-direction:column">
     <div style="padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue);letter-spacing:1px">💬 CLAUDE CHAT</span>
@@ -1198,6 +1366,26 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
       <div id="chatStatus" style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)"></div>
     </div>
   </div>
+
+<!-- Toast notifications host -->
+<div id="toastHost" role="region" aria-live="polite" aria-label="התראות"></div>
+
+<!-- Command Palette -->
+<div id="cmdPaletteOverlay" role="dialog" aria-modal="true" aria-label="פעולות מהירות" onclick="if(event.target===this)closeCommandPalette()">
+  <div id="commandPalette">
+    <div class="cmd-search">
+      <span class="cmd-search-icon" aria-hidden="true">🔍</span>
+      <input id="cmdInput" type="text" placeholder="חפש פעולה... (נסה: סיגנלים, רענן, ערכת צבעים)" autocomplete="off" aria-label="חפש פעולה">
+      <kbd class="cmd-hint">Esc</kbd>
+    </div>
+    <div id="cmdList" role="listbox"></div>
+    <div class="cmd-footer">
+      <span><kbd>↑↓</kbd> ניווט</span>
+      <span><kbd>↵</kbd> הפעלה</span>
+      <span><kbd>Esc</kbd> סגור</span>
+    </div>
+  </div>
+</div>
 
 <div class="overlay" id="overlay">
   <div class="popup">
@@ -1399,24 +1587,25 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
 
   var isLong = s < e;
 
-  // Color intensity based on verdict
+  // Color intensity based on verdict (uses runtime CSS variables)
+  var _pb = chartColors();
   var v = (verdict||'').toLowerCase();
-  var greenAlpha, redAlpha, greenBdr, redBdr, entryColor;
+  var greenAlpha, redAlpha, greenBdr, redBdr, entryColor, entryGlow;
   if (v === 'take') {
-    greenAlpha = '0.75'; redAlpha = '0.20'; greenBdr = '1'; redBdr = '0.4'; entryColor = '#00d084';
+    greenAlpha = '0.75'; redAlpha = '0.20'; greenBdr = '1'; redBdr = '0.4'; entryColor = _pb.green; entryGlow = '0 0 8px '+withAlpha(_pb.green,0.6);
   } else if (v === 'skip') {
-    greenAlpha = '0.10'; redAlpha = '0.75'; greenBdr = '0.2'; redBdr = '1'; entryColor = '#ff4560';
+    greenAlpha = '0.10'; redAlpha = '0.75'; greenBdr = '0.2'; redBdr = '1'; entryColor = _pb.red; entryGlow = '0 0 8px '+withAlpha(_pb.red,0.5);
   } else if (v === 'wait') {
-    greenAlpha = '0.35'; redAlpha = '0.35'; greenBdr = '0.6'; redBdr = '0.6'; entryColor = '#ffa500';
+    greenAlpha = '0.35'; redAlpha = '0.35'; greenBdr = '0.6'; redBdr = '0.6'; entryColor = _pb.yellow; entryGlow = '0 0 6px '+withAlpha(_pb.yellow,0.5);
   } else {
-    greenAlpha = '0.18'; redAlpha = '0.22'; greenBdr = '0.3'; redBdr = '0.35'; entryColor = 'white';
+    greenAlpha = '0.18'; redAlpha = '0.22'; greenBdr = '0.3'; redBdr = '0.35'; entryColor = _pb.text; entryGlow = 'none';
   }
 
   var leftW    = slW, rightW = tpW;
-  var leftBg   = isLong ? 'rgba(255,69,96,'+redAlpha+')'   : 'rgba(0,208,132,'+greenAlpha+')';
-  var leftBdr  = isLong ? 'rgba(255,69,96,'+redBdr+')'     : 'rgba(0,208,132,'+greenBdr+')';
-  var rightBg  = isLong ? 'rgba(0,208,132,'+greenAlpha+')' : 'rgba(255,69,96,'+redAlpha+')';
-  var rightBdr = isLong ? 'rgba(0,208,132,'+greenBdr+')'   : 'rgba(255,69,96,'+redBdr+')';
+  var leftBg   = isLong ? 'linear-gradient(90deg,'+withAlpha(_pb.red,parseFloat(redAlpha))+','+withAlpha(_pb.red,parseFloat(redAlpha)*0.7)+')'   : 'linear-gradient(90deg,'+withAlpha(_pb.green,parseFloat(greenAlpha)*0.7)+','+withAlpha(_pb.green,parseFloat(greenAlpha))+')';
+  var leftBdr  = isLong ? withAlpha(_pb.red,parseFloat(redBdr))     : withAlpha(_pb.green,parseFloat(greenBdr));
+  var rightBg  = isLong ? 'linear-gradient(90deg,'+withAlpha(_pb.green,parseFloat(greenAlpha)*0.7)+','+withAlpha(_pb.green,parseFloat(greenAlpha))+')' : 'linear-gradient(90deg,'+withAlpha(_pb.red,parseFloat(redAlpha))+','+withAlpha(_pb.red,parseFloat(redAlpha)*0.7)+')';
+  var rightBdr = isLong ? withAlpha(_pb.green,parseFloat(greenBdr))   : withAlpha(_pb.red,parseFloat(redBdr));
   var leftPrice  = isLong ? s  : (t2||t1);
   var rightPrice = isLong ? (t2||t1) : s;
   var leftColor  = isLong ? '#ff4560' : '#00d084';
@@ -1460,19 +1649,21 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   html += '</div>';
 
   // === BAR ===
-  html += '<div style="width:100%;display:flex;align-items:stretch;height:16px;border-radius:4px;overflow:hidden;gap:1px">';
+  // Taller, smoother bar with gradient fills + glowing entry marker + clearer TP1 tick
+  var tickStyle = 'position:absolute;top:-2px;bottom:-2px;width:2px;background:'+entryColor+';opacity:0.55;border-radius:1px;box-shadow:0 0 4px '+withAlpha(entryColor,0.5);
+  html += '<div style="width:100%;display:flex;align-items:stretch;height:18px;border-radius:6px;overflow:visible;gap:0;position:relative">';
   if (isLong) {
-    html += '<div style="width:' + slW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:4px 0 0 4px"></div>';
-    html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0"></div>';
-    html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 4px 4px 0;position:relative">';
-    if (t2) html += '<div style="position:absolute;left:' + tp1LineW + '%;top:0;bottom:0;width:1px;background:' + entryColor + ';opacity:0.5"></div>';
+    html += '<div style="width:' + slW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:6px 0 0 6px"></div>';
+    html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0;box-shadow:'+entryGlow+';position:relative;z-index:2"></div>';
+    html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:0 6px 6px 0;position:relative">';
+    if (t2) html += '<div style="'+tickStyle+';left:' + tp1LineW + '%"></div>';
     html += '</div>';
   } else {
-    html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:4px 0 0 4px;position:relative">';
-    if (t2) html += '<div style="position:absolute;right:' + (100-parseFloat(tp1LineW)) + '%;top:0;bottom:0;width:1px;background:' + entryColor + ';opacity:0.5"></div>';
+    html += '<div style="width:' + tpW + '%;background:' + rightBg + ';border:1px solid ' + rightBdr + ';border-radius:6px 0 0 6px;position:relative">';
+    if (t2) html += '<div style="'+tickStyle+';right:' + (100-parseFloat(tp1LineW)) + '%"></div>';
     html += '</div>';
-    html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0"></div>';
-    html += '<div style="width:' + slW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:0 4px 4px 0"></div>';
+    html += '<div style="width:3px;background:' + entryColor + ';flex-shrink:0;box-shadow:'+entryGlow+';position:relative;z-index:2"></div>';
+    html += '<div style="width:' + slW + '%;background:' + leftBg + ';border:1px solid ' + leftBdr + ';border-radius:0 6px 6px 0"></div>';
   }
   html += '</div>';
 
@@ -1496,7 +1687,14 @@ function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
 function renderSignals(items) {
   document.getElementById('sigCount').textContent = items.length;
   var el = document.getElementById('sigList');
-  if (!items.length) { el.innerHTML = '<div class="empty">אין סיגנלים עדיין</div>'; return; }
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state">'
+      + '<div class="empty-state-icon" aria-hidden="true">📡</div>'
+      + '<div class="empty-state-title">אין סיגנלים להצגה</div>'
+      + '<div class="empty-state-msg">שנה את הפילטרים למעלה כדי לראות סיגנלים מתאריכים אחרים, או המתן לסיגנל הבא מ-TradingView.</div>'
+      + '</div>';
+    return;
+  }
 
   if (!isFirst && lastSigId && items[0].ID !== lastSigId) {
     var _newVerdict = (items[0].ClaudeVerdict||'').toUpperCase();
@@ -1510,6 +1708,16 @@ function renderSignals(items) {
           body: 'כניסה: ' + (items[0].Entry||'') + ' | SL: ' + (items[0].SL||'')
         });
       }
+    } else if (_newVerdict === 'SKIP' || _newVerdict === 'WAIT' || _newVerdict === 'NEUTRAL') {
+      // Non-TAKE: quiet toast instead of interruptive popup
+      var _toastType = _newVerdict === 'WAIT' ? 'warn' : 'info';
+      var _dirArrow = (items[0].Direction||'').toUpperCase() === 'LONG' ? '▲' : '▼';
+      showToast({
+        type: _toastType,
+        title: _newVerdict + ' · ' + _dirArrow + ' ' + (items[0].Direction||''),
+        message: (items[0].Ticker||'') + ' — ציון ' + (items[0].Score||'—'),
+        duration: 4000
+      });
     }
   }
   lastSigId = items[0].ID;
@@ -1607,7 +1815,14 @@ window.showPopupById = function(idx) {
 function renderScans(items) {
   document.getElementById('scanCount').textContent = items.length;
   var el = document.getElementById('scanList');
-  if (!items.length) { el.innerHTML = '<div class="empty">אין סקירות עדיין</div>'; return; }
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state">'
+      + '<div class="empty-state-icon" aria-hidden="true">🔍</div>'
+      + '<div class="empty-state-title">אין סקירות שוק</div>'
+      + '<div class="empty-state-msg">סקירות נוצרות אוטומטית כל מספר דקות על ידי המערכת.</div>'
+      + '</div>';
+    return;
+  }
   var html = '';
   for (var i = 0; i < items.length; i++) {
     var it = items[i];
@@ -1813,19 +2028,20 @@ function updateAnalysis(items) {
     var sW=shorts.filter(function(it){return isWin((it.Result||'').toUpperCase());}).length;
     var sL=shorts.filter(function(it){return isLoss((it.Result||'').toUpperCase());}).length;
     if (dirChart) dirChart.destroy();
+    var _c = chartColors();
     dirChart = new Chart(ctx, {
       type:'bar',
       data:{ labels:['▲ LONG','▼ SHORT'],
         datasets:[
-          {label:'WIN',  data:[lW,sW], backgroundColor:'rgba(0,208,132,0.85)', borderRadius:3},
-          {label:'LOSS', data:[lL,sL], backgroundColor:'rgba(255,69,96,0.85)',  borderRadius:3},
-          {label:'⏳',   data:[longs.length-lW-lL, shorts.length-sW-sL], backgroundColor:['rgba(0,208,132,0.25)','rgba(255,69,96,0.25)'], borderRadius:3}
+          {label:'WIN',  data:[lW,sW], backgroundColor:withAlpha(_c.green,0.85), borderRadius:4, borderSkipped:false},
+          {label:'LOSS', data:[lL,sL], backgroundColor:withAlpha(_c.red,0.85),   borderRadius:4, borderSkipped:false},
+          {label:'⏳',   data:[longs.length-lW-lL, shorts.length-sW-sL], backgroundColor:[withAlpha(_c.green,0.25),withAlpha(_c.red,0.25)], borderRadius:4, borderSkipped:false}
         ]},
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{color:'#4a6080',font:{size:10},boxWidth:10}}},
+        plugins:{legend:{labels:{color:_c.muted,font:{size:10},boxWidth:10}}},
         scales:{
-          x:{stacked:true,ticks:{color:'#4a6080',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
-          y:{stacked:true,ticks:{color:'#4a6080',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}}
+          x:{stacked:true,ticks:{color:_c.muted,font:{size:10}},grid:{color:withAlpha(_c.grid,0.3),drawBorder:false}},
+          y:{stacked:true,ticks:{color:_c.muted,font:{size:10},stepSize:1},grid:{color:withAlpha(_c.grid,0.3),drawBorder:false}}
         }}
     });
   }
@@ -1900,7 +2116,7 @@ async function updateResult(itemId, result) {
     console.log('[Resolver] Updated item ' + itemId + ' → ' + result);
   } catch(e) {
     console.error('[Resolver] updateResult error:', e);
-    alert('שגיאה בעדכון: ' + e.message);
+    showToast({type:'error', title:'שגיאה בעדכון', message:e.message});
   }
 }
 
@@ -1976,7 +2192,7 @@ async function resolveResults(manual) {
     if (!yahooData) {
       console.warn('[Resolver] Could not fetch NQ data from any source');
       if (statusEl) { statusEl.textContent = '❌ לא ניתן למשוך מחיר NQ'; statusEl.style.color = 'var(--red)'; }
-      if (manual) alert('לא ניתן למשוך נתוני NQ=F.\nנסה שוב מאוחר יותר או עדכן ידנית.');
+      if (manual) showToast({type:'error', title:'לא ניתן למשוך נתוני NQ=F', message:'נסה שוב מאוחר יותר או עדכן ידנית.'});
       resolveNextRun = Date.now() + RESOLVE_INTERVAL;
       return;
     }
@@ -2073,7 +2289,7 @@ async function resolveResults(manual) {
   } catch(e) {
     console.error('[Resolver] Error:', e);
     if (statusEl) { statusEl.textContent = '❌ שגיאה: ' + e.message; statusEl.style.color = 'var(--red)'; }
-    if (manual) alert('שגיאה: ' + e.message);
+    if (manual) showToast({type:'error', title:'שגיאה', message:e.message});
   }
 
   resolveNextRun = Date.now() + RESOLVE_INTERVAL;
@@ -2382,12 +2598,398 @@ var currentTab = 'signals';
 // === SOUND ALERTS ===
 var soundEnabled = localStorage.getItem('sound') !== 'off';
 function initSoundBtn() {
-  document.getElementById('soundBtn').textContent = soundEnabled ? '🔔' : '🔇';
+  var ic = document.getElementById('soundIcon');
+  if (ic) ic.textContent = soundEnabled ? '🔔' : '🔇';
+  var st = document.getElementById('soundState');
+  if (st) st.textContent = soundEnabled ? 'מופעל' : 'כבוי';
+  var tIc = document.getElementById('themeIcon');
+  if (tIc) tIc.textContent = document.body.classList.contains('light') ? '🌑' : '🌙';
+  var tSt = document.getElementById('themeState');
+  if (tSt) tSt.textContent = document.body.classList.contains('light') ? 'בהיר' : 'כהה';
 }
+// ===================== SVG ICON LIBRARY (Lucide subset, MIT) =====================
+// Inline Lucide icons so they inherit color via stroke="currentColor".
+// All icons use viewBox="0 0 24 24", stroke-width="2", round caps/joins.
+var LUCIDE_ICONS = {
+  'radio-tower':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9"/><path d="M7.8 4.7a6.14 6.14 0 0 0-.86 7.6"/><circle cx="12" cy="9" r="2"/><path d="M16.2 4.8c2 2 2.26 5.11.8 7.47"/><path d="M19.1 1.9a9.96 9.96 0 0 1 0 14.1"/><path d="M9.5 18h5"/><path d="m8 22 4-11 4 11"/></svg>',
+  'trending-up':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  'flask':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg>',
+  'book-open':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+  'settings':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+  'clipboard-list':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>',
+  'message-circle':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>',
+  'calendar':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  'target':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  'lock':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  'volume-x':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>',
+  'volume-2':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>',
+  'moon':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  'sun':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
+  'log-out':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+  'bar-chart':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16V8"/><path d="M12 16v-5"/><path d="M17 16v-3"/></svg>',
+  'brain':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg>',
+  'bot':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  'search':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  'ban':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
+  'rows':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>',
+  'zap':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  'command':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>'
+};
+function icon(name) {
+  var svg = LUCIDE_ICONS[name];
+  if (!svg) return '';
+  return '<span class="ic" aria-hidden="true">' + svg + '</span>';
+}
+// Hydrate icons into existing DOM after load
+function hydrateIcons() {
+  var map = [
+    { sel:'#tabSignals',   name:'radio-tower',    text:'סיגנלים' },
+    { sel:'#tabAnalytics', name:'trending-up',    text:'אנליטיקס' },
+    { sel:'#tabBacktest',  name:'flask',          text:'Backtest' },
+    { sel:'#tabLegend',    name:'book-open',      text:'מקרא' },
+    { sel:'#tabSettings',  name:'settings',       text:'כיוונון' },
+    { sel:'#tabTrades',    name:'clipboard-list', text:'עסקאות' },
+    { sel:'#tabChat',      name:'message-circle', text:"צ'אט" },
+    { sel:'#headerMenuBtn',name:'settings',       iconOnly:true }
+  ];
+  map.forEach(function(m){
+    var el = document.querySelector(m.sel);
+    if (!el) return;
+    if (m.iconOnly) {
+      el.innerHTML = icon(m.name);
+    } else {
+      el.innerHTML = icon(m.name) + ' ' + m.text;
+    }
+  });
+  // Filter labels
+  document.querySelectorAll('.filter-label').forEach(function(el){
+    var t = el.textContent.trim();
+    if (t.indexOf('תאריך') !== -1)  el.innerHTML = icon('calendar') + ' תאריך:';
+    if (t.indexOf('פסיקה') !== -1)  el.innerHTML = icon('target')   + ' פסיקה:';
+  });
+  // Analysis panel titles
+  document.querySelectorAll('.analysis-title').forEach(function(el){
+    var t = el.textContent.trim();
+    if (t.indexOf('LONG') !== -1)     el.innerHTML = icon('bar-chart') + ' LONG / SHORT';
+    if (t.indexOf('ניתוח יומי') !== -1) el.innerHTML = icon('brain')     + ' ניתוח יומי';
+    if (t.indexOf('Claude AI') !== -1) el.innerHTML = icon('bot')        + ' Claude AI';
+  });
+  // Login button
+  var lb = document.getElementById('loginBtn');
+  if (lb) lb.innerHTML = icon('lock') + ' התחבר עם Microsoft';
+  // Menu icons (sound, theme, density, command, logout)
+  var sIc = document.getElementById('soundIcon');
+  if (sIc) sIc.innerHTML = icon(soundEnabled ? 'volume-2' : 'volume-x');
+  var tIc = document.getElementById('themeIcon');
+  if (tIc) tIc.innerHTML = icon(document.body.classList.contains('light') ? 'sun' : 'moon');
+  // Replace remaining menu-icons
+  var menuItems = document.querySelectorAll('#headerMenuList .menu-item .menu-icon');
+  menuItems.forEach(function(el){
+    var txt = el.textContent.trim();
+    if (txt === '▦')  el.innerHTML = icon('rows');
+    if (txt === '⌘')  el.innerHTML = icon('command');
+    if (txt === '⏻')  el.innerHTML = icon('log-out');
+  });
+  // Command palette search icon
+  var cIc = document.querySelector('.cmd-search-icon');
+  if (cIc) cIc.innerHTML = icon('search');
+}
+// Update sound/theme icons when state changes — override the earlier text-based updates
+(function patchIconToggles(){
+  var origToggleSound = window.toggleSound;
+  window.toggleSound = function(){
+    if (origToggleSound) origToggleSound.apply(this, arguments);
+    var ic = document.getElementById('soundIcon');
+    if (ic) ic.innerHTML = icon(soundEnabled ? 'volume-2' : 'volume-x');
+  };
+  var origToggleTheme = window.toggleTheme;
+  window.toggleTheme = function(){
+    if (origToggleTheme) origToggleTheme.apply(this, arguments);
+    var ic = document.getElementById('themeIcon');
+    if (ic) ic.innerHTML = icon(document.body.classList.contains('light') ? 'sun' : 'moon');
+  };
+})();
+
+// ===================== COMMAND PALETTE =====================
+var _cmdCommands = null;
+var _cmdSelectedIdx = 0;
+var _cmdFiltered = [];
+function _getCommands() {
+  // Lazily build commands so references to functions work
+  return [
+    { id:'nav-signals',   icon:'📡', title:'עבור לסיגנלים',      sub:'Tab 1', action:function(){ switchTab('signals'); } },
+    { id:'nav-analytics', icon:'📈', title:'עבור לאנליטיקס',     sub:'Tab 2', action:function(){ switchTab('analytics'); } },
+    { id:'nav-backtest',  icon:'🔬', title:'עבור ל-Backtest',    sub:'Tab 3', action:function(){ switchTab('backtest'); } },
+    { id:'nav-legend',    icon:'📖', title:'עבור למקרא',         sub:'Tab 4', action:function(){ switchTab('legend'); } },
+    { id:'nav-settings',  icon:'⚙️', title:'עבור לכיוונון',      sub:'Tab 5', action:function(){ switchTab('settings'); } },
+    { id:'nav-trades',    icon:'📋', title:'עבור לעסקאות',       sub:'Tab 6', action:function(){ switchTab('trades'); } },
+    { id:'nav-chat',      icon:'💬', title:'עבור לצ׳אט Claude',  sub:'Tab 7', action:function(){ switchTab('chat'); } },
+    { id:'refresh',       icon:'↻',  title:'רענן נתונים עכשיו',  sub:'מ-SharePoint', action:function(){ if (typeof refresh === 'function') refresh(); showToast({type:'info', title:'רענון ידני', duration:2500}); } },
+    { id:'ask-claude',    icon:'🎯', title:'שאל את Claude עכשיו',sub:'ניתוח כיוון',  action:function(){ switchTab('chat'); setTimeout(function(){ if (typeof askClaudeDirectional === 'function') askClaudeDirectional(); }, 200); } },
+    { id:'dyn-refresh',   icon:'🧠', title:'רענן ניתוח Claude AI',sub:'פאנל דינמי',  action:function(){ if (typeof runDynamicAnalysis === 'function') runDynamicAnalysis(true); } },
+    { id:'filter-today',  icon:'📅', title:'פילטר: היום',        sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(0); } },
+    { id:'filter-yest',   icon:'📅', title:'פילטר: אתמול',       sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(-1); } },
+    { id:'filter-week',   icon:'📅', title:'פילטר: שבוע אחרון',  sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(-7); } },
+    { id:'filter-all',    icon:'📅', title:'פילטר: כל הנתונים',  sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(null); } },
+    { id:'filter-take',   icon:'✓',  title:'פילטר: TAKE בלבד',   sub:'פסיקה', action:function(){ if (typeof setVerdictFilter === 'function') setVerdictFilter('take'); } },
+    { id:'filter-skip',   icon:'✕',  title:'פילטר: SKIP בלבד',   sub:'פסיקה', action:function(){ if (typeof setVerdictFilter === 'function') setVerdictFilter('skip'); } },
+    { id:'filter-long',   icon:'▲',  title:'פילטר: LONG',        sub:'כיוון', action:function(){ if (typeof setDirFilter === 'function') setDirFilter('long'); } },
+    { id:'filter-short',  icon:'▼',  title:'פילטר: SHORT',       sub:'כיוון', action:function(){ if (typeof setDirFilter === 'function') setDirFilter('short'); } },
+    { id:'theme',         icon:'🌙', title:'החלף ערכת צבעים',    sub:'בהיר/כהה', action:function(){ toggleTheme(); updateHeaderMenuLabels(); } },
+    { id:'sound',         icon:'🔔', title:'הפעל/כבה התראות קוליות', sub:'סאונד', action:function(){ toggleSound(); updateHeaderMenuLabels(); } },
+    { id:'density-c',     icon:'▦',  title:'צפיפות: צפוף',       sub:'תצוגה', action:function(){ setDensity('compact'); } },
+    { id:'density-m',     icon:'▦',  title:'צפיפות: רגיל',       sub:'תצוגה', action:function(){ setDensity('comfortable'); } },
+    { id:'density-s',     icon:'▦',  title:'צפיפות: רחב',        sub:'תצוגה', action:function(){ setDensity('spacious'); } },
+    { id:'system',        icon:'⏻',  title:'הפעל/כבה מערכת',     sub:'סיגנלים חיים', action:function(){ if (typeof toggleSystem === 'function') toggleSystem(); } },
+    { id:'api-key',       icon:'🔑', title:'ערוך API Key',       sub:'Anthropic', action:function(){ if (typeof showKeyModal === 'function') showKeyModal(); } },
+    { id:'clear-chat',    icon:'🗑',  title:'נקה היסטוריית צ׳אט', sub:'Claude Chat', action:function(){ if (typeof clearChatHistory === 'function') { switchTab('chat'); clearChatHistory(); } } }
+  ];
+}
+function openCommandPalette() {
+  _cmdCommands = _getCommands();
+  _cmdSelectedIdx = 0;
+  var ov = document.getElementById('cmdPaletteOverlay');
+  if (!ov) return;
+  ov.classList.add('open');
+  var input = document.getElementById('cmdInput');
+  if (input) { input.value = ''; setTimeout(function(){ input.focus(); }, 50); }
+  _renderCmdList('');
+  // Close header dropdown if open
+  var list = document.getElementById('headerMenuList');
+  if (list) list.classList.remove('open');
+}
+function closeCommandPalette() {
+  var ov = document.getElementById('cmdPaletteOverlay');
+  if (ov) ov.classList.remove('open');
+}
+function _renderCmdList(query) {
+  var list = document.getElementById('cmdList');
+  if (!list || !_cmdCommands) return;
+  var q = (query||'').trim().toLowerCase();
+  _cmdFiltered = !q ? _cmdCommands.slice() : _cmdCommands.filter(function(c){
+    return c.title.toLowerCase().indexOf(q) !== -1 || (c.sub||'').toLowerCase().indexOf(q) !== -1 || c.id.indexOf(q) !== -1;
+  });
+  if (_cmdSelectedIdx >= _cmdFiltered.length) _cmdSelectedIdx = 0;
+  if (!_cmdFiltered.length) {
+    list.innerHTML = '<div class="cmd-empty">אין פעולות תואמות</div>';
+    return;
+  }
+  list.innerHTML = _cmdFiltered.map(function(c, i){
+    return '<div class="cmd-item' + (i === _cmdSelectedIdx ? ' selected' : '') + '" data-idx="' + i + '" role="option" aria-selected="' + (i === _cmdSelectedIdx) + '">'
+      + '<div class="cmd-item-icon">' + c.icon + '</div>'
+      + '<div class="cmd-item-body"><div class="cmd-item-title">' + escapeHtml(c.title) + '</div>'
+      + (c.sub ? '<div class="cmd-item-sub">' + escapeHtml(c.sub) + '</div>' : '') + '</div>'
+      + '</div>';
+  }).join('');
+  // Click to activate
+  list.querySelectorAll('.cmd-item').forEach(function(el){
+    el.onclick = function(){ _runCmd(parseInt(el.getAttribute('data-idx'),10)); };
+    el.onmouseenter = function(){
+      _cmdSelectedIdx = parseInt(el.getAttribute('data-idx'),10);
+      list.querySelectorAll('.cmd-item').forEach(function(e2){ e2.classList.remove('selected'); });
+      el.classList.add('selected');
+    };
+  });
+}
+function _runCmd(idx) {
+  var c = _cmdFiltered[idx];
+  if (!c) return;
+  closeCommandPalette();
+  try { c.action(); } catch(e) { console.error('[CmdPalette]', e); showToast({type:'error', title:'שגיאה', message:e.message}); }
+}
+(function cmdPaletteBind(){
+  document.addEventListener('keydown', function(e){
+    var ov = document.getElementById('cmdPaletteOverlay');
+    if (!ov || !ov.classList.contains('open')) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _cmdSelectedIdx = Math.min(_cmdFiltered.length-1, _cmdSelectedIdx+1);
+      _renderCmdList(document.getElementById('cmdInput').value);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _cmdSelectedIdx = Math.max(0, _cmdSelectedIdx-1);
+      _renderCmdList(document.getElementById('cmdInput').value);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      _runCmd(_cmdSelectedIdx);
+    }
+  });
+  // Input filter — late-bind to ensure element exists
+  setTimeout(function(){
+    var input = document.getElementById('cmdInput');
+    if (input) input.addEventListener('input', function(){ _cmdSelectedIdx = 0; _renderCmdList(input.value); });
+  }, 100);
+})();
+
+// ===================== CHART THEMING HELPERS =====================
+// Read CSS variables at runtime so Chart.js follows light/dark theme switches.
+function cssVar(name, fallback) {
+  try {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  } catch(e) { return fallback; }
+}
+function chartColors() {
+  return {
+    green: cssVar('--green', '#10d48b'),
+    red:   cssVar('--red',   '#ff5773'),
+    blue:  cssVar('--blue',  '#5fb2ff'),
+    yellow:cssVar('--yellow','#ffb547'),
+    text:  cssVar('--text-dim', '#9ba8c0'),
+    muted: cssVar('--muted', '#5e728e'),
+    grid:  cssVar('--border', '#1f2a3d'),
+    bg:    cssVar('--surface','#101623'),
+    greenSoft: cssVar('--green-soft', 'rgba(16,212,139,.12)'),
+    redSoft:   cssVar('--red-soft',   'rgba(255,87,115,.12)'),
+    blueSoft:  cssVar('--blue-soft',  'rgba(95,178,255,.12)')
+  };
+}
+// Convert hex + alpha → rgba string (for chart fills)
+function withAlpha(hex, alpha) {
+  if (!hex || hex.indexOf('#') !== 0) return hex;
+  var h = hex.replace('#','');
+  if (h.length === 3) h = h.split('').map(function(c){return c+c}).join('');
+  var r = parseInt(h.substring(0,2),16);
+  var g = parseInt(h.substring(2,4),16);
+  var b = parseInt(h.substring(4,6),16);
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
+// Common axes style reused across charts
+function chartAxes() {
+  var c = chartColors();
+  return {
+    x: { grid: { color: withAlpha(c.grid, 0.5), drawBorder:false }, ticks: { color: c.muted, font: { size: 10 } } },
+    y: { grid: { color: withAlpha(c.grid, 0.5), drawBorder:false }, ticks: { color: c.muted, font: { size: 10 } } }
+  };
+}
+
+// ===================== TOAST NOTIFICATIONS =====================
+// showToast({type:'success|error|warn|info', title, message, duration})
+// Returns toast element so caller can dismiss early if needed.
+function showToast(opts) {
+  opts = opts || {};
+  var host = document.getElementById('toastHost');
+  if (!host) return null;
+  var type = opts.type || 'info';
+  var duration = opts.duration == null ? 5000 : opts.duration;
+  var icons = { success:'✓', error:'✕', warn:'⚠', info:'ℹ' };
+  var t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  var html = '<div class="toast-icon" aria-hidden="true">' + (opts.icon || icons[type]) + '</div>';
+  html += '<div class="toast-body">';
+  if (opts.title) html += '<div class="toast-title">' + escapeHtml(opts.title) + '</div>';
+  if (opts.message) html += '<div class="toast-msg">' + escapeHtml(opts.message) + '</div>';
+  html += '</div>';
+  html += '<button class="toast-close" aria-label="סגור">✕</button>';
+  if (duration > 0) {
+    html += '<div class="toast-progress" style="animation-duration:' + duration + 'ms"></div>';
+  }
+  t.innerHTML = html;
+  host.appendChild(t);
+  var timer = null;
+  function dismiss() {
+    if (!t.parentNode) return;
+    if (timer) { clearTimeout(timer); timer = null; }
+    t.classList.add('toast-exit');
+    setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); }, 250);
+  }
+  t.querySelector('.toast-close').onclick = dismiss;
+  if (duration > 0) timer = setTimeout(dismiss, duration);
+  return { element: t, dismiss: dismiss };
+}
+// Lightweight HTML escape for toast messages
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+// ===================== HEADER MENU =====================
+function toggleHeaderMenu() {
+  var list = document.getElementById('headerMenuList');
+  var btn  = document.getElementById('headerMenuBtn');
+  if (!list) return;
+  var willOpen = !list.classList.contains('open');
+  list.classList.toggle('open', willOpen);
+  if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+}
+function updateHeaderMenuLabels() {
+  var sEl = document.getElementById('soundState');
+  if (sEl) sEl.textContent = soundEnabled ? 'מופעל' : 'כבוי';
+  var tEl = document.getElementById('themeState');
+  if (tEl) tEl.textContent = document.body.classList.contains('light') ? 'בהיר' : 'כהה';
+}
+// === DENSITY TOGGLE ===
+function setDensity(mode) {
+  document.body.classList.remove('density-compact','density-spacious');
+  if (mode === 'compact') document.body.classList.add('density-compact');
+  else if (mode === 'spacious') document.body.classList.add('density-spacious');
+  localStorage.setItem('density', mode);
+  // Update active state in segmented control
+  var btns = document.querySelectorAll('.density-seg button');
+  btns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-d') === mode); });
+}
+function initDensity() {
+  var m = localStorage.getItem('density') || 'comfortable';
+  setDensity(m);
+}
+document.addEventListener('click', function(e){
+  var menu = document.getElementById('headerMenu');
+  var list = document.getElementById('headerMenuList');
+  if (menu && list && list.classList.contains('open') && !menu.contains(e.target)) {
+    list.classList.remove('open');
+    var btn = document.getElementById('headerMenuBtn');
+    if (btn) btn.setAttribute('aria-expanded','false');
+  }
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    var list = document.getElementById('headerMenuList');
+    if (list) list.classList.remove('open');
+    var btn = document.getElementById('headerMenuBtn');
+    if (btn) btn.setAttribute('aria-expanded','false');
+    var cp = document.getElementById('commandPalette');
+    if (cp && cp.classList.contains('open')) closeCommandPalette();
+  }
+  // Cmd/Ctrl+K opens command palette
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    if (typeof openCommandPalette === 'function') openCommandPalette();
+  }
+});
+
+// Keyboard navigation for tabs (Arrow Left/Right, Home, End)
+(function tabKbdNav(){
+  var tabIds = ['tabSignals','tabAnalytics','tabBacktest','tabLegend','tabSettings','tabTrades','tabChat'];
+  var tabKeys = ['signals','analytics','backtest','legend','settings','trades','chat'];
+  document.addEventListener('keydown', function(e){
+    var el = document.activeElement;
+    if (!el || tabIds.indexOf(el.id) === -1) return;
+    var idx = tabIds.indexOf(el.id);
+    var next = null;
+    // RTL: visually right-arrow = previous. But for keyboard nav we follow DOM order.
+    if (e.key === 'ArrowLeft')  next = (idx + 1) % tabIds.length;
+    if (e.key === 'ArrowRight') next = (idx - 1 + tabIds.length) % tabIds.length;
+    if (e.key === 'Home')       next = 0;
+    if (e.key === 'End')        next = tabIds.length - 1;
+    if (next !== null) {
+      e.preventDefault();
+      switchTab(tabKeys[next]);
+      var nextBtn = document.getElementById(tabIds[next]);
+      if (nextBtn) nextBtn.focus();
+    }
+  });
+})();
+
 function toggleSound() {
   soundEnabled = !soundEnabled;
   localStorage.setItem('sound', soundEnabled ? 'on' : 'off');
-  document.getElementById('soundBtn').textContent = soundEnabled ? '🔔' : '🔇';
+  var ic = document.getElementById('soundIcon');
+  if (ic) ic.textContent = soundEnabled ? '🔔' : '🔇';
+  var st = document.getElementById('soundState');
+  if (st) st.textContent = soundEnabled ? 'מופעל' : 'כבוי';
 }
 function playSignalSound(direction, verdict) {
   if (!soundEnabled) return;
@@ -2415,7 +3017,10 @@ function playSignalSound(direction, verdict) {
 
 function toggleTheme() {
   var isLight = document.body.classList.toggle('light');
-  document.getElementById('themeBtn').textContent = isLight ? '🌑' : '🌙';
+  var ic = document.getElementById('themeIcon');
+  if (ic) ic.textContent = isLight ? '🌑' : '🌙';
+  var st = document.getElementById('themeState');
+  if (st) st.textContent = isLight ? 'בהיר' : 'כהה';
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
   // Redraw charts with updated colors
   if (allSignals.length) updateAnalysis(allSignals.filter(function(it){
@@ -2437,13 +3042,15 @@ function switchTab(tab) {
   document.getElementById('settingsPanel').style.display  = tab === 'settings'  ? '' : 'none';
   document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   var cp = document.getElementById('chatPanel'); if (cp) cp.style.display = tab === 'chat' ? 'flex' : 'none';
-  document.getElementById('tabSignals').classList.toggle('active',  tab === 'signals');
-  document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
-  document.getElementById('tabBacktest').classList.toggle('active',  tab === 'backtest');
-  document.getElementById('tabLegend').classList.toggle('active',   tab === 'legend');
-  document.getElementById('tabSettings').classList.toggle('active',  tab === 'settings');
-  document.getElementById('tabTrades').classList.toggle('active',    tab === 'trades');
-  var tc = document.getElementById('tabChat'); if (tc) tc.classList.toggle('active', tab === 'chat');
+  var _tabMap = { signals:'tabSignals', analytics:'tabAnalytics', backtest:'tabBacktest', legend:'tabLegend', settings:'tabSettings', trades:'tabTrades', chat:'tabChat' };
+  Object.keys(_tabMap).forEach(function(k){
+    var btn = document.getElementById(_tabMap[k]);
+    if (!btn) return;
+    var active = (tab === k);
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    btn.setAttribute('tabindex', active ? '0' : '-1');
+  });
   if (tab === 'analytics') updateAnalytics(allSignals);
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
@@ -2468,19 +3075,20 @@ function updateAnalytics(items) {
   }
   var ctx = document.getElementById('pnlChart').getContext('2d');
   if (pnlChart) pnlChart.destroy();
-  var pnlColor = cumPnl >= 0 ? 'rgba(0,208,132,0.8)' : 'rgba(255,69,96,0.8)';
+  var _pc = chartColors();
+  var pnlColor = cumPnl >= 0 ? withAlpha(_pc.green,0.9) : withAlpha(_pc.red,0.9);
   pnlChart = new Chart(ctx, {
     type:'line',
     data:{labels:pnlLabels,datasets:[{
       label:'P&L (R)',data:pnlData,
-      borderColor:pnlColor,backgroundColor:cumPnl>=0?'rgba(0,208,132,0.1)':'rgba(255,69,96,0.1)',
-      fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:pnlColor
+      borderColor:pnlColor,backgroundColor:cumPnl>=0?withAlpha(_pc.green,0.12):withAlpha(_pc.red,0.12),
+      fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:pnlColor,borderWidth:2
     }]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
-        x:{ticks:{color:'#4a6080',font:{size:9},maxTicksLimit:8},grid:{color:'rgba(255,255,255,0.04)'}},
-        y:{ticks:{color:'#4a6080',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'},
+        x:{ticks:{color:_pc.muted,font:{size:9},maxTicksLimit:8},grid:{color:withAlpha(_pc.grid,0.3),drawBorder:false}},
+        y:{ticks:{color:_pc.muted,font:{size:9}},grid:{color:withAlpha(_pc.grid,0.3),drawBorder:false},
            borderDash:[3,3]}
       }}
   });
@@ -2547,9 +3155,11 @@ document.getElementById('overlay').onclick = function(e) { if (e.target.id === '
   // Apply saved theme
   if (localStorage.getItem('theme') === 'light') {
     document.body.classList.add('light');
-    var tb = document.getElementById('themeBtn');
-    if (tb) tb.textContent = '🌑';
   }
+  // Initialize header menu labels + density (safe if elements don't exist yet)
+  try { if (typeof initSoundBtn === 'function') initSoundBtn(); } catch(e){}
+  try { if (typeof initDensity === 'function') initDensity(); } catch(e){}
+  try { if (typeof hydrateIcons === 'function') hydrateIcons(); } catch(e){}
   var app = await getApp();
   // account set by handleRedirectPromise = just came back from Microsoft
   if (account) { startDash(); return; }
@@ -2631,7 +3241,7 @@ function setVolMode(mode, silent) {
 
 function saveCustomConfig() {
   var name = (document.getElementById('configNameInput').value || '').trim();
-  if (!name) { alert('הכנס שם לתצורה'); return; }
+  if (!name) { showToast({type:'warn', title:'חסר שם', message:'הכנס שם לתצורה לפני שמירה'}); return; }
   customConfigs = customConfigs.filter(function(c){ return c.name !== name; });
   customConfigs.push({ name: name, settings: Object.assign({}, currentSettings) });
   if (customConfigs.length > 3) customConfigs = customConfigs.slice(-3);
