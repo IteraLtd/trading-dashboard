@@ -280,6 +280,31 @@ button .ic,.menu-item .ic{margin-left:2px}
 .quick-btn:hover{background:var(--surface2);border-color:var(--blue);color:var(--text)}
 .quick-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;box-shadow:var(--shadow-glow-blue)}
 .quick-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.ai-seg{display:inline-flex;align-items:center;gap:3px;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--r-sm);padding:2px}
+.ai-seg .theme-btn{font-size:10px;padding:4px 9px;border-color:transparent;color:var(--muted);min-height:24px}
+.ai-seg .theme-btn.active{background:var(--blue-soft);border-color:var(--blue-line);color:var(--blue);box-shadow:none}
+.ai-health-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px 20px;background:var(--bg-soft);border-bottom:1px solid var(--border);flex-shrink:0}
+.ai-health-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px;min-height:30px;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.ai-health-chip strong{font-size:10px;color:var(--muted);font-weight:600}
+.ai-health-chip.ok{border-color:var(--green-line);background:var(--green-soft);color:var(--green)}
+.ai-health-chip.warn{border-color:var(--yellow-line);background:var(--yellow-soft);color:var(--yellow)}
+.ai-health-chip.err{border-color:var(--red-line);background:var(--red-soft);color:var(--red)}
+.decision-card{display:grid;grid-template-columns:1.1fr repeat(4,minmax(90px,.55fr));gap:8px;align-items:stretch;background:linear-gradient(90deg,var(--surface),var(--bg-soft));border:1px solid var(--border);border-radius:var(--r-md);padding:10px;margin-bottom:8px}
+.decision-main{border-right:3px solid var(--blue);padding-right:10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.decision-kicker{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.5px}
+.decision-title{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.decision-sub{font-size:11px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.decision-metric{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 9px;min-width:0}
+.decision-metric span{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:3px}
+.decision-metric b{display:block;font-family:var(--mono);font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.decision-card.long .decision-main{border-right-color:var(--green)}
+.decision-card.short .decision-main{border-right-color:var(--red)}
+.decision-card.wait .decision-main{border-right-color:var(--yellow)}
+@media (max-width: 900px) {
+  .ai-health-strip{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px 12px}
+  .decision-card{grid-template-columns:1fr 1fr}
+  .decision-main{grid-column:1/-1}
+}
 .filter-count{margin-right:auto;font-family:var(--mono);font-size:var(--fs-xs);color:var(--text-dim);font-variant-numeric:tabular-nums;font-weight:500}
 
 /* ANALYSIS SECTION */
@@ -641,7 +666,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
       <button class="quick-btn"        id="tabLegend"    role="tab" aria-selected="false" aria-controls="legendPanel"    onclick="switchTab('legend')"    title="מקרא">📖 מקרא</button>
       <button class="quick-btn"        id="tabSettings"  role="tab" aria-selected="false" aria-controls="settingsPanel"  onclick="switchTab('settings')"  title="כיוונון">⚙️ כיוונון</button>
       <button class="quick-btn"        id="tabTrades"    role="tab" aria-selected="false" aria-controls="tradesPanel"    onclick="switchTab('trades')"    title="עסקאות">📋 עסקאות</button>
-      <button class="quick-btn"        id="tabChat"      role="tab" aria-selected="false" aria-controls="chatPanel"      onclick="switchTab('chat')"      title="צ'אט Claude">💬 צ'אט</button>
+      <button class="quick-btn"        id="tabChat"      role="tab" aria-selected="false" aria-controls="chatPanel"      onclick="switchTab('chat')"      title="צ'אט AI">💬 צ'אט</button>
       </div>
     </div>
   </div>
@@ -1272,17 +1297,29 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
   <div id="chatPanel" role="tabpanel" aria-labelledby="tabChat" style="display:none;padding:0;overflow:hidden;height:calc(100vh - 160px);height:calc(100dvh - 160px);direction:rtl;flex-direction:column">
     <div style="padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue);letter-spacing:1px">💬 CLAUDE CHAT</span>
+        <span id="chatTitle" style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue);letter-spacing:1px">💬 CLAUDE CHAT</span>
         <span id="chatModelBadge" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:3px">Sonnet 4.6</span>
         <span id="chatCacheBadge" style="font-family:var(--mono);font-size:10px;color:var(--green);display:none">⚡ cached</span>
+        <div class="ai-seg" role="group" aria-label="בחירת מנוע AI">
+          <button id="chatProviderClaude" onclick="setChatProvider('claude')" class="theme-btn">Claude</button>
+          <button id="chatProviderOpenAI" onclick="setChatProvider('openai')" class="theme-btn">OpenAI</button>
+          <button id="chatProviderCompare" onclick="setChatProvider('compare')" class="theme-btn">Compare</button>
+        </div>
       </div>
       <div style="display:flex;gap:6px">
         <button onclick="clearChatHistory()" class="theme-btn" style="font-size:11px" title="נקה שיחה">🗑️</button>
         <button onclick="exportChatHistory()" class="theme-btn" style="font-size:11px" title="ייצא JSON">📤</button>
       </div>
     </div>
+    <div class="ai-health-strip" aria-label="סטטוס חיבורי AI">
+      <div id="aiHealthMarket" class="ai-health-chip"><strong>MARKET</strong><span>בודק...</span></div>
+      <div id="aiHealthTV" class="ai-health-chip"><strong>TV BRIDGE</strong><span>בודק...</span></div>
+      <div id="aiHealthClaude" class="ai-health-chip"><strong>CLAUDE</strong><span>בודק...</span></div>
+      <div id="aiHealthOpenAI" class="ai-health-chip"><strong>OPENAI</strong><span>בודק...</span></div>
+    </div>
     <div style="padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
-      <button id="askClaudeBtn" onclick="askClaudeDirectional()" style="width:100%;background:linear-gradient(90deg,var(--blue),#7aa3ff);color:#000;border:none;padding:10px 12px;font-family:var(--mono);font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;letter-spacing:.5px">🎯 שאל את Claude עכשיו — ניתוח כיוון מיידי</button>
+      <div id="decisionNowCard" class="decision-card wait" aria-live="polite"></div>
+      <button id="askClaudeBtn" onclick="askAIDirectional()" style="width:100%;background:linear-gradient(90deg,var(--blue),#7aa3ff);color:#000;border:none;padding:10px 12px;font-family:var(--mono);font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;letter-spacing:.5px">🎯 שאל את Claude עכשיו — ניתוח כיוון מיידי</button>
       <div id="askClaudeResult" style="display:none;margin-top:8px"></div>
     </div>
     <!-- min-height:0 is critical: without it flex:1 + overflow-y:auto can
@@ -1302,7 +1339,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         <button class="quick-btn" onclick="chatQuickAsk('/stats')" style="font-size:10px">/stats — סטטיסטיקה</button>
         <button class="quick-btn" onclick="chatQuickAsk('/review last')" style="font-size:10px">/review last — סיגנל אחרון</button>
       </div>
-      <div id="chatStatus" style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)"></div>
+      <div id="chatStatus" role="status" aria-live="polite" style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)"></div>
     </div>
   </div>
 
@@ -2724,7 +2761,7 @@ function _getCommands() {
     { id:'nav-trades',    icon:'📋', title:'עבור לעסקאות',       sub:'Tab 6', action:function(){ switchTab('trades'); } },
     { id:'nav-chat',      icon:'💬', title:'עבור לצ׳אט Claude',  sub:'Tab 7', action:function(){ switchTab('chat'); } },
     { id:'refresh',       icon:'↻',  title:'רענן נתונים עכשיו',  sub:'מ-SharePoint', action:function(){ if (typeof refresh === 'function') refresh(); showToast({type:'info', title:'רענון ידני', duration:2500}); } },
-    { id:'ask-claude',    icon:'🎯', title:'שאל את Claude עכשיו',sub:'ניתוח כיוון',  action:function(){ switchTab('chat'); setTimeout(function(){ if (typeof askClaudeDirectional === 'function') askClaudeDirectional(); }, 200); } },
+    { id:'ask-claude',    icon:'🎯', title:'שאל את ה-AI עכשיו',sub:'ניתוח כיוון',  action:function(){ switchTab('chat'); setTimeout(function(){ if (typeof askAIDirectional === 'function') askAIDirectional(); }, 200); } },
     { id:'dyn-refresh',   icon:'🧠', title:'רענן ניתוח Claude AI',sub:'פאנל דינמי',  action:function(){ if (typeof runDynamicAnalysis === 'function') runDynamicAnalysis(true); } },
     { id:'filter-today',  icon:'📅', title:'פילטר: היום',        sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(0); } },
     { id:'filter-yest',   icon:'📅', title:'פילטר: אתמול',       sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(-1); } },
@@ -3591,6 +3628,74 @@ async function askClaudeDirectional() {
   btn.textContent = '🎯 שאל את Claude עכשיו';
 }
 
+function askAIDirectional() {
+  if (_chatProvider === 'openai') return askOpenAIDirectional();
+  if (_chatProvider === 'compare') { var i=document.getElementById('chatInput'); if(i){ i.value='/analyze'; return sendChatMessage(); } }
+  return askClaudeDirectional();
+}
+
+async function askOpenAIDirectional() {
+  var btn = document.getElementById('askClaudeBtn');
+  var out = document.getElementById('askClaudeResult');
+  btn.disabled = true; btn.style.opacity = '0.6';
+  btn.textContent = '⟳ OpenAI מנתח...';
+  out.style.display = 'block';
+  out.innerHTML = '<div style="padding:8px;color:var(--muted);font-size:11px;font-family:var(--mono)">⟳ שולח ל-' + OPENAI_CHAT_MODEL + ' דרך Node...</div>';
+  try {
+    var ctx = await gatherDashboardContext();
+    var shot = await fetchTvScreenshotBase64();
+    var prompt = 'אתה מנתח MNQ futures בסקאלפינג. תקבל מצב שוק עדכני ותחזיר החלטת כיוון.\n\n' +
+      'מצב נוכחי:\n' + ctx + '\n\n' +
+      'החזר JSON בלבד (ללא טקסט נוסף):\n' +
+      '{"long":<0-100>,"short":<0-100>,"skip":<0-100>,"verdict":"LONG|SHORT|SKIP","confidence":"high|medium|low","reason":"סיבה קצרה בעברית","risk_pts":<מספר>,"rr_target":<מספר>,"invalidation":"תנאי ביטול"}\n' +
+      'החלטה: LONG אם long>=60, SHORT אם short>=60, אחרת SKIP. סכום long+short+skip=100.';
+    var content = [];
+    if (shot) {
+      content.push({ type: 'image', source: { type: 'base64', media_type: shot.media_type, data: shot.data } });
+    }
+    content.push({ type: 'text', text: prompt });
+    var resp = await fetch(OPENAI_BRIDGE_URL + '/ai/openai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: OPENAI_CHAT_MODEL,
+        system: 'ענה בעברית. החזר JSON תקין בלבד, ללא Markdown.',
+        messages: [{ role: 'user', content: content }],
+        max_output_tokens: 500
+      })
+    });
+    var data = await resp.json().catch(function(){ return {}; });
+    if (!resp.ok) throw new Error(data.error || ('OpenAI bridge HTTP ' + resp.status));
+    var text = data.reply || data.output_text || data.text || '';
+    var j1 = text.indexOf('{'); var j2 = text.lastIndexOf('}');
+    if (j1 !== -1 && j2 > j1) text = text.substring(j1, j2+1);
+    var pj = JSON.parse(text);
+    var l = parseInt(pj.long)||0, s = parseInt(pj.short)||0, k = parseInt(pj.skip)||0;
+    var verdictColor = pj.verdict === 'LONG' ? 'var(--green)' : pj.verdict === 'SHORT' ? 'var(--red)' : 'var(--yellow)';
+    var verdictIcon = pj.verdict === 'LONG' ? '▲' : pj.verdict === 'SHORT' ? '▼' : '⏳';
+    var html = '';
+    html += '<div style="background:var(--surface2);border:1px solid var(--border);border-right:3px solid '+verdictColor+';border-radius:6px;padding:10px 12px">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+    html += '<span style="font-family:var(--mono);font-size:14px;font-weight:700;color:'+verdictColor+'">'+verdictIcon+' '+(pj.verdict||'?')+'</span>';
+    html += '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">OpenAI · confidence: '+(pj.confidence||'?')+'</span>';
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;font-family:var(--mono);font-size:10px">';
+    html += '<div><div style="color:var(--green)">LONG '+l+'%</div><div style="height:4px;background:rgba(0,208,132,.2);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+l+'%;background:var(--green)"></div></div></div>';
+    html += '<div><div style="color:var(--red)">SHORT '+s+'%</div><div style="height:4px;background:rgba(255,69,96,.2);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+s+'%;background:var(--red)"></div></div></div>';
+    html += '<div><div style="color:var(--yellow)">SKIP '+k+'%</div><div style="height:4px;background:rgba(255,165,0,.2);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+k+'%;background:var(--yellow)"></div></div></div>';
+    html += '</div>';
+    if (pj.reason) html += '<div style="font-size:11px;color:var(--text);margin-bottom:4px">📝 '+pj.reason+'</div>';
+    if (pj.risk_pts || pj.rr_target) html += '<div style="font-family:var(--mono);font-size:10px;color:var(--muted)">🛡 Risk: '+(pj.risk_pts||'?')+' pt · RR: '+(pj.rr_target||'?')+'</div>';
+    if (pj.invalidation) html += '<div style="font-family:var(--mono);font-size:10px;color:var(--red);margin-top:4px">⚠️ Invalid: '+pj.invalidation+'</div>';
+    html += '</div>';
+    out.innerHTML = html;
+  } catch(e) {
+    out.innerHTML = '<div style="background:rgba(255,69,96,0.1);border:1px solid rgba(255,69,96,0.3);border-radius:5px;padding:8px;font-size:11px;color:var(--red)">⚠️ '+e.message+'<br>ודא ש-mnq-openai-proxy.js רץ וש-OPENAI_API_KEY מוגדר.</div>';
+  }
+  btn.disabled = false; btn.style.opacity = '1';
+  btn.textContent = '🎯 שאל את ' + chatProviderName() + ' עכשיו';
+}
+
 // Open chat tab with context of a specific signal and pre-asked analysis
 function askClaudeAboutSignal(idx) {
   var sig = window._sigItems && window._sigItems[idx];
@@ -3677,6 +3782,8 @@ function updateBridgeBadge() {
     b.style.color = 'var(--muted)';
     b.style.background = 'var(--surface2)';
   }
+  updateAiHealthStrip();
+  updateDecisionNow();
 }
 
 // Format live TV snapshot into compact text for Claude prompt
@@ -3764,17 +3871,40 @@ async function gatherDashboardContext() {
 setInterval(fetchTvSnapshot, 30000);
 setTimeout(fetchTvSnapshot, 1500);
 
-// ===================== CLAUDE CHAT =====================
-// Sonnet 4.6 with prompt caching (stable system prompt cached, rolling messages fresh)
+// ===================== AI CHAT =====================
+// Claude Sonnet 4.6 or OpenAI via a local Node proxy.
 var _chatHistory = [];
 var _chatSystemPrompt = '';
+var _chatProvider = localStorage.getItem('ai_chat_provider') || 'claude';
+var OPENAI_BRIDGE_URL = (localStorage.getItem('openaiBridgeUrl') || 'http://127.0.0.1:3031').replace(/\/$/, '');
+var OPENAI_CHAT_MODEL = localStorage.getItem('openaiModel') || 'gpt-5.4';
+var _openAiHealth = { ok:false, label:'offline' };
 
-function initChatPanel() {
-  if (_chatSystemPrompt) return; // already initialized
-  try { _chatHistory = JSON.parse(localStorage.getItem('claude_chat_history')||'[]'); } catch(e) { _chatHistory = []; }
-  _chatSystemPrompt =
-    'אתה Claude, עוזר אישי של סוחר MNQ futures בסקאלפינג. אתה משולב במערכת דשבורד בזמן אמת.\n\n' +
-    'חשוב: בכל הודעה מהמשתמש מצורפים (א) מצב טקסטואלי חי של TradingView (Symbol, TF, OHLC, אינדיקטורים, תוויות AI_Webhook), ו-(ב) תמונת PNG חיה של הגרף. אתה רואה את הגרף ויזואלית — התייחס למה שאתה רואה (נרות, רמות, קווים, תיבות, תוויות). אל תגיד שאתה לא רואה את המסך.\n\n' +
+function aiEsc(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function chatProviderName() {
+  if (_chatProvider === 'openai') return 'OpenAI';
+  if (_chatProvider === 'compare') return 'Compare';
+  return 'Claude';
+}
+
+function chatHistoryKey() {
+  if (_chatProvider === 'openai') return 'openai_chat_history';
+  if (_chatProvider === 'compare') return 'compare_chat_history';
+  return 'claude_chat_history';
+}
+
+function buildChatSystemPrompt() {
+  var persona = _chatProvider === 'compare' ? 'אתה עוזר AI' : ('אתה ' + chatProviderName());
+  return persona + ', עוזר אישי של סוחר MNQ futures בסקאלפינג. אתה משולב במערכת דשבורד בזמן אמת.\n\n' +
+    'חשוב: בכל הודעה מהמשתמש מצורפים (א) מצב טקסטואלי חי של TradingView (Symbol, TF, OHLC, אינדיקטורים, תוויות AI_Webhook), ו-(ב) תמונת PNG חיה של הגרף אם ה-Bridge מחובר. התייחס למה שאתה רואה ולנתונים שקיבלת. אם אין תמונה או Bridge, אמור זאת במפורש.\n\n' +
     'יכולות:\n' +
     '- מנתח את הגרף החי של TradingView + סיגנלים מהדשבורד\n' +
     '- עונה בעברית בלבד, ברור ותמציתי\n' +
@@ -3791,9 +3921,117 @@ function initChatPanel() {
     '- השתמש ב-emoji בצמצום\n' +
     '- אם יש JSON מתבקש בפקודה, החזר רק JSON\n' +
     '- שמור על מענה תמציתי (≤100 מילים אלא אם התבקש אחרת)';
+}
+
+function updateChatProviderUI() {
+  var isOpenAI = _chatProvider === 'openai';
+  var isCompare = _chatProvider === 'compare';
+  var title = document.getElementById('chatTitle');
+  var badge = document.getElementById('chatModelBadge');
+  var cacheBadge = document.getElementById('chatCacheBadge');
+  var claudeBtn = document.getElementById('chatProviderClaude');
+  var openaiBtn = document.getElementById('chatProviderOpenAI');
+  var compareBtn = document.getElementById('chatProviderCompare');
+  var askBtn = document.getElementById('askClaudeBtn');
+  var input = document.getElementById('chatInput');
+  if (title) title.textContent = isCompare ? '💬 AI COMPARE' : (isOpenAI ? '💬 OPENAI CHAT' : '💬 CLAUDE CHAT');
+  if (badge) badge.textContent = isCompare ? 'Claude + ' + OPENAI_CHAT_MODEL : (isOpenAI ? OPENAI_CHAT_MODEL : 'Sonnet 4.6');
+  if (cacheBadge && (isOpenAI || isCompare)) cacheBadge.style.display = 'none';
+  if (askBtn) askBtn.textContent = '🎯 שאל את ' + chatProviderName() + ' עכשיו — ניתוח כיוון מיידי';
+  if (input) input.placeholder = 'שאל את ' + chatProviderName() + '... (Enter לשליחה, Shift+Enter לשורה חדשה)';
+  [claudeBtn, openaiBtn, compareBtn].forEach(function(btn){ if (btn) btn.classList.remove('active'); });
+  if (claudeBtn && _chatProvider === 'claude') claudeBtn.classList.add('active');
+  if (openaiBtn && isOpenAI) openaiBtn.classList.add('active');
+  if (compareBtn && isCompare) compareBtn.classList.add('active');
+  updateAiHealthStrip();
+  updateDecisionNow();
+}
+
+function setChatProvider(provider) {
+  _chatProvider = provider === 'openai' ? 'openai' : (provider === 'compare' ? 'compare' : 'claude');
+  localStorage.setItem('ai_chat_provider', _chatProvider);
+  _chatSystemPrompt = '';
+  initChatPanel(true);
+}
+
+function setHealthChip(id, state, label) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('ok','warn','err');
+  el.classList.add(state);
+  var span = el.querySelector('span');
+  if (span) span.textContent = label;
+}
+
+function updateAiHealthStrip() {
+  var market = document.getElementById('marketStatusBadge')?.textContent || document.getElementById('statusText')?.textContent || 'unknown';
+  var marketState = /open|פתוח|live/i.test(market) ? 'ok' : (/closed|סגור/i.test(market) ? 'warn' : 'warn');
+  setHealthChip('aiHealthMarket', marketState, market || 'unknown');
+  setHealthChip('aiHealthTV', _bridgeStatus === 'online' ? 'ok' : (_bridgeStatus === 'offline' ? 'err' : 'warn'), _bridgeStatus === 'online' ? 'online' : (_bridgeStatus === 'offline' ? 'offline' : 'checking'));
+  setHealthChip('aiHealthClaude', localStorage.getItem('claude_api_key') ? 'ok' : 'warn', localStorage.getItem('claude_api_key') ? 'key ready' : 'missing key');
+  setHealthChip('aiHealthOpenAI', _openAiHealth.ok ? 'ok' : 'err', _openAiHealth.label);
+}
+
+async function pingOpenAIHealth() {
+  try {
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ ctrl.abort(); }, 2000);
+    var r = await fetch(OPENAI_BRIDGE_URL + '/health', { signal: ctrl.signal, cache:'no-store' });
+    clearTimeout(t);
+    var j = await r.json().catch(function(){ return {}; });
+    _openAiHealth.ok = !!(r.ok && j.ok && j.has_api_key);
+    _openAiHealth.label = r.ok ? (j.has_api_key ? 'online' : 'no key') : 'offline';
+  } catch(e) {
+    _openAiHealth.ok = false;
+    _openAiHealth.label = 'offline';
+  }
+  updateAiHealthStrip();
+}
+
+function updateDecisionNow() {
+  var card = document.getElementById('decisionNowCard');
+  if (!card) return;
+  var items = (typeof allSignals !== 'undefined' && allSignals) ? allSignals : [];
+  var last = items[0];
+  if (!last) {
+    card.className = 'decision-card wait';
+    card.innerHTML = '<div class="decision-main"><div class="decision-kicker">DECISION NOW</div><div class="decision-title">אין סיגנל זמין</div><div class="decision-sub">מחכה לנתוני SharePoint / TradingView</div></div>';
+    return;
+  }
+  var dir = (last.Direction || '').toUpperCase();
+  var verdict = (last.ClaudeVerdict || last.Verdict || 'WAIT').toUpperCase();
+  var cls = dir === 'LONG' ? 'long' : (dir === 'SHORT' ? 'short' : 'wait');
+  var icon = dir === 'LONG' ? '▲' : (dir === 'SHORT' ? '▼' : '⏳');
+  var entry = last.Entry || last.EntryPrice || '—';
+  var sl = last.StopLoss || last.SL || '—';
+  var tp1 = last.TakeProfit1 || last.TP1 || last['OData__x0054_P1'] || '—';
+  var tp2 = last.TakeProfit2 || last.TP2 || last['OData__x0054_P2'] || '—';
+  var score = last.ClaudeScore || last.Score || '—';
+  var time = (last.SignalTime || '').toString().replace('T',' ').slice(0,16) || '—';
+  card.className = 'decision-card ' + cls;
+  card.innerHTML =
+    '<div class="decision-main">' +
+      '<div class="decision-kicker">DECISION NOW · ' + aiEsc(time) + '</div>' +
+      '<div class="decision-title">' + icon + ' ' + aiEsc(dir || verdict) + ' · ' + aiEsc(verdict) + '</div>' +
+      '<div class="decision-sub">AI: ' + aiEsc(chatProviderName()) + ' · Bridge: ' + aiEsc(_bridgeStatus || 'unknown') + '</div>' +
+    '</div>' +
+    '<div class="decision-metric"><span>ENTRY</span><b>' + aiEsc(entry) + '</b></div>' +
+    '<div class="decision-metric"><span>SL</span><b>' + aiEsc(sl) + '</b></div>' +
+    '<div class="decision-metric"><span>TP1 / TP2</span><b>' + aiEsc(tp1) + ' / ' + aiEsc(tp2) + '</b></div>' +
+    '<div class="decision-metric"><span>SCORE</span><b>' + aiEsc(score) + '</b></div>';
+}
+
+setInterval(function(){ pingOpenAIHealth(); updateAiHealthStrip(); updateDecisionNow(); }, 30000);
+setTimeout(function(){ pingOpenAIHealth(); updateAiHealthStrip(); updateDecisionNow(); }, 800);
+
+function initChatPanel(force) {
+  if (_chatSystemPrompt && !force) { updateChatProviderUI(); return; }
+  try { _chatHistory = JSON.parse(localStorage.getItem(chatHistoryKey())||'[]'); } catch(e) { _chatHistory = []; }
+  _chatSystemPrompt = buildChatSystemPrompt();
+  updateChatProviderUI();
   renderChatMessages();
   if (!_chatHistory.length) {
-    addChatMessage('assistant', 'שלום! אני Claude. אני רואה את מצב הדשבורד שלך בזמן אמת. שאל אותי כל דבר על השוק, סיגנלים או אסטרטגיה.\n\nהקלד `/` לפקודות מיוחדות.', false);
+    addChatMessage('assistant', 'שלום! אני ' + chatProviderName() + '. אני רואה את מצב הדשבורד שלך בזמן אמת כשה-Bridge מחובר. שאל אותי כל דבר על השוק, סיגנלים או אסטרטגיה.\n\nהקלד `/` לפקודות מיוחדות.', false);
   }
   setTimeout(function(){ var i=document.getElementById('chatInput'); if(i) i.focus(); }, 100);
 }
@@ -3829,7 +4067,7 @@ function appendChatBubble(role, content) {
 
 function addChatMessage(role, content, persist) {
   _chatHistory.push({role: role, content: content, ts: Date.now()});
-  if (persist !== false) { try { localStorage.setItem('claude_chat_history', JSON.stringify(_chatHistory.slice(-100))); } catch(e){} }
+  if (persist !== false) { try { localStorage.setItem(chatHistoryKey(), JSON.stringify(_chatHistory.slice(-100))); } catch(e){} }
   appendChatBubble(role, content);
 }
 
@@ -3843,20 +4081,63 @@ function chatQuickAsk(cmd) {
   sendChatMessage();
 }
 
+async function callClaudeChat(messages, systemPrompt, apiKey) {
+  var resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      system: [{type:'text', text:systemPrompt, cache_control:{type:'ephemeral'}}],
+      messages: messages
+    })
+  });
+  if (!resp.ok) { var errTxt = await resp.text(); throw new Error('Claude HTTP '+resp.status+' '+errTxt.slice(0,120)); }
+  var data = await resp.json();
+  return {
+    reply: (data.content && data.content[0]) ? data.content[0].text : '(אין תגובה)',
+    usage: data.usage || {}
+  };
+}
+
+async function callOpenAIChat(messages, systemPrompt) {
+  var oaiResp = await fetch(OPENAI_BRIDGE_URL + '/ai/openai/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: OPENAI_CHAT_MODEL,
+      system: systemPrompt,
+      messages: messages,
+      max_output_tokens: 800
+    })
+  });
+  var oaiData = await oaiResp.json().catch(function(){ return {}; });
+  if (!oaiResp.ok) throw new Error(oaiData.error || ('OpenAI bridge HTTP ' + oaiResp.status));
+  return {
+    reply: oaiData.reply || oaiData.output_text || oaiData.text || '(אין תגובה)',
+    usage: oaiData.usage || {}
+  };
+}
+
 async function sendChatMessage() {
   var input = document.getElementById('chatInput');
   var sendBtn = document.getElementById('chatSendBtn');
   var status = document.getElementById('chatStatus');
   var cacheBadge = document.getElementById('chatCacheBadge');
   var apiKey = localStorage.getItem('claude_api_key');
-  if (!apiKey) { showKeyModal(); return; }
+  if ((_chatProvider === 'claude' || _chatProvider === 'compare') && !apiKey) { showKeyModal(); return; }
   var msg = (input.value||'').trim();
   if (!msg) return;
   input.value = '';
   input.style.height = 'auto';
   addChatMessage('user', msg);
   sendBtn.disabled = true; sendBtn.style.opacity = '0.5';
-  status.textContent = '⟳ Claude חושב...';
+  status.textContent = '⟳ ' + chatProviderName() + ' חושב...';
   try {
     var ctx = await gatherDashboardContext();
     // Fetch a live chart screenshot in parallel (best-effort — null if bridge down)
@@ -3877,35 +4158,42 @@ async function sendChatMessage() {
     }
     currentContent.push({ type: 'text', text: userText });
     messages.push({ role: 'user', content: shot ? currentContent : userText });
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 800,
-        system: [{type:'text', text:_chatSystemPrompt, cache_control:{type:'ephemeral'}}],
-        messages: messages
-      })
-    });
-    if (!resp.ok) { var errTxt = await resp.text(); throw new Error('HTTP '+resp.status+' '+errTxt.slice(0,120)); }
-    var data = await resp.json();
-    var reply = (data.content && data.content[0]) ? data.content[0].text : '(אין תגובה)';
-    var usage = data.usage || {};
-    var cacheRead = usage.cache_read_input_tokens || 0;
-    var cacheCreate = usage.cache_creation_input_tokens || 0;
+    var reply = '';
+    var usage = {};
+    var cacheRead = 0;
+    var cacheCreate = 0;
+    if (_chatProvider === 'openai') {
+      var oaiOnly = await callOpenAIChat(messages, _chatSystemPrompt);
+      reply = oaiOnly.reply;
+      usage = oaiOnly.usage;
+    } else if (_chatProvider === 'compare') {
+      var pair = await Promise.allSettled([
+        callClaudeChat(messages, _chatSystemPrompt, apiKey),
+        callOpenAIChat(messages, _chatSystemPrompt)
+      ]);
+      var cReply = pair[0].status === 'fulfilled' ? pair[0].value.reply : 'שגיאה: ' + pair[0].reason.message;
+      var oReply = pair[1].status === 'fulfilled' ? pair[1].value.reply : 'שגיאה: ' + pair[1].reason.message;
+      reply = 'COMPARE MODE\n\nClaude:\n' + cReply + '\n\nOpenAI:\n' + oReply;
+      usage = pair[0].status === 'fulfilled' ? pair[0].value.usage : {};
+      if (pair[0].status !== 'fulfilled' && pair[1].status !== 'fulfilled') throw new Error('שני המנועים נכשלו');
+    } else {
+      var claudeOnly = await callClaudeChat(messages, _chatSystemPrompt, apiKey);
+      reply = claudeOnly.reply;
+      usage = claudeOnly.usage;
+      cacheRead = usage.cache_read_input_tokens || 0;
+      cacheCreate = usage.cache_creation_input_tokens || 0;
+    }
     addChatMessage('assistant', reply);
     // Cache badge
     if (cacheRead > 0) { cacheBadge.style.display = 'inline'; cacheBadge.textContent = '⚡ cached ('+cacheRead+'t)'; }
-    status.textContent = 'in:'+(usage.input_tokens||0)+'t | out:'+(usage.output_tokens||0)+'t' +
+    var inTok = usage.input_tokens || usage.prompt_tokens || usage.input || 0;
+    var outTok = usage.output_tokens || usage.completion_tokens || usage.output || 0;
+    status.textContent = 'provider:' + chatProviderName() + ' | in:' + inTok + 't | out:' + outTok + 't' +
       (cacheRead ? ' | ✅cache read:'+cacheRead : '') +
       (cacheCreate ? ' | 📝cache write:'+cacheCreate : '');
   } catch(e) {
-    addChatMessage('assistant', '⚠️ שגיאה: '+e.message);
+    var hint = (_chatProvider === 'openai' || _chatProvider === 'compare') ? '\nודא ש-mnq-openai-proxy.js רץ וש-OPENAI_API_KEY מוגדר.' : '';
+    addChatMessage('assistant', '⚠️ שגיאה: '+e.message + hint);
     status.textContent = 'error: '+e.message.slice(0,80);
   }
   sendBtn.disabled = false; sendBtn.style.opacity = '1';
@@ -3915,7 +4203,7 @@ async function sendChatMessage() {
 function clearChatHistory() {
   if (!confirm('לנקות את היסטוריית השיחה?')) return;
   _chatHistory = [];
-  localStorage.removeItem('claude_chat_history');
+  localStorage.removeItem(chatHistoryKey());
   renderChatMessages();
   addChatMessage('assistant', 'היסטוריית השיחה נמחקה. במה אעזור?', false);
 }
@@ -3925,7 +4213,7 @@ function exportChatHistory() {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
-  a.download = 'claude-chat-'+new Date().toISOString().slice(0,10)+'.json';
+  a.download = _chatProvider + '-chat-' + new Date().toISOString().slice(0,10)+'.json';
   a.click();
   URL.revokeObjectURL(url);
 }
