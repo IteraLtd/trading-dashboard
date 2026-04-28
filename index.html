@@ -603,6 +603,9 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
           <button class="menu-item" onclick="toggleSound();updateHeaderMenuLabels()" role="menuitem">
             <span class="menu-icon" id="soundIcon">🔇</span><span>התראות קוליות</span><span class="menu-state" id="soundState"></span>
           </button>
+          <button class="menu-item" onclick="toggleTradeAlerts();updateHeaderMenuLabels()" role="menuitem">
+            <span class="menu-icon" id="tradeAlertsIcon">🔔</span><span>התראות עסקאות</span><span class="menu-state" id="tradeAlertsState"></span>
+          </button>
           <button class="menu-item" onclick="toggleTheme();updateHeaderMenuLabels()" role="menuitem">
             <span class="menu-icon" id="themeIcon">🌙</span><span>ערכת צבעים</span><span class="menu-state" id="themeState"></span>
           </button>
@@ -2125,9 +2128,11 @@ async function updateResult(itemId, result) {
       })
     });
     // Update local data
+    var updatedSig = null;
     for (var i = 0; i < allSignals.length; i++) {
-      if (allSignals[i].ID === itemId) { allSignals[i].Result = result; break; }
+      if (allSignals[i].ID === itemId) { allSignals[i].Result = result; updatedSig = allSignals[i]; break; }
     }
+    if (updatedSig) alertResultChange(updatedSig, result, 'updateResult');
     // Close popup + refresh display
     document.getElementById('overlay').classList.remove('show');
     applyFilter();
@@ -2216,6 +2221,7 @@ async function resolveResults(manual) {
     }
 
     var candles = yahooToCandles(yahooData);
+    window._lastNQCandles = candles;
     if (!candles.length) {
       if (statusEl) { statusEl.textContent = '❌ אין נרות'; statusEl.style.color = 'var(--red)'; }
       resolveNextRun = Date.now() + RESOLVE_INTERVAL;
@@ -2302,6 +2308,7 @@ async function resolveResults(manual) {
       statusEl.textContent = '✅ ' + timeStr + ' | ' + updates + ' עודכנו מתוך ' + pending.length + ' pending | ' + candles.length + ' נרות';
       statusEl.style.color = updates > 0 ? 'var(--green)' : 'var(--muted)';
     }
+    runTradeAlertEngine(allSignals, manual ? 'resolver-manual' : 'resolver', candles);
     console.log('[Resolver] Done. Updated ' + updates + ' of ' + pending.length + ' pending. Candles: ' + candles.length);
 
   } catch(e) {
@@ -2572,6 +2579,7 @@ async function refresh() {
     if (allSignals.length > 0) console.log('SIGNAL KEYS:', JSON.stringify(Object.keys(allSignals[0])));
     if (allSignals.length > 0) console.log('SIGNAL TP1:', allSignals[0].TP1, '| TP2:', allSignals[0].TP2, '| Entry:', allSignals[0].Entry, '| SL:', allSignals[0].SL);
     applyFilter();
+    runTradeAlertEngine(allSignals, 'refresh');
     renderScans(scans);
     dot.className = 'dot';
     document.getElementById('statusText').textContent = 'מחובר';
@@ -2633,11 +2641,16 @@ var currentTab = 'signals';
 
 // === SOUND ALERTS ===
 var soundEnabled = localStorage.getItem('sound') !== 'off';
+var tradeAlertsEnabled = localStorage.getItem('tradeAlerts') !== 'off';
 function initSoundBtn() {
   var ic = document.getElementById('soundIcon');
   if (ic) ic.textContent = soundEnabled ? '🔔' : '🔇';
   var st = document.getElementById('soundState');
   if (st) st.textContent = soundEnabled ? 'מופעל' : 'כבוי';
+  var taIc = document.getElementById('tradeAlertsIcon');
+  if (taIc) taIc.textContent = tradeAlertsEnabled ? '🔔' : '🔕';
+  var taSt = document.getElementById('tradeAlertsState');
+  if (taSt) taSt.textContent = tradeAlertsEnabled ? 'מופעל' : 'כבוי';
   var tIc = document.getElementById('themeIcon');
   if (tIc) tIc.textContent = document.body.classList.contains('light') ? '🌑' : '🌙';
   var tSt = document.getElementById('themeState');
@@ -2716,6 +2729,8 @@ function hydrateIcons() {
   // Menu icons (sound, theme, density, command, logout)
   var sIc = document.getElementById('soundIcon');
   if (sIc) sIc.innerHTML = icon(soundEnabled ? 'volume-2' : 'volume-x');
+  var taIc = document.getElementById('tradeAlertsIcon');
+  if (taIc) taIc.innerHTML = icon('zap');
   var tIc = document.getElementById('themeIcon');
   if (tIc) tIc.innerHTML = icon(document.body.classList.contains('light') ? 'sun' : 'moon');
   // Replace remaining menu-icons
@@ -2773,6 +2788,7 @@ function _getCommands() {
     { id:'filter-short',  icon:'▼',  title:'פילטר: SHORT',       sub:'כיוון', action:function(){ if (typeof setDirFilter === 'function') setDirFilter('short'); } },
     { id:'theme',         icon:'🌙', title:'החלף ערכת צבעים',    sub:'בהיר/כהה', action:function(){ toggleTheme(); updateHeaderMenuLabels(); } },
     { id:'sound',         icon:'🔔', title:'הפעל/כבה התראות קוליות', sub:'סאונד', action:function(){ toggleSound(); updateHeaderMenuLabels(); } },
+    { id:'trade-alerts',  icon:'⚡', title:'הפעל/כבה התראות עסקאות', sub:'AI + ניהול עסקה', action:function(){ toggleTradeAlerts(); updateHeaderMenuLabels(); } },
     { id:'density-c',     icon:'▦',  title:'צפיפות: צפוף',       sub:'תצוגה', action:function(){ setDensity('compact'); } },
     { id:'density-m',     icon:'▦',  title:'צפיפות: רגיל',       sub:'תצוגה', action:function(){ setDensity('comfortable'); } },
     { id:'density-s',     icon:'▦',  title:'צפיפות: רחב',        sub:'תצוגה', action:function(){ setDensity('spacious'); } },
@@ -2968,6 +2984,10 @@ function toggleHeaderMenu() {
 function updateHeaderMenuLabels() {
   var sEl = document.getElementById('soundState');
   if (sEl) sEl.textContent = soundEnabled ? 'מופעל' : 'כבוי';
+  var taEl = document.getElementById('tradeAlertsState');
+  if (taEl) taEl.textContent = tradeAlertsEnabled ? 'מופעל' : 'כבוי';
+  var taIc = document.getElementById('tradeAlertsIcon');
+  if (taIc) taIc.innerHTML = typeof icon === 'function' ? icon('zap') : (tradeAlertsEnabled ? '🔔' : '🔕');
   var tEl = document.getElementById('themeState');
   if (tEl) tEl.textContent = document.body.classList.contains('light') ? 'בהיר' : 'כהה';
 }
@@ -3041,6 +3061,19 @@ function toggleSound() {
   var st = document.getElementById('soundState');
   if (st) st.textContent = soundEnabled ? 'מופעל' : 'כבוי';
 }
+
+function toggleTradeAlerts() {
+  tradeAlertsEnabled = !tradeAlertsEnabled;
+  localStorage.setItem('tradeAlerts', tradeAlertsEnabled ? 'on' : 'off');
+  updateHeaderMenuLabels();
+  showToast({
+    type: tradeAlertsEnabled ? 'success' : 'warn',
+    title: 'התראות עסקאות ' + (tradeAlertsEnabled ? 'הופעלו' : 'כובו'),
+    message: tradeAlertsEnabled ? 'תקבל התראות UI/צליל לניהול עסקאות וסיכוני AI.' : 'התראות עסקאות מושתקות.',
+    duration: 3000
+  });
+}
+
 function playSignalSound(direction, verdict) {
   if (!soundEnabled) return;
   try {
@@ -3063,6 +3096,250 @@ function playSignalSound(direction, verdict) {
       osc.start(t); osc.stop(t + 0.25);
     });
   } catch(e) {}
+}
+
+// ===================== TRADE ALERT ENGINE =====================
+// Local, non-execution alerts only: UI toast + optional sound.
+var TRADE_ALERT_MEMORY_KEY = 'mnq_trade_alert_memory_v1';
+var TRADE_ALERT_RESULTS_KEY = 'mnq_trade_alert_results_v1';
+var tradeAlertMemory = {};
+var tradeAlertLastResults = {};
+try { tradeAlertMemory = JSON.parse(localStorage.getItem(TRADE_ALERT_MEMORY_KEY) || '{}'); } catch(e) { tradeAlertMemory = {}; }
+try { tradeAlertLastResults = JSON.parse(localStorage.getItem(TRADE_ALERT_RESULTS_KEY) || '{}'); } catch(e) { tradeAlertLastResults = {}; }
+
+function saveTradeAlertMemory() {
+  try {
+    var keys = Object.keys(tradeAlertMemory).sort(function(a,b){ return tradeAlertMemory[b] - tradeAlertMemory[a]; });
+    if (keys.length > 300) keys.slice(300).forEach(function(k){ delete tradeAlertMemory[k]; });
+    localStorage.setItem(TRADE_ALERT_MEMORY_KEY, JSON.stringify(tradeAlertMemory));
+  } catch(e) {}
+}
+
+function saveTradeAlertResults() {
+  try {
+    var keys = Object.keys(tradeAlertLastResults);
+    if (keys.length > 300) keys.slice(0, keys.length - 300).forEach(function(k){ delete tradeAlertLastResults[k]; });
+    localStorage.setItem(TRADE_ALERT_RESULTS_KEY, JSON.stringify(tradeAlertLastResults));
+  } catch(e) {}
+}
+
+function sigKey(sig) {
+  return String(sig.ID || sig.Id || ((sig.SignalTime||'') + '|' + (sig.Direction||'') + '|' + (sig.Entry||'')));
+}
+
+function sigField(sig, names) {
+  for (var i = 0; i < names.length; i++) {
+    var v = sig[names[i]];
+    if (v !== undefined && v !== null && v !== '') return v;
+  }
+  return null;
+}
+
+function sigNum(sig, names) {
+  var v = sigField(sig, names);
+  var n = parseFloat(v);
+  return isNaN(n) ? null : n;
+}
+
+function signalLevels(sig) {
+  return {
+    entry: sigNum(sig, ['Entry','EntryPrice']),
+    sl: sigNum(sig, ['SL','StopLoss']),
+    tp1: sigNum(sig, ['OData__x0054_P1','TP1','TakeProfit1']),
+    tp2: sigNum(sig, ['OData__x0054_P2','TP2','TakeProfit2'])
+  };
+}
+
+function signalRR(sig) {
+  var rr = sigNum(sig, ['RiskReward','PnLR','RR']);
+  if (rr != null && rr > 0) return rr;
+  var lv = signalLevels(sig);
+  if (lv.entry == null || lv.sl == null || lv.tp1 == null) return null;
+  var risk = Math.abs(lv.entry - lv.sl);
+  return risk > 0 ? Math.abs(lv.tp1 - lv.entry) / risk : null;
+}
+
+function emitTradeAlert(opts) {
+  if (!tradeAlertsEnabled) return false;
+  opts = opts || {};
+  var key = opts.key || (opts.title + '|' + opts.message);
+  if (tradeAlertMemory[key]) return false;
+  tradeAlertMemory[key] = Date.now();
+  saveTradeAlertMemory();
+  showToast({
+    type: opts.type || 'info',
+    title: opts.title || 'התראת עסקה',
+    message: opts.message || '',
+    icon: opts.icon,
+    duration: opts.duration == null ? 6500 : opts.duration
+  });
+  if (opts.sound !== false) playSignalSound(opts.direction || '', opts.major ? 'TAKE' : 'WAIT');
+  return true;
+}
+
+function alertResultChange(sig, result, source) {
+  var r = (result || '').toUpperCase();
+  var dir = (sig.Direction || '').toUpperCase();
+  var key = 'result:' + sigKey(sig) + ':' + r;
+  var entry = sigField(sig, ['Entry','EntryPrice']) || '—';
+  var title = 'עדכון עסקה · ' + r;
+  var msg = (sig.Ticker || 'MNQ') + ' · ' + dir + ' · Entry ' + entry;
+  var type = isLoss(r) ? 'error' : (r === 'BE' ? 'warn' : 'success');
+  if (r === 'TP1_HIT') msg += ' · שקול להעביר SL ל-BE / לנעול רווח חלקי.';
+  if (r === 'TP2_HIT') msg += ' · יעד מלא הושג.';
+  if (r === 'SL_HIT') msg += ' · עצירה הופעלה, בדוק אם היה פילטר שהזהיר.';
+  if (r === 'BE') msg += ' · העסקה נסגרה ללא הפסד.';
+  emitTradeAlert({ key:key, type:type, title:title, message:msg, direction:dir, major:r === 'TP2_HIT' || r === 'SL_HIT' });
+  tradeAlertLastResults[sigKey(sig)] = r;
+  saveTradeAlertResults();
+}
+
+function scanResultTransitions(items) {
+  var changed = false;
+  items.slice(0, 80).forEach(function(sig) {
+    var k = sigKey(sig);
+    var r = (sig.Result || 'PENDING').toUpperCase();
+    var prev = tradeAlertLastResults[k];
+    if (!prev) {
+      tradeAlertLastResults[k] = r;
+      changed = true;
+      return;
+    }
+    if (prev !== r) {
+      tradeAlertLastResults[k] = r;
+      changed = true;
+      if (isWin(r) || isLoss(r) || r === 'BE') alertResultChange(sig, r, 'refresh-transition');
+    }
+  });
+  if (changed) saveTradeAlertResults();
+}
+
+function extractAIVerdict(text) {
+  text = String(text || '').toUpperCase();
+  var hits = [];
+  ['LONG','SHORT','SKIP','WAIT'].forEach(function(v){
+    if (new RegExp('(^|[^A-Z])' + v + '([^A-Z]|$)').test(text)) hits.push(v);
+  });
+  return hits.length ? hits[0] : '';
+}
+
+function alertCompareDisagreement(sig, claudeText, openaiText) {
+  var c = extractAIVerdict(claudeText);
+  var o = extractAIVerdict(openaiText);
+  if (!c || !o || c === o) return;
+  emitTradeAlert({
+    key: 'ai-disagree:' + (sig ? sigKey(sig) : 'chat') + ':' + c + ':' + o,
+    type: 'warn',
+    title: 'AI Disagreement',
+    message: 'Claude: ' + c + ' · OpenAI: ' + o + ' — כדאי לעצור ולבדוק רמות/סיכון לפני פעולה.',
+    direction: sig ? sig.Direction : '',
+    major: true
+  });
+}
+
+function runTradeAlertEngine(items, source, candles) {
+  if (!items || !items.length) return;
+  scanResultTransitions(items);
+  if (!tradeAlertsEnabled) return;
+  candles = candles || window._lastNQCandles || [];
+
+  var active = null;
+  for (var i = 0; i < items.length; i++) {
+    var v = (items[i].ClaudeVerdict || '').toUpperCase();
+    var r = (items[i].Result || 'PENDING').toUpperCase();
+    if (v === 'TAKE' && !isWin(r) && !isLoss(r) && r !== 'BE') { active = items[i]; break; }
+  }
+  if (!active) return;
+
+  var key = sigKey(active);
+  var dir = (active.Direction || '').toUpperCase();
+  var score = sigNum(active, ['ClaudeScore','Score']);
+  var rr = signalRR(active);
+  var lv = signalLevels(active);
+  var risk = (lv.entry != null && lv.sl != null) ? Math.abs(lv.entry - lv.sl) : null;
+  var riskNotes = [];
+  if (score != null && score < 70) riskNotes.push('score ' + score);
+  if (rr != null && rr < 1.1) riskNotes.push('RR ' + rr.toFixed(2));
+  if (risk != null && risk > 45) riskNotes.push('SL רחב ' + risk.toFixed(1) + 'pt');
+  if (riskNotes.length) {
+    emitTradeAlert({
+      key: 'ai-risk:' + key + ':' + riskNotes.join(','),
+      type: 'warn',
+      title: 'AI Risk Check',
+      message: (active.Ticker || 'MNQ') + ' · ' + dir + ' · ' + riskNotes.join(' · '),
+      direction: dir
+    });
+  }
+
+  if (!candles.length || lv.entry == null || lv.sl == null || lv.tp1 == null || risk == null || risk <= 0) return;
+  var last = candles[candles.length - 1];
+  var price = last.close;
+  var near = Math.max(3, risk * 0.22);
+  var sigTime = new Date(active.SignalTime);
+  var after = candles.filter(function(c){ return c.time > sigTime; });
+  var bars = after.length;
+  var tp1Touched = after.some(function(c){ return dir === 'LONG' ? c.high >= lv.tp1 : c.low <= lv.tp1; });
+
+  var distTp1 = dir === 'LONG' ? (lv.tp1 - price) : (price - lv.tp1);
+  var distSl = dir === 'LONG' ? (price - lv.sl) : (lv.sl - price);
+  if (distTp1 >= 0 && distTp1 <= near) {
+    emitTradeAlert({
+      key: 'near-tp1:' + key,
+      type: 'success',
+      title: 'מתקרב ל-TP1',
+      message: dir + ' · מחיר ' + price.toFixed(2) + ' · נותר ' + distTp1.toFixed(1) + 'pt ל-TP1.',
+      direction: dir
+    });
+  }
+  if (distSl >= 0 && distSl <= near) {
+    emitTradeAlert({
+      key: 'near-sl:' + key,
+      type: 'warn',
+      title: 'מתקרב ל-SL',
+      message: dir + ' · מחיר ' + price.toFixed(2) + ' · מרחק ' + distSl.toFixed(1) + 'pt מהסטופ.',
+      direction: dir,
+      major: true
+    });
+  }
+  if (tp1Touched) {
+    emitTradeAlert({
+      key: 'tp1-touch-be:' + key,
+      type: 'success',
+      title: 'TP1 נגע',
+      message: dir + ' · שקול להעביר SL ל-BE / לנעול חלק מהרווח.',
+      direction: dir,
+      major: true
+    });
+    var backToEntry = Math.abs(price - lv.entry) <= Math.max(2, risk * 0.15);
+    if (backToEntry) {
+      emitTradeAlert({
+        key: 'tp1-back-entry:' + key,
+        type: 'warn',
+        title: 'חזרה לאזור Entry אחרי TP1',
+        message: 'המחיר חזר ל-' + price.toFixed(2) + ' אחרי נגיעה ב-TP1 — בדוק BE/יציאה.',
+        direction: dir
+      });
+    }
+  }
+  if (bars >= 12) {
+    emitTradeAlert({
+      key: 'time-in-trade-12:' + key,
+      type: 'warn',
+      title: 'זמן בעסקה מעל שעה',
+      message: dir + ' · ' + bars + ' נרות מאז הסיגנל. בדוק אם העסקה עדיין מצדיקה החזקה.',
+      direction: dir
+    });
+  }
+  if (bars >= 24) {
+    emitTradeAlert({
+      key: 'time-in-trade-24:' + key,
+      type: 'warn',
+      title: 'עסקה נמשכת מעל שעתיים',
+      message: dir + ' · ' + bars + ' נרות. שקול הפחתת סיכון או יציאה ידנית.',
+      direction: dir,
+      major: true
+    });
+  }
 }
 
 function toggleTheme() {
@@ -4173,6 +4450,8 @@ async function sendChatMessage() {
       ]);
       var cReply = pair[0].status === 'fulfilled' ? pair[0].value.reply : 'שגיאה: ' + pair[0].reason.message;
       var oReply = pair[1].status === 'fulfilled' ? pair[1].value.reply : 'שגיאה: ' + pair[1].reason.message;
+      var latestSig = (typeof allSignals !== 'undefined' && allSignals && allSignals.length) ? allSignals[0] : null;
+      alertCompareDisagreement(latestSig, cReply, oReply);
       reply = 'COMPARE MODE\n\nClaude:\n' + cReply + '\n\nOpenAI:\n' + oReply;
       usage = pair[0].status === 'fulfilled' ? pair[0].value.usage : {};
       if (pair[0].status !== 'fulfilled' && pair[1].status !== 'fulfilled') throw new Error('שני המנועים נכשלו');
