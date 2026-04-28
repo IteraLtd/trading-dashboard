@@ -280,6 +280,12 @@ button .ic,.menu-item .ic{margin-left:2px}
 .quick-btn:hover{background:var(--surface2);border-color:var(--blue);color:var(--text)}
 .quick-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;box-shadow:var(--shadow-glow-blue)}
 .quick-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.ai-row-actions{display:inline-flex;align-items:center;gap:3px;direction:ltr}
+.ai-row-actions button{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:10px;font-weight:700;line-height:1;padding:4px 6px;border-radius:var(--r-xs);cursor:pointer;min-width:24px;height:23px;transition:all var(--dur-fast) var(--ease)}
+.ai-row-actions button:hover{background:var(--blue-soft);border-color:var(--blue-line);color:var(--blue)}
+.ai-row-actions button.ai-openai:hover{background:var(--green-soft);border-color:var(--green-line);color:var(--green)}
+.ai-row-actions button.ai-compare{min-width:36px}
+.ai-row-actions button.ai-compare:hover{background:var(--yellow-soft);border-color:var(--yellow-line);color:var(--yellow)}
 .ai-seg{display:inline-flex;align-items:center;gap:3px;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--r-sm);padding:2px}
 .ai-seg .theme-btn{font-size:10px;padding:4px 9px;border-color:transparent;color:var(--muted);min-height:24px}
 .ai-seg .theme-btn.active{background:var(--blue-soft);border-color:var(--blue-line);color:var(--blue);box-shadow:none}
@@ -808,7 +814,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
     </div>
     <div class="analysis-panel" style="padding:10px 12px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span class="analysis-title" style="margin:0">🤖 Claude AI</span>
+        <span class="analysis-title" style="margin:0">🤖 AI Live</span>
         <div style="display:flex;gap:4px;align-items:center">
           <span id="bridgeBadge" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 6px;border-radius:4px;cursor:pointer;white-space:nowrap" onclick="fetchTvSnapshot();this.textContent='⟳ בודק...'" title="סטטוס חיבור ל-TradingView">⚪ TV ?</span>
           <span class="dyn-timer-lbl" id="dynTimer" style="font-size:10px;color:var(--muted)"></span>
@@ -1368,9 +1374,9 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         <div style="overflow-x:auto">
           <table class="trades-tbl">
             <thead><tr>
-              <th>תאריך/שעה</th><th>כיוון</th><th>כניסה</th><th>SL</th><th>TP1</th><th>TP2</th><th>תוצאה</th><th>P&L</th><th>ציון</th><th>Verdict</th><th>Ticker</th>
+              <th>תאריך/שעה</th><th>כיוון</th><th>כניסה</th><th>SL</th><th>TP1</th><th>TP2</th><th>תוצאה</th><th>P&L</th><th>ציון</th><th>Verdict</th><th>Ticker</th><th>AI</th>
             </tr></thead>
-            <tbody id="tradesTableBody"><tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px">טוען עסקאות...</td></tr></tbody>
+            <tbody id="tradesTableBody"><tr><td colspan="12" style="text-align:center;color:var(--muted);padding:20px">טוען עסקאות...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1378,7 +1384,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
       <div style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:1px">🤖 ניתוח ביצועי עסקאות — Claude AI</span>
+            <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:1px">🤖 ניתוח ביצועי עסקאות — AI</span>
             <span id="tradeAnalysisBadge" style="font-family:var(--mono);font-size:10px;background:rgba(0,208,132,.15);color:var(--green);border:1px solid rgba(0,208,132,.3);padding:1px 7px;border-radius:10px;display:none">מעודכן</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -1400,7 +1406,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
   <div id="chatPanel" role="tabpanel" aria-labelledby="tabChat" style="display:none;padding:0;overflow:hidden;height:calc(100vh - 160px);height:calc(100dvh - 160px);direction:rtl;flex-direction:column">
     <div style="padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="display:flex;align-items:center;gap:8px">
-        <span id="chatTitle" style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue);letter-spacing:1px">💬 CLAUDE CHAT</span>
+        <span id="chatTitle" style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue);letter-spacing:1px">💬 AI CHAT</span>
         <span id="chatModelBadge" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:3px">Sonnet 4.6</span>
         <span id="chatCacheBadge" style="font-family:var(--mono);font-size:10px;color:var(--green);display:none">⚡ cached</span>
         <div class="ai-seg" role="group" aria-label="בחירת מנוע AI">
@@ -1422,7 +1428,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
     </div>
     <div style="padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
       <div id="decisionNowCard" class="decision-card wait" aria-live="polite"></div>
-      <button id="askClaudeBtn" onclick="askAIDirectional()" style="width:100%;background:linear-gradient(90deg,var(--blue),#7aa3ff);color:#000;border:none;padding:10px 12px;font-family:var(--mono);font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;letter-spacing:.5px">🎯 שאל את Claude עכשיו — ניתוח כיוון מיידי</button>
+      <button id="askClaudeBtn" onclick="askAIDirectional()" style="width:100%;background:linear-gradient(90deg,var(--blue),#7aa3ff);color:#000;border:none;padding:10px 12px;font-family:var(--mono);font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;letter-spacing:.5px">🎯 שאל AI עכשיו — ניתוח כיוון מיידי</button>
       <div id="askClaudeResult" style="display:none;margin-top:8px"></div>
     </div>
     <!-- min-height:0 is critical: without it flex:1 + overflow-y:auto can
@@ -1432,7 +1438,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
          if the slash-button row wraps to 2 lines on narrow viewports. -->
     <div style="padding:8px 14px 10px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
       <div style="display:flex;gap:8px;align-items:flex-end">
-        <textarea id="chatInput" placeholder="שאל את Claude... (Enter לשליחה, Shift+Enter לשורה חדשה)" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:5px;font-family:var(--sans);font-size:13px;resize:none;min-height:38px;max-height:120px" rows="1" onkeydown="chatHandleKeydown(event)"></textarea>
+        <textarea id="chatInput" placeholder="שאל את ה-AI... (Enter לשליחה, Shift+Enter לשורה חדשה)" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:5px;font-family:var(--sans);font-size:13px;resize:none;min-height:38px;max-height:120px" rows="1" onkeydown="chatHandleKeydown(event)"></textarea>
         <button id="chatSendBtn" onclick="sendChatMessage()" style="background:var(--blue);color:#000;border:none;padding:8px 14px;font-family:var(--mono);font-size:12px;font-weight:700;border-radius:5px;cursor:pointer;height:38px">שלח ▶</button>
       </div>
       <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
@@ -1893,7 +1899,11 @@ function renderSignals(items) {
     html += '<div class="sig-left" style="flex-wrap:wrap;gap:6px">';
     html += '<span class="verdict-badge ' + vClass + '" style="white-space:nowrap">' + (it.ClaudeVerdict||'NEUTRAL') + '</span>';
     html += '<span class="res-badge ' + rClass + '" style="white-space:nowrap">' + resultLabel(r) + '</span>';
-    html += '<button onclick="event.stopPropagation();askClaudeAboutSignal(' + i + ')" title="שאל את Claude על הסיגנל הזה" style="background:var(--surface2);border:1px solid var(--border);color:var(--blue);font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:3px;cursor:pointer">💬</button>';
+    html += '<span class="ai-row-actions" onclick="event.stopPropagation()" title="ניתוח AI לסיגנל">';
+    html += "<button onclick=\"askAIAboutSignal(" + i + ",'claude')\" title=\"שאל Claude\">C</button>";
+    html += "<button class=\"ai-openai\" onclick=\"askAIAboutSignal(" + i + ",'openai')\" title=\"שאל OpenAI\">O</button>";
+    html += "<button class=\"ai-compare\" onclick=\"askAIAboutSignal(" + i + ",'compare')\" title=\"השווה Claude מול OpenAI\">CMP</button>";
+    html += '</span>';
     html += '</div>';
     html += '</div>';
 
@@ -2878,10 +2888,10 @@ function _getCommands() {
     { id:'nav-legend',    icon:'📖', title:'עבור למקרא',         sub:'Tab 4', action:function(){ switchTab('legend'); } },
     { id:'nav-settings',  icon:'⚙️', title:'עבור לכיוונון',      sub:'Tab 5', action:function(){ switchTab('settings'); } },
     { id:'nav-trades',    icon:'📋', title:'עבור לעסקאות',       sub:'Tab 6', action:function(){ switchTab('trades'); } },
-    { id:'nav-chat',      icon:'💬', title:'עבור לצ׳אט Claude',  sub:'Tab 7', action:function(){ switchTab('chat'); } },
+    { id:'nav-chat',      icon:'💬', title:'עבור לצ׳אט AI',  sub:'Tab 7', action:function(){ switchTab('chat'); } },
     { id:'refresh',       icon:'↻',  title:'רענן נתונים עכשיו',  sub:'מ-SharePoint', action:function(){ if (typeof refresh === 'function') refresh(); showToast({type:'info', title:'רענון ידני', duration:2500}); } },
     { id:'ask-claude',    icon:'🎯', title:'שאל את ה-AI עכשיו',sub:'ניתוח כיוון',  action:function(){ switchTab('chat'); setTimeout(function(){ if (typeof askAIDirectional === 'function') askAIDirectional(); }, 200); } },
-    { id:'dyn-refresh',   icon:'🧠', title:'רענן ניתוח Claude AI',sub:'פאנל דינמי',  action:function(){ if (typeof runDynamicAnalysis === 'function') runDynamicAnalysis(true); } },
+    { id:'dyn-refresh',   icon:'🧠', title:'רענן ניתוח AI',sub:'פאנל דינמי',  action:function(){ if (typeof runDynamicAnalysis === 'function') runDynamicAnalysis(true); } },
     { id:'filter-today',  icon:'📅', title:'פילטר: היום',        sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(0); } },
     { id:'filter-yest',   icon:'📅', title:'פילטר: אתמול',       sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(-1); } },
     { id:'filter-week',   icon:'📅', title:'פילטר: שבוע אחרון',  sub:'תאריך', action:function(){ if (typeof setQuickDate === 'function') setQuickDate(-7); } },
@@ -3932,7 +3942,8 @@ function renderTradesDashboard(items) {
   el=document.getElementById('tradesTableCount'); if(el) el.textContent=filtered.length+' עסקאות';
   var tbody=document.getElementById('tradesTableBody');
   if(!tbody) return;
-  if(!filtered.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px">אין עסקאות להציג</td></tr>';return;}
+  window._tradeItems = filtered;
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:20px">אין עסקאות להציג</td></tr>';return;}
   var rows='';
   for(var i=0;i<filtered.length;i++){
     var it=filtered[i];
@@ -3947,7 +3958,12 @@ function renderTradesDashboard(items) {
     var vColor=v==='TAKE'?'var(--green)':v==='SKIP'?'var(--red)':v==='WAIT'?'var(--yellow)':'var(--muted)';
     var tp1=it['OData__x0054_P1']||it.TP1||'—';
     var tp2=it['OData__x0054_P2']||it.TP2||'—';
-    rows+='<tr><td style="color:var(--blue)">'+fmtTime(it.SignalTime)+'</td><td>'+dBadge+'</td><td style="color:white;font-weight:600">'+(it.Entry||'—')+'</td><td style="color:var(--red)">'+(it.SL||'—')+'</td><td style="color:rgba(0,208,132,.7)">'+tp1+'</td><td style="color:var(--green)">'+tp2+'</td><td class="'+rClass+'">'+rTxt+'</td><td>'+rrTxt+'</td><td style="color:var(--yellow)">'+(it.ClaudeScore||'—')+'</td><td style="color:'+vColor+';font-weight:600">'+(v||'—')+'</td><td style="color:var(--muted)">'+(it.Ticker||'MNQ')+'</td></tr>';
+    var aiBtns='<span class="ai-row-actions" title="ניתוח AI לעסקה">'
+      +"<button onclick=\"askAIAboutTrade("+i+",'claude')\" title=\"שאל Claude\">C</button>"
+      +"<button class=\"ai-openai\" onclick=\"askAIAboutTrade("+i+",'openai')\" title=\"שאל OpenAI\">O</button>"
+      +"<button class=\"ai-compare\" onclick=\"askAIAboutTrade("+i+",'compare')\" title=\"השווה Claude מול OpenAI\">CMP</button>"
+      +'</span>';
+    rows+='<tr><td style="color:var(--blue)">'+fmtTime(it.SignalTime)+'</td><td>'+dBadge+'</td><td style="color:white;font-weight:600">'+(it.Entry||'—')+'</td><td style="color:var(--red)">'+(it.SL||'—')+'</td><td style="color:rgba(0,208,132,.7)">'+tp1+'</td><td style="color:var(--green)">'+tp2+'</td><td class="'+rClass+'">'+rTxt+'</td><td>'+rrTxt+'</td><td style="color:var(--yellow)">'+(it.ClaudeScore||'—')+'</td><td style="color:'+vColor+';font-weight:600">'+(v||'—')+'</td><td style="color:var(--muted)">'+(it.Ticker||'MNQ')+'</td><td>'+aiBtns+'</td></tr>';
   }
   tbody.innerHTML=rows;
 }
@@ -4013,7 +4029,7 @@ async function askClaudeDirectional() {
     out.innerHTML = '<div style="background:rgba(255,69,96,0.1);border:1px solid rgba(255,69,96,0.3);border-radius:5px;padding:8px;font-size:11px;color:var(--red)">⚠️ '+e.message+'</div>';
   }
   btn.disabled = false; btn.style.opacity = '1';
-  btn.textContent = '🎯 שאל את Claude עכשיו';
+  btn.textContent = '🎯 שאל את ' + chatProviderName() + ' עכשיו';
 }
 
 function askAIDirectional() {
@@ -4084,30 +4100,86 @@ async function askOpenAIDirectional() {
   btn.textContent = '🎯 שאל את ' + chatProviderName() + ' עכשיו';
 }
 
-// Open chat tab with context of a specific signal and pre-asked analysis
-function askClaudeAboutSignal(idx) {
-  var sig = window._sigItems && window._sigItems[idx];
-  if (!sig) return;
+function normalizeAIProvider(provider) {
+  return provider === 'openai' || provider === 'compare' ? provider : 'claude';
+}
+
+function openAIChatWithPrompt(provider, prompt) {
+  provider = normalizeAIProvider(provider);
   switchTab('chat');
+  if (typeof setChatProvider === 'function') setChatProvider(provider);
   setTimeout(function(){
     var i = document.getElementById('chatInput');
     if (!i) return;
-    var _ca = {};
-    try { _ca = JSON.parse(sig.ClaudeAnalysis||'{}'); } catch(e){}
-    var parts = [];
-    parts.push('נתח לי את הסיגנל הזה:');
-    parts.push('— זמן: ' + (sig.SignalTime||'?'));
-    parts.push('— כיוון: ' + (sig.Direction||'?'));
-    parts.push('— Entry: ' + (sig.Entry||'?') + ' | SL: ' + (sig.SL||'?') + ' | TP1: ' + (sig['OData__x0054_P1']||'?') + ' | TP2: ' + (sig['OData__x0054_P2']||'?'));
-    parts.push('— Claude: ' + (sig.ClaudeVerdict||'?') + ' (' + (sig.ClaudeScore||'?') + '/10)');
-    if (_ca.signal_type) parts.push('— סוג: ' + _ca.signal_type);
-    if (_ca.reason) parts.push('— סיבה: ' + _ca.reason);
-    parts.push('— תוצאה: ' + (sig.Result||'PENDING'));
-    parts.push('');
-    parts.push('מה דעתך? האם כדאי היה להיכנס? ולמה/למה לא?');
-    i.value = parts.join('\n');
+    i.value = prompt;
     i.focus();
-  }, 150);
+    if (typeof sendChatMessage === 'function') sendChatMessage();
+  }, 180);
+}
+
+function buildSignalAIPrompt(sig) {
+  var _ca = {};
+  try { _ca = JSON.parse(sig.ClaudeAnalysis||'{}'); } catch(e){}
+  var tp1 = sig['OData__x0054_P1'] || sig.TP1 || '?';
+  var tp2 = sig['OData__x0054_P2'] || sig.TP2 || '?';
+  var parts = [];
+  parts.push('נתח לי את הסיגנל הבא כעוזר מסחר נוסף.');
+  parts.push('החזר המלצה מעשית וברורה: TAKE / WAIT / REDUCE SIZE / SKIP.');
+  parts.push('אם זה Compare, הצג את ההמלצה בטבלה: Provider | Recommendation | Confidence | Main reason | Risk | Action.');
+  parts.push('');
+  parts.push('נתוני הסיגנל:');
+  parts.push('- זמן: ' + (sig.SignalTime||'?'));
+  parts.push('- טיקר: ' + (sig.Ticker||'MNQ'));
+  parts.push('- כיוון: ' + (sig.Direction||'?'));
+  parts.push('- Entry: ' + (sig.Entry||'?') + ' | SL: ' + (sig.SL||'?') + ' | TP1: ' + tp1 + ' | TP2: ' + tp2);
+  parts.push('- Verdict קיים: ' + (sig.ClaudeVerdict||'?') + ' | Score: ' + (sig.ClaudeScore||'?') + '/10');
+  if (_ca.signal_type) parts.push('- סוג setup: ' + _ca.signal_type);
+  if (_ca.reason) parts.push('- הסבר קיים: ' + _ca.reason);
+  parts.push('- תוצאה נוכחית: ' + (sig.Result||'PENDING'));
+  if (sig.BarsToResult) parts.push('- נרות עד תוצאה: ' + sig.BarsToResult);
+  parts.push('');
+  parts.push('תן חוות דעת עצמאית: האם היית לוקח את הסיגנל, מחכה, מקטין גודל, או מדלג? ציין גם תנאי ביטול וניהול סיכון.');
+  return parts.join('\n');
+}
+
+function buildTradeAIPrompt(trade) {
+  var tp1 = trade['OData__x0054_P1'] || trade.TP1 || '?';
+  var tp2 = trade['OData__x0054_P2'] || trade.TP2 || '?';
+  var result = (trade.Result||'PENDING').toUpperCase();
+  var isPendingTrade = result === 'PENDING';
+  var parts = [];
+  parts.push(isPendingTrade ? 'נתח לי את העסקה הפתוחה הבאה לניהול בזמן אמת.' : 'בצע Post-Trade Review לעסקה הבאה.');
+  parts.push('החזר המלצה מעשית: HOLD / MOVE BE / TAKE PARTIAL / EXIT / SKIP FUTURE SIMILAR SETUP.');
+  parts.push('אם זה Compare, הצג בטבלה: Provider | Recommendation | Confidence | Main reason | Risk | Action.');
+  parts.push('');
+  parts.push('נתוני העסקה:');
+  parts.push('- זמן: ' + (trade.SignalTime||'?'));
+  parts.push('- טיקר: ' + (trade.Ticker||'MNQ'));
+  parts.push('- כיוון: ' + (trade.Direction||'?'));
+  parts.push('- Entry: ' + (trade.Entry||'?') + ' | SL: ' + (trade.SL||'?') + ' | TP1: ' + tp1 + ' | TP2: ' + tp2);
+  parts.push('- Result: ' + result + ' | PnL/RR: ' + (trade.PnLR||trade.RiskReward||'?'));
+  parts.push('- Verdict קיים: ' + (trade.ClaudeVerdict||'?') + ' | Score: ' + (trade.ClaudeScore||'?') + '/10');
+  if (trade.BarsToResult) parts.push('- נרות עד תוצאה: ' + trade.BarsToResult);
+  parts.push('');
+  parts.push(isPendingTrade ? 'מה הפעולה הנכונה עכשיו בניהול העסקה, ומה חייב לקרות כדי לבטל את הרעיון?' : 'מה למדנו מהעסקה, האם הכניסה היתה מוצדקת, ומה לשנות בחוקי הסינון/ניהול?');
+  return parts.join('\n');
+}
+
+// Backward-compatible wrapper for older buttons/shortcuts.
+function askClaudeAboutSignal(idx) {
+  askAIAboutSignal(idx, 'claude');
+}
+
+function askAIAboutSignal(idx, provider) {
+  var sig = window._sigItems && window._sigItems[idx];
+  if (!sig) return;
+  openAIChatWithPrompt(provider, buildSignalAIPrompt(sig));
+}
+
+function askAIAboutTrade(idx, provider) {
+  var trade = window._tradeItems && window._tradeItems[idx];
+  if (!trade) return;
+  openAIChatWithPrompt(provider, buildTradeAIPrompt(trade));
 }
 
 // Bridge connection — live TradingView data via local proxy (tv-bridge-server.js)
