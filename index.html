@@ -300,10 +300,46 @@ button .ic,.menu-item .ic{margin-left:2px}
 .decision-card.long .decision-main{border-right-color:var(--green)}
 .decision-card.short .decision-main{border-right-color:var(--red)}
 .decision-card.wait .decision-main{border-right-color:var(--yellow)}
+.compare-bubble{width:min(920px,100%);max-width:100%;white-space:normal}
+.compare-table{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;direction:rtl}
+.compare-col{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;min-width:0}
+.compare-col-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;background:var(--bg-soft);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text)}
+.compare-provider{display:inline-flex;align-items:center;gap:6px}
+.compare-badge{font-size:9px;color:var(--muted);border:1px solid var(--border);border-radius:var(--r-full);padding:1px 6px}
+.compare-col-body{padding:10px 12px;font-size:12px;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;max-height:420px;overflow:auto}
+.compare-col.claude{border-color:var(--blue-line)}
+.compare-col.openai{border-color:var(--green-line)}
+.compare-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 8px}
+.compare-summary-cell{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 9px;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.compare-summary-cell b{display:block;font-size:12px;color:var(--text);margin-top:2px}
+.compare-summary.agree .compare-summary-cell:first-child{border-color:var(--green-line);background:var(--green-soft)}
+.compare-summary.disagree .compare-summary-cell:first-child{border-color:var(--yellow-line);background:var(--yellow-soft)}
+.cockpit-panel{display:none;padding:14px 18px;overflow-y:auto;height:calc(100vh - 185px);direction:rtl;background:var(--bg)}
+.cockpit-grid{display:grid;grid-template-columns:minmax(360px,1.15fr) minmax(280px,.85fr);gap:12px;max-width:1320px;margin:0 auto}
+.cockpit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px;box-shadow:var(--shadow-sm);min-width:0}
+.cockpit-card h3{font-family:var(--mono);font-size:12px;color:var(--text);letter-spacing:.8px;margin:0 0 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cockpit-hero{display:grid;grid-template-columns:1fr repeat(3,minmax(90px,.45fr));gap:8px;align-items:stretch;border-right:3px solid var(--blue);background:linear-gradient(90deg,var(--surface),var(--bg-soft));border-radius:var(--r-md);padding:10px;margin-bottom:10px}
+.cockpit-hero.long{border-right-color:var(--green)}.cockpit-hero.short{border-right-color:var(--red)}.cockpit-hero.wait{border-right-color:var(--yellow)}
+.cockpit-title{font-family:var(--mono);font-size:22px;font-weight:800;color:var(--text);line-height:1.2}
+.cockpit-sub{font-size:12px;color:var(--text-dim);margin-top:4px}
+.cockpit-metric{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px;min-width:0}
+.cockpit-metric span{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:3px}.cockpit-metric b{font-family:var(--mono);font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.risk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.risk-grid label{font-size:10px;color:var(--muted);font-family:var(--mono);display:flex;flex-direction:column;gap:4px}
+.risk-grid input,.risk-grid select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--mono);font-size:12px;padding:7px 8px;min-width:0}
+.mini-table{width:100%;border-collapse:collapse;font-size:11px}.mini-table td,.mini-table th{border-bottom:1px solid var(--border);padding:6px 5px;text-align:right}.mini-table th{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:600}
+.watch-list,.journal-list,.snapshot-list{display:flex;flex-direction:column;gap:6px}
+.watch-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--border);background:var(--surface2);border-radius:var(--r-sm);padding:7px 9px;font-size:11px;color:var(--text-dim)}
+.watch-item.ok{border-color:var(--green-line);background:var(--green-soft);color:var(--green)}.watch-item.warn{border-color:var(--yellow-line);background:var(--yellow-soft);color:var(--yellow)}.watch-item.err{border-color:var(--red-line);background:var(--red-soft);color:var(--red)}
+.journal-note,.snapshot-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 10px;font-size:12px;line-height:1.55;color:var(--text-dim);white-space:pre-wrap}
+.cockpit-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 @media (max-width: 900px) {
   .ai-health-strip{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px 12px}
   .decision-card{grid-template-columns:1fr 1fr}
   .decision-main{grid-column:1/-1}
+  .compare-table{grid-template-columns:1fr}
+  .compare-summary{grid-template-columns:1fr 1fr}
+  .cockpit-grid{grid-template-columns:1fr}.cockpit-hero{grid-template-columns:1fr 1fr}.risk-grid{grid-template-columns:1fr 1fr}
 }
 .filter-count{margin-right:auto;font-family:var(--mono);font-size:var(--fs-xs);color:var(--text-dim);font-variant-numeric:tabular-nums;font-weight:500}
 
@@ -463,7 +499,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 ::selection{background:var(--blue-soft);color:var(--text)}
 
 /* Smooth tab content transitions */
-#signalsTab,#analyticsTab,#backtestTab,#legendTab,#settingsTab,#tradesTab,#chatPanel{animation:tab-enter var(--dur-base) var(--ease-out)}
+#signalsTab,#analyticsTab,#backtestTab,#legendTab,#settingsTab,#tradesTab,#chatPanel,#cockpitPanel{animation:tab-enter var(--dur-base) var(--ease-out)}
 @keyframes tab-enter{from{opacity:0}to{opacity:1}}
 
 /* Mobile responsive improvements */
@@ -664,6 +700,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 
       <div role="tablist" aria-label="טאבי ניווט" style="display:contents">
       <button class="quick-btn active" id="tabSignals"   role="tab" aria-selected="true"  aria-controls="mainPanel"      onclick="switchTab('signals')"   title="סיגנלים">📡 סיגנלים</button>
+      <button class="quick-btn"        id="tabCockpit"   role="tab" aria-selected="false" aria-controls="cockpitPanel"   onclick="switchTab('cockpit')"   title="Trade Cockpit">🎛 Cockpit</button>
       <button class="quick-btn"        id="tabAnalytics" role="tab" aria-selected="false" aria-controls="analyticsPanel" onclick="switchTab('analytics')" title="אנליטיקס">📈 אנליטיקס</button>
       <button class="quick-btn"        id="tabBacktest"  role="tab" aria-selected="false" aria-controls="backtestPanel"  onclick="switchTab('backtest')"  title="Backtest">🔬 Backtest</button>
       <button class="quick-btn"        id="tabLegend"    role="tab" aria-selected="false" aria-controls="legendPanel"    onclick="switchTab('legend')"    title="מקרא">📖 מקרא</button>
@@ -671,6 +708,51 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
       <button class="quick-btn"        id="tabTrades"    role="tab" aria-selected="false" aria-controls="tradesPanel"    onclick="switchTab('trades')"    title="עסקאות">📋 עסקאות</button>
       <button class="quick-btn"        id="tabChat"      role="tab" aria-selected="false" aria-controls="chatPanel"      onclick="switchTab('chat')"      title="צ'אט AI">💬 צ'אט</button>
       </div>
+    </div>
+  </div>
+
+
+  <!-- TRADE COCKPIT -->
+  <div id="cockpitPanel" class="cockpit-panel" role="tabpanel" aria-labelledby="tabCockpit">
+    <div class="cockpit-grid">
+      <section class="cockpit-card" style="grid-column:1/-1">
+        <h3><span>🎛 TRADE COCKPIT</span><span id="cockpitUpdated" style="color:var(--muted);font-weight:400"></span></h3>
+        <div id="cockpitHero" class="cockpit-hero wait"></div>
+        <div class="cockpit-actions">
+          <button class="quick-btn" onclick="cockpitAskCompare()">שאל Compare על העסקה הפעילה</button>
+          <button class="quick-btn" onclick="copyActiveAlertJson()">Copy Alert JSON</button>
+          <button class="quick-btn" onclick="copyLatestSnapshotJson()">Copy Snapshot</button>
+          <button class="quick-btn" onclick="archiveSignalSnapshot(getActiveTradeSignal(),'manual')">שמור Snapshot</button>
+        </div>
+      </section>
+      <section class="cockpit-card">
+        <h3><span>🛡 Risk Calculator</span><span id="riskPresetBadge" style="color:var(--muted);font-weight:400"></span></h3>
+        <div class="risk-grid">
+          <label>Account $<input id="riskAccountInput" type="number" min="0" step="100" inputmode="decimal" oninput="saveRiskSettings();renderCockpit()"></label>
+          <label>Risk %<input id="riskPctInput" type="number" min="0.1" max="10" step="0.1" inputmode="decimal" oninput="saveRiskSettings();renderCockpit()"></label>
+          <label>$/Point<input id="riskPointInput" type="number" min="0.1" step="0.1" inputmode="decimal" oninput="saveRiskSettings();renderCockpit()"></label>
+          <label>Preset<select id="riskPresetSelect" onchange="applyTradePreset(this.value)">
+            <option value="normal">Normal</option><option value="conservative">Conservative</option><option value="aggressive">Aggressive</option><option value="news-safe">News-safe</option>
+          </select></label>
+        </div>
+        <div id="riskCalcBody" style="margin-top:10px"></div>
+      </section>
+      <section class="cockpit-card">
+        <h3>🩺 Watchdog</h3>
+        <div id="watchdogBody" class="watch-list"></div>
+      </section>
+      <section class="cockpit-card">
+        <h3>📊 Optimization Insights</h3>
+        <div id="cockpitInsights"></div>
+      </section>
+      <section class="cockpit-card">
+        <h3>📝 Smart Journal</h3>
+        <div id="smartJournalBody" class="journal-list"></div>
+      </section>
+      <section class="cockpit-card" style="grid-column:1/-1">
+        <h3>🗂 Snapshot Archive</h3>
+        <div id="snapshotArchiveBody" class="snapshot-list"></div>
+      </section>
     </div>
   </div>
 
@@ -2580,6 +2662,8 @@ async function refresh() {
     if (allSignals.length > 0) console.log('SIGNAL TP1:', allSignals[0].TP1, '| TP2:', allSignals[0].TP2, '| Entry:', allSignals[0].Entry, '| SL:', allSignals[0].SL);
     applyFilter();
     runTradeAlertEngine(allSignals, 'refresh');
+    renderCockpit();
+    runWatchdog();
     renderScans(scans);
     dot.className = 'dot';
     document.getElementById('statusText').textContent = 'מחובר';
@@ -2693,6 +2777,7 @@ function icon(name) {
 function hydrateIcons() {
   var map = [
     { sel:'#tabSignals',   name:'radio-tower',    text:'סיגנלים' },
+    { sel:'#tabCockpit',   name:'target',         text:'Cockpit' },
     { sel:'#tabAnalytics', name:'trending-up',    text:'אנליטיקס' },
     { sel:'#tabBacktest',  name:'flask',          text:'Backtest' },
     { sel:'#tabLegend',    name:'book-open',      text:'מקרא' },
@@ -2769,6 +2854,7 @@ function _getCommands() {
   // Lazily build commands so references to functions work
   return [
     { id:'nav-signals',   icon:'📡', title:'עבור לסיגנלים',      sub:'Tab 1', action:function(){ switchTab('signals'); } },
+    { id:'nav-cockpit',   icon:'🎛', title:'עבור ל-Cockpit',      sub:'Trade desk', action:function(){ switchTab('cockpit'); } },
     { id:'nav-analytics', icon:'📈', title:'עבור לאנליטיקס',     sub:'Tab 2', action:function(){ switchTab('analytics'); } },
     { id:'nav-backtest',  icon:'🔬', title:'עבור ל-Backtest',    sub:'Tab 3', action:function(){ switchTab('backtest'); } },
     { id:'nav-legend',    icon:'📖', title:'עבור למקרא',         sub:'Tab 4', action:function(){ switchTab('legend'); } },
@@ -3032,8 +3118,8 @@ document.addEventListener('keydown', function(e){
 
 // Keyboard navigation for tabs (Arrow Left/Right, Home, End)
 (function tabKbdNav(){
-  var tabIds = ['tabSignals','tabAnalytics','tabBacktest','tabLegend','tabSettings','tabTrades','tabChat'];
-  var tabKeys = ['signals','analytics','backtest','legend','settings','trades','chat'];
+  var tabIds = ['tabSignals','tabCockpit','tabAnalytics','tabBacktest','tabLegend','tabSettings','tabTrades','tabChat'];
+  var tabKeys = ['signals','cockpit','analytics','backtest','legend','settings','trades','chat'];
   document.addEventListener('keydown', function(e){
     var el = document.activeElement;
     if (!el || tabIds.indexOf(el.id) === -1) return;
@@ -3252,6 +3338,11 @@ function runTradeAlertEngine(items, source, candles) {
   if (!active) return;
 
   var key = sigKey(active);
+  if (!tradeAlertMemory['snapshot:' + key]) {
+    tradeAlertMemory['snapshot:' + key] = Date.now();
+    saveTradeAlertMemory();
+    archiveSignalSnapshot(active, 'new-active');
+  }
   var dir = (active.Direction || '').toUpperCase();
   var score = sigNum(active, ['ClaudeScore','Score']);
   var rr = signalRR(active);
@@ -3363,13 +3454,14 @@ function toggleTheme() {
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('mainPanel').style.display      = tab === 'signals'   ? '' : 'none';
+  var cockpit = document.getElementById('cockpitPanel'); if (cockpit) cockpit.style.display = tab === 'cockpit' ? 'block' : 'none';
   document.getElementById('analyticsPanel').style.display = tab === 'analytics' ? '' : 'none';
   document.getElementById('backtestPanel').style.display  = tab === 'backtest'  ? '' : 'none';
   document.getElementById('legendPanel').style.display    = tab === 'legend'    ? '' : 'none';
   document.getElementById('settingsPanel').style.display  = tab === 'settings'  ? '' : 'none';
   document.getElementById('tradesPanel').style.display    = tab === 'trades'    ? '' : 'none';
   var cp = document.getElementById('chatPanel'); if (cp) cp.style.display = tab === 'chat' ? 'flex' : 'none';
-  var _tabMap = { signals:'tabSignals', analytics:'tabAnalytics', backtest:'tabBacktest', legend:'tabLegend', settings:'tabSettings', trades:'tabTrades', chat:'tabChat' };
+  var _tabMap = { signals:'tabSignals', cockpit:'tabCockpit', analytics:'tabAnalytics', backtest:'tabBacktest', legend:'tabLegend', settings:'tabSettings', trades:'tabTrades', chat:'tabChat' };
   Object.keys(_tabMap).forEach(function(k){
     var btn = document.getElementById(_tabMap[k]);
     if (!btn) return;
@@ -3379,6 +3471,7 @@ function switchTab(tab) {
     btn.setAttribute('tabindex', active ? '0' : '-1');
   });
   if (tab === 'analytics') updateAnalytics(allSignals);
+  if (tab === 'cockpit')   renderCockpit();
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
   if (tab === 'trades')    renderTradesDashboard(allSignals);
@@ -4155,7 +4248,7 @@ var _chatSystemPrompt = '';
 var _chatProvider = localStorage.getItem('ai_chat_provider') || 'claude';
 var OPENAI_BRIDGE_URL = (localStorage.getItem('openaiBridgeUrl') || 'http://127.0.0.1:3031').replace(/\/$/, '');
 var OPENAI_CHAT_MODEL = localStorage.getItem('openaiModel') || 'gpt-5.4';
-var _openAiHealth = { ok:false, label:'offline' };
+var _openAiHealth = { ok:false, label:'offline', anthropic:false };
 
 function aiEsc(value) {
   return String(value == null ? '' : value)
@@ -4245,7 +4338,7 @@ function updateAiHealthStrip() {
   var marketState = /open|פתוח|live/i.test(market) ? 'ok' : (/closed|סגור/i.test(market) ? 'warn' : 'warn');
   setHealthChip('aiHealthMarket', marketState, market || 'unknown');
   setHealthChip('aiHealthTV', _bridgeStatus === 'online' ? 'ok' : (_bridgeStatus === 'offline' ? 'err' : 'warn'), _bridgeStatus === 'online' ? 'online' : (_bridgeStatus === 'offline' ? 'offline' : 'checking'));
-  setHealthChip('aiHealthClaude', localStorage.getItem('claude_api_key') ? 'ok' : 'warn', localStorage.getItem('claude_api_key') ? 'key ready' : 'missing key');
+  setHealthChip('aiHealthClaude', (_openAiHealth.anthropic || localStorage.getItem('claude_api_key')) ? 'ok' : 'warn', _openAiHealth.anthropic ? 'proxy ready' : (localStorage.getItem('claude_api_key') ? 'browser key' : 'missing key'));
   setHealthChip('aiHealthOpenAI', _openAiHealth.ok ? 'ok' : 'err', _openAiHealth.label);
 }
 
@@ -4256,10 +4349,12 @@ async function pingOpenAIHealth() {
     var r = await fetch(OPENAI_BRIDGE_URL + '/health', { signal: ctrl.signal, cache:'no-store' });
     clearTimeout(t);
     var j = await r.json().catch(function(){ return {}; });
-    _openAiHealth.ok = !!(r.ok && j.ok && j.has_api_key);
-    _openAiHealth.label = r.ok ? (j.has_api_key ? 'online' : 'no key') : 'offline';
+    _openAiHealth.ok = !!(r.ok && j.ok && (j.has_openai_key || j.has_api_key));
+    _openAiHealth.anthropic = !!(r.ok && j.ok && j.has_anthropic_key);
+    _openAiHealth.label = r.ok ? (_openAiHealth.ok ? 'online' : 'no key') : 'offline';
   } catch(e) {
     _openAiHealth.ok = false;
+    _openAiHealth.anthropic = false;
     _openAiHealth.label = 'offline';
   }
   updateAiHealthStrip();
@@ -4301,6 +4396,219 @@ function updateDecisionNow() {
 setInterval(function(){ pingOpenAIHealth(); updateAiHealthStrip(); updateDecisionNow(); }, 30000);
 setTimeout(function(){ pingOpenAIHealth(); updateAiHealthStrip(); updateDecisionNow(); }, 800);
 
+// ===================== TRADE COCKPIT =====================
+var COCKPIT_RISK_KEY = 'mnq_cockpit_risk_v1';
+var COCKPIT_SNAP_KEY = 'mnq_cockpit_snapshots_v1';
+var COCKPIT_JOURNAL_KEY = 'mnq_smart_journal_v1';
+
+function getRiskSettings() {
+  var d = { account: 10000, riskPct: 0.5, pointValue: 2, preset: 'normal' };
+  try { Object.assign(d, JSON.parse(localStorage.getItem(COCKPIT_RISK_KEY) || '{}')); } catch(e) {}
+  return d;
+}
+
+function saveRiskSettings() {
+  var s = getRiskSettings();
+  var a = document.getElementById('riskAccountInput');
+  var r = document.getElementById('riskPctInput');
+  var p = document.getElementById('riskPointInput');
+  var pr = document.getElementById('riskPresetSelect');
+  if (a) s.account = parseFloat(a.value) || s.account;
+  if (r) s.riskPct = parseFloat(r.value) || s.riskPct;
+  if (p) s.pointValue = parseFloat(p.value) || s.pointValue;
+  if (pr) s.preset = pr.value || s.preset;
+  localStorage.setItem(COCKPIT_RISK_KEY, JSON.stringify(s));
+}
+
+function applyTradePreset(preset) {
+  var s = getRiskSettings();
+  s.preset = preset || 'normal';
+  if (s.preset === 'conservative') s.riskPct = 0.25;
+  if (s.preset === 'normal') s.riskPct = 0.5;
+  if (s.preset === 'aggressive') s.riskPct = 1.0;
+  if (s.preset === 'news-safe') s.riskPct = 0.15;
+  localStorage.setItem(COCKPIT_RISK_KEY, JSON.stringify(s));
+  renderCockpit();
+}
+
+function getActiveTradeSignal() {
+  var items = (typeof allSignals !== 'undefined' && allSignals) ? allSignals : [];
+  for (var i=0;i<items.length;i++) {
+    var v = (items[i].ClaudeVerdict || '').toUpperCase();
+    var r = (items[i].Result || 'PENDING').toUpperCase();
+    if (v === 'TAKE' && !isWin(r) && !isLoss(r) && r !== 'BE') return items[i];
+  }
+  return items[0] || null;
+}
+
+function riskCalcFor(sig) {
+  var s = getRiskSettings();
+  if (!sig) return { settings:s };
+  var lv = signalLevels(sig);
+  var riskPts = (lv.entry != null && lv.sl != null) ? Math.abs(lv.entry - lv.sl) : null;
+  var riskPerContract = riskPts != null ? riskPts * s.pointValue : null;
+  var maxRisk = s.account * s.riskPct / 100;
+  var contracts = riskPerContract && riskPerContract > 0 ? Math.max(0, Math.floor(maxRisk / riskPerContract)) : 0;
+  var tp1Usd = contracts && lv.tp1 != null && lv.entry != null ? Math.abs(lv.tp1 - lv.entry) * s.pointValue * contracts : null;
+  var tp2Usd = contracts && lv.tp2 != null && lv.entry != null ? Math.abs(lv.tp2 - lv.entry) * s.pointValue * contracts : null;
+  return { settings:s, levels:lv, riskPts:riskPts, riskPerContract:riskPerContract, maxRisk:maxRisk, contracts:contracts, tp1Usd:tp1Usd, tp2Usd:tp2Usd };
+}
+
+function buildJournalNote(sig) {
+  if (!sig) return 'אין סיגנל פעיל.';
+  var r = (sig.Result || 'PENDING').toUpperCase();
+  var v = (sig.ClaudeVerdict || '—').toUpperCase();
+  var rr = signalRR(sig);
+  var risk = riskCalcFor(sig);
+  var parts = [];
+  parts.push('סיגנל: ' + (sig.Direction||'?') + ' · Verdict ' + v + ' · Score ' + (sig.ClaudeScore||'—'));
+  parts.push('רמות: Entry ' + (sig.Entry||'—') + ' · SL ' + (sig.SL||sig.StopLoss||'—') + ' · TP1 ' + (sig.TP1||sig['OData__x0054_P1']||'—') + ' · TP2 ' + (sig.TP2||sig['OData__x0054_P2']||'—'));
+  parts.push('Risk: ' + (risk.riskPts!=null?risk.riskPts.toFixed(1)+'pt':'—') + ' · RR ' + (rr!=null?rr.toFixed(2):'—') + ' · Size ' + (risk.contracts||0));
+  parts.push('Result: ' + r + (r === 'PENDING' ? ' · לעקוב אחרי TP1/BE וזמן בעסקה.' : ' · לסכם אם הכניסה עמדה בכללים.'));
+  return parts.join('\n');
+}
+
+function saveJournalNote(sig, reason) {
+  if (!sig) return;
+  var journal = {};
+  try { journal = JSON.parse(localStorage.getItem(COCKPIT_JOURNAL_KEY) || '{}'); } catch(e) {}
+  journal[sigKey(sig)] = { ts: Date.now(), reason: reason || 'auto', note: buildJournalNote(sig), result: sig.Result || 'PENDING' };
+  localStorage.setItem(COCKPIT_JOURNAL_KEY, JSON.stringify(journal));
+}
+
+function archiveSignalSnapshot(sig, reason) {
+  if (!sig) return;
+  var snaps = [];
+  try { snaps = JSON.parse(localStorage.getItem(COCKPIT_SNAP_KEY) || '[]'); } catch(e) {}
+  snaps.unshift({
+    ts: new Date().toISOString(),
+    reason: reason || 'auto',
+    signal: sig,
+    risk: riskCalcFor(sig),
+    health: { bridge:_bridgeStatus, openai:_openAiHealth, refresh:window._lastRefreshTime || null },
+    provider: _chatProvider
+  });
+  snaps = snaps.slice(0, 30);
+  localStorage.setItem(COCKPIT_SNAP_KEY, JSON.stringify(snaps));
+  renderCockpit();
+  showToast({type:'success', title:'Snapshot נשמר', message:(sig.Direction||'') + ' · ' + (sig.Entry||'')});
+}
+
+function copyTextSafe(txt, okTitle) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function(){ showToast({type:'success', title:okTitle || 'הועתק'}); });
+  } else {
+    showToast({type:'warn', title:'Clipboard לא זמין', message:'פתח בדפדפן רגיל כדי להעתיק.'});
+  }
+}
+
+function copyActiveAlertJson() {
+  var sig = getActiveTradeSignal();
+  if (!sig) return showToast({type:'warn', title:'אין סיגנל להעתקה'});
+  copyTextSafe(JSON.stringify(sig, null, 2), 'Alert JSON הועתק');
+}
+
+function copyLatestSnapshotJson() {
+  var snaps = [];
+  try { snaps = JSON.parse(localStorage.getItem(COCKPIT_SNAP_KEY) || '[]'); } catch(e) {}
+  if (!snaps.length) return showToast({type:'warn', title:'אין Snapshot'});
+  copyTextSafe(JSON.stringify(snaps[0], null, 2), 'Snapshot הועתק');
+}
+
+function cockpitAskCompare() {
+  var sig = getActiveTradeSignal();
+  switchTab('chat');
+  setChatProvider('compare');
+  setTimeout(function(){
+    var input = document.getElementById('chatInput');
+    if (!input) return;
+    input.value = 'נתח את העסקה הפעילה והחזר החלטה תמציתית: TAKE / WAIT / REDUCE RISK / EXIT. סיגנל:\n' + JSON.stringify(sig || {}, null, 2);
+    sendChatMessage();
+  }, 150);
+}
+
+function renderCockpit() {
+  var sig = getActiveTradeSignal();
+  var s = getRiskSettings();
+  ['riskAccountInput','riskPctInput','riskPointInput'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; });
+  var a=document.getElementById('riskAccountInput'), r=document.getElementById('riskPctInput'), p=document.getElementById('riskPointInput'), pr=document.getElementById('riskPresetSelect');
+  if (a && document.activeElement !== a) a.value = s.account;
+  if (r && document.activeElement !== r) r.value = s.riskPct;
+  if (p && document.activeElement !== p) p.value = s.pointValue;
+  if (pr) pr.value = s.preset;
+  var presetBadge = document.getElementById('riskPresetBadge'); if (presetBadge) presetBadge.textContent = s.preset;
+  var updated = document.getElementById('cockpitUpdated'); if (updated) updated.textContent = new Date().toLocaleTimeString('he-IL');
+
+  var hero = document.getElementById('cockpitHero');
+  var risk = riskCalcFor(sig);
+  if (hero) {
+    if (!sig) {
+      hero.className = 'cockpit-hero wait';
+      hero.innerHTML = '<div><div class="cockpit-title">אין עסקה פעילה</div><div class="cockpit-sub">מחכה לסיגנל TAKE או נתוני SharePoint</div></div>';
+    } else {
+      var dir = (sig.Direction||'?').toUpperCase();
+      var cls = dir === 'LONG' ? 'long' : (dir === 'SHORT' ? 'short' : 'wait');
+      hero.className = 'cockpit-hero ' + cls;
+      hero.innerHTML = '<div><div class="cockpit-title">' + aiEsc(dir) + ' · ' + aiEsc(sig.ClaudeVerdict||'—') + '</div><div class="cockpit-sub">' + aiEsc((sig.SignalTime||'').toString().slice(0,16)) + ' · Result ' + aiEsc(sig.Result||'PENDING') + '</div></div>' +
+        '<div class="cockpit-metric"><span>ENTRY</span><b>' + aiEsc(sig.Entry||'—') + '</b></div>' +
+        '<div class="cockpit-metric"><span>SL / RISK</span><b>' + aiEsc(sig.SL||sig.StopLoss||'—') + ' · ' + (risk.riskPts!=null?risk.riskPts.toFixed(1)+'pt':'—') + '</b></div>' +
+        '<div class="cockpit-metric"><span>SIZE</span><b>' + (risk.contracts||0) + ' חוזים</b></div>';
+    }
+  }
+  var riskBody = document.getElementById('riskCalcBody');
+  if (riskBody) riskBody.innerHTML = '<table class="mini-table"><tr><th>Max Risk</th><th>Risk/Contract</th><th>Contracts</th><th>TP1 $</th><th>TP2 $</th></tr><tr><td>$' + risk.maxRisk.toFixed(0) + '</td><td>' + (risk.riskPerContract!=null?'$'+risk.riskPerContract.toFixed(0):'—') + '</td><td>' + (risk.contracts||0) + '</td><td>' + (risk.tp1Usd!=null?'$'+risk.tp1Usd.toFixed(0):'—') + '</td><td>' + (risk.tp2Usd!=null?'$'+risk.tp2Usd.toFixed(0):'—') + '</td></tr></table>';
+  renderCockpitInsights();
+  renderSmartJournal();
+  renderSnapshotArchive();
+  runWatchdog(false);
+}
+
+function renderCockpitInsights() {
+  var el = document.getElementById('cockpitInsights'); if (!el) return;
+  var items = (allSignals || []).filter(function(x){ return isWin((x.Result||'').toUpperCase()) || isLoss((x.Result||'').toUpperCase()); });
+  if (!items.length) { el.innerHTML = '<div class="journal-note">אין מספיק עסקאות סגורות.</div>'; return; }
+  function rate(arr){ var w=arr.filter(function(x){return isWin((x.Result||'').toUpperCase());}).length; return arr.length?Math.round(w/arr.length*100):0; }
+  var longs=items.filter(function(x){return (x.Direction||'').toUpperCase()==='LONG';});
+  var shorts=items.filter(function(x){return (x.Direction||'').toUpperCase()==='SHORT';});
+  var byHour={}; items.forEach(function(x){ var h=new Date(x.SignalTime).getHours(); (byHour[h]=byHour[h]||[]).push(x); });
+  var bestHour=Object.keys(byHour).sort(function(a,b){return rate(byHour[b])-rate(byHour[a]);})[0];
+  el.innerHTML = '<table class="mini-table"><tr><th>Slice</th><th>Count</th><th>WR</th></tr>' +
+    '<tr><td>LONG</td><td>'+longs.length+'</td><td>'+rate(longs)+'%</td></tr>' +
+    '<tr><td>SHORT</td><td>'+shorts.length+'</td><td>'+rate(shorts)+'%</td></tr>' +
+    '<tr><td>Best hour</td><td>'+(bestHour!=null?bestHour+':00':'—')+'</td><td>'+(bestHour!=null?rate(byHour[bestHour])+'%':'—')+'</td></tr></table>';
+}
+
+function renderSmartJournal() {
+  var el=document.getElementById('smartJournalBody'); if(!el) return;
+  var sig=getActiveTradeSignal();
+  if (sig) saveJournalNote(sig, 'render');
+  var j={}; try{j=JSON.parse(localStorage.getItem(COCKPIT_JOURNAL_KEY)||'{}');}catch(e){}
+  var rows=Object.keys(j).sort(function(a,b){return j[b].ts-j[a].ts;}).slice(0,5);
+  el.innerHTML = rows.length ? rows.map(function(k){return '<div class="journal-note">'+aiEsc(j[k].note)+'</div>';}).join('') : '<div class="journal-note">אין הערות עדיין.</div>';
+}
+
+function renderSnapshotArchive() {
+  var el=document.getElementById('snapshotArchiveBody'); if(!el) return;
+  var snaps=[]; try{snaps=JSON.parse(localStorage.getItem(COCKPIT_SNAP_KEY)||'[]');}catch(e){}
+  el.innerHTML = snaps.slice(0,5).map(function(s){ var sig=s.signal||{}; return '<div class="snapshot-item"><b>'+aiEsc((s.ts||'').slice(0,19).replace('T',' '))+'</b> · '+aiEsc(s.reason)+' · '+aiEsc(sig.Direction||'')+' '+aiEsc(sig.Entry||'')+' · '+aiEsc(sig.Result||'PENDING')+'</div>';}).join('') || '<div class="snapshot-item">אין snapshots.</div>';
+}
+
+function runWatchdog(showAlerts) {
+  var list=[];
+  var now=Date.now();
+  var refreshAge=window._lastRefreshTime ? Math.floor((now-new Date(window._lastRefreshTime))/1000) : null;
+  list.push({k:'SharePoint', state:refreshAge!=null&&refreshAge<90?'ok':refreshAge!=null&&refreshAge<300?'warn':'err', txt:refreshAge==null?'no refresh':refreshAge+'s'});
+  list.push({k:'TV Bridge', state:_bridgeStatus==='online'?'ok':_bridgeStatus==='offline'?'err':'warn', txt:_bridgeStatus||'unknown'});
+  list.push({k:'OpenAI', state:_openAiHealth.ok?'ok':'err', txt:_openAiHealth.label});
+  list.push({k:'Claude', state:localStorage.getItem('claude_api_key')?'ok':'warn', txt:localStorage.getItem('claude_api_key')?'key ready':'missing key'});
+  var latest=(allSignals||[])[0]; var latestAge=latest&&latest.SignalTime?Math.floor((now-new Date(latest.SignalTime))/60000):null;
+  list.push({k:'Signal Flow', state:latestAge!=null&&latestAge<45?'ok':latestAge!=null&&latestAge<120?'warn':'err', txt:latestAge==null?'no signals':latestAge+'m'});
+  var el=document.getElementById('watchdogBody');
+  if(el) el.innerHTML=list.map(function(x){return '<div class="watch-item '+x.state+'"><b>'+aiEsc(x.k)+'</b><span>'+aiEsc(x.txt)+'</span></div>';}).join('');
+  if (showAlerts !== false) list.forEach(function(x){ if(x.state==='err') emitTradeAlert({key:'watchdog:'+x.k+':'+x.txt,type:'error',title:'Watchdog · '+x.k,message:x.txt,major:true}); });
+}
+setInterval(function(){ runWatchdog(); renderCockpit(); }, 60000);
+
 function initChatPanel(force) {
   if (_chatSystemPrompt && !force) { updateChatProviderUI(); return; }
   try { _chatHistory = JSON.parse(localStorage.getItem(chatHistoryKey())||'[]'); } catch(e) { _chatHistory = []; }
@@ -4320,6 +4628,76 @@ function renderChatMessages() {
   c.scrollTop = c.scrollHeight;
 }
 
+function parseCompareContent(content) {
+  var text = String(content || '');
+  if (text.indexOf('COMPARE MODE\n\nClaude:\n') !== 0) return null;
+  var marker = '\n\nOpenAI:\n';
+  var start = 'COMPARE MODE\n\nClaude:\n'.length;
+  var split = text.indexOf(marker, start);
+  if (split === -1) return null;
+  return {
+    claude: text.slice(start, split).trim(),
+    openai: text.slice(split + marker.length).trim()
+  };
+}
+
+function appendCompareTable(bubble, content) {
+  var parts = parseCompareContent(content);
+  if (!parts) return false;
+  bubble.classList.add('compare-bubble');
+  bubble.style.whiteSpace = 'normal';
+  bubble.textContent = '';
+
+  var cVerdict = extractAIVerdict(parts.claude) || '—';
+  var oVerdict = extractAIVerdict(parts.openai) || '—';
+  var agree = cVerdict !== '—' && oVerdict !== '—' && cVerdict === oVerdict;
+  var action = agree ? cVerdict : 'WAIT / CHECK';
+
+  var summary = document.createElement('div');
+  summary.className = 'compare-summary ' + (agree ? 'agree' : 'disagree');
+  [
+    ['STATUS', agree ? 'AGREE' : 'DISAGREE'],
+    ['CLAUDE', cVerdict],
+    ['OPENAI', oVerdict],
+    ['ACTION', action]
+  ].forEach(function(x){
+    var cell = document.createElement('div');
+    cell.className = 'compare-summary-cell';
+    cell.innerHTML = aiEsc(x[0]) + '<b>' + aiEsc(x[1]) + '</b>';
+    summary.appendChild(cell);
+  });
+  bubble.appendChild(summary);
+
+  var wrap = document.createElement('div');
+  wrap.className = 'compare-table';
+
+  function addCol(cls, name, badge, text) {
+    var col = document.createElement('div');
+    col.className = 'compare-col ' + cls;
+    var head = document.createElement('div');
+    head.className = 'compare-col-head';
+    var provider = document.createElement('span');
+    provider.className = 'compare-provider';
+    provider.textContent = name;
+    var b = document.createElement('span');
+    b.className = 'compare-badge';
+    b.textContent = badge;
+    head.appendChild(provider);
+    head.appendChild(b);
+    var body = document.createElement('div');
+    body.className = 'compare-col-body';
+    body.textContent = text || 'אין תגובה';
+    col.appendChild(head);
+    col.appendChild(body);
+    wrap.appendChild(col);
+  }
+
+  addCol('claude', 'Claude', 'Vision / Sonnet', parts.claude);
+  addCol('openai', 'OpenAI', OPENAI_CHAT_MODEL, parts.openai);
+  bubble.appendChild(wrap);
+  return true;
+}
+
 function appendChatBubble(role, content) {
   var c = document.getElementById('chatMessages'); if (!c) return;
   var isUser = role === 'user';
@@ -4337,7 +4715,11 @@ function appendChatBubble(role, content) {
     var bdr    = isLight ? '#d2dce8' : '#2a3a55';
     bubble.style.cssText = common + 'align-self:flex-end;background:' + bg + ';border:1px solid ' + bdr + ';color:' + fg + ';border-bottom-left-radius:3px';
   }
-  bubble.textContent = content;
+  if (!isUser && appendCompareTable(bubble, content)) {
+    // rendered as structured comparison table
+  } else {
+    bubble.textContent = content;
+  }
   c.appendChild(bubble);
   c.scrollTop = c.scrollHeight;
 }
@@ -4359,6 +4741,21 @@ function chatQuickAsk(cmd) {
 }
 
 async function callClaudeChat(messages, systemPrompt, apiKey) {
+  if (_openAiHealth.anthropic) {
+    var proxyResp = await fetch(OPENAI_BRIDGE_URL + '/ai/anthropic/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        system: systemPrompt,
+        messages: messages,
+        max_output_tokens: 800
+      })
+    });
+    var proxyData = await proxyResp.json().catch(function(){ return {}; });
+    if (!proxyResp.ok) throw new Error(proxyData.error || ('Claude proxy HTTP ' + proxyResp.status));
+    return { reply: proxyData.reply || '(אין תגובה)', usage: proxyData.usage || {} };
+  }
   var resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -4407,7 +4804,7 @@ async function sendChatMessage() {
   var status = document.getElementById('chatStatus');
   var cacheBadge = document.getElementById('chatCacheBadge');
   var apiKey = localStorage.getItem('claude_api_key');
-  if ((_chatProvider === 'claude' || _chatProvider === 'compare') && !apiKey) { showKeyModal(); return; }
+  if ((_chatProvider === 'claude' || _chatProvider === 'compare') && !apiKey && !_openAiHealth.anthropic) { showKeyModal(); return; }
   var msg = (input.value||'').trim();
   if (!msg) return;
   input.value = '';
