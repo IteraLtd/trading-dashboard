@@ -333,6 +333,14 @@ button .ic,.menu-item .ic{margin-left:2px}
 .watch-item.ok{border-color:var(--green-line);background:var(--green-soft);color:var(--green)}.watch-item.warn{border-color:var(--yellow-line);background:var(--yellow-soft);color:var(--yellow)}.watch-item.err{border-color:var(--red-line);background:var(--red-soft);color:var(--red)}
 .journal-note,.snapshot-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 10px;font-size:12px;line-height:1.55;color:var(--text-dim);white-space:pre-wrap}
 .cockpit-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.opinion-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.opinion-table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:12px}
+.opinion-table th{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:700;text-align:right;padding:0 8px}
+.opinion-table td{background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:9px 8px;vertical-align:top;line-height:1.5}
+.opinion-table td:first-child{border-right:1px solid var(--border);border-radius:0 var(--r-sm) var(--r-sm) 0;font-family:var(--mono);font-weight:700;color:var(--text)}
+.opinion-table td:last-child{border-left:1px solid var(--border);border-radius:var(--r-sm) 0 0 var(--r-sm)}
+.opinion-decision{font-family:var(--mono);font-weight:800}.opinion-confidence{font-family:var(--mono);color:var(--yellow)}
+.opinion-empty{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;color:var(--muted);font-size:12px}
 @media (max-width: 900px) {
   .ai-health-strip{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px 12px}
   .decision-card{grid-template-columns:1fr 1fr}
@@ -724,6 +732,16 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
           <button class="quick-btn" onclick="copyLatestSnapshotJson()">Copy Snapshot</button>
           <button class="quick-btn" onclick="archiveSignalSnapshot(getActiveTradeSignal(),'manual')">שמור Snapshot</button>
         </div>
+      </section>
+      <section class="cockpit-card" style="grid-column:1/-1">
+        <h3><span>🧭 AI Opinion</span><span id="aiOpinionStatus" style="color:var(--muted);font-weight:400"></span></h3>
+        <div class="opinion-actions">
+          <button class="quick-btn" onclick="runAIOpinion('pre')">Pre-Trade</button>
+          <button class="quick-btn" onclick="runAIOpinion('live')">Live Management</button>
+          <button class="quick-btn" onclick="runAIOpinion('review')">Post-Trade Review</button>
+          <button class="quick-btn" onclick="copyLatestOpinionJson()">Copy Opinion JSON</button>
+        </div>
+        <div id="aiOpinionBody" class="opinion-empty">בחר Pre / Live / Review כדי לקבל חוות דעת מחולקת מ-Claude ומ-OpenAI.</div>
       </section>
       <section class="cockpit-card">
         <h3><span>🛡 Risk Calculator</span><span id="riskPresetBadge" style="color:var(--muted);font-weight:400"></span></h3>
@@ -4400,6 +4418,7 @@ setTimeout(function(){ pingOpenAIHealth(); updateAiHealthStrip(); updateDecision
 var COCKPIT_RISK_KEY = 'mnq_cockpit_risk_v1';
 var COCKPIT_SNAP_KEY = 'mnq_cockpit_snapshots_v1';
 var COCKPIT_JOURNAL_KEY = 'mnq_smart_journal_v1';
+var AI_OPINION_KEY = 'mnq_ai_opinions_v1';
 
 function getRiskSettings() {
   var d = { account: 10000, riskPct: 0.5, pointValue: 2, preset: 'normal' };
@@ -4527,6 +4546,151 @@ function cockpitAskCompare() {
   }, 150);
 }
 
+function opinionStoreKey(sig, stage) {
+  return (sig ? sigKey(sig) : 'none') + ':' + stage;
+}
+
+function parseOpinionJson(text, stage) {
+  text = String(text || '').trim();
+  var j1 = text.indexOf('{');
+  var j2 = text.lastIndexOf('}');
+  if (j1 !== -1 && j2 > j1) text = text.slice(j1, j2 + 1);
+  try {
+    var obj = JSON.parse(text);
+    return {
+      stage: obj.stage || stage,
+      decision: obj.decision || obj.verdict || 'UNKNOWN',
+      confidence: obj.confidence || obj.score || '—',
+      reason: obj.reason || obj.why || '',
+      action: obj.action || obj.next_action || '',
+      risk: obj.risk || obj.risk_note || ''
+    };
+  } catch(e) {
+    return { stage:stage, decision:'TEXT', confidence:'—', reason:text.slice(0, 800), action:'קרא תשובה מלאה', risk:'' };
+  }
+}
+
+function buildOpinionPrompt(stage, sig) {
+  var risk = riskCalcFor(sig);
+  var labels = {
+    pre: 'Pre-Trade Opinion',
+    live: 'In-Trade Management',
+    review: 'Post-Trade Review'
+  };
+  var decisions = {
+    pre: 'TAKE|WAIT|REDUCE_SIZE|SKIP',
+    live: 'HOLD|MOVE_BE|TRIM|EXIT|WAIT',
+    review: 'A|B|C|D'
+  };
+  return 'אתה מנתח עסקת MNQ. שלב הבדיקה: ' + labels[stage] + '.\n' +
+    'החזר JSON בלבד ללא Markdown:\n' +
+    '{"stage":"' + stage + '","decision":"' + decisions[stage] + '","confidence":0-100,"reason":"סיבה קצרה בעברית","action":"פעולה מעשית אחת","risk":"סיכון/אזהרה קצרה"}\n\n' +
+    'סיגנל:\n' + JSON.stringify(sig || {}, null, 2) + '\n\n' +
+    'Risk calc:\n' + JSON.stringify({ riskPts:risk.riskPts, maxRisk:risk.maxRisk, contracts:risk.contracts, tp1Usd:risk.tp1Usd, tp2Usd:risk.tp2Usd, preset:risk.settings.preset }, null, 2);
+}
+
+function getStoredOpinions() {
+  try { return JSON.parse(localStorage.getItem(AI_OPINION_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function saveStoredOpinions(data) {
+  localStorage.setItem(AI_OPINION_KEY, JSON.stringify(data));
+}
+
+function renderAIOpinion(stage, opinion) {
+  var body = document.getElementById('aiOpinionBody');
+  if (!body) return;
+  if (!opinion) {
+    body.className = 'opinion-empty';
+    body.textContent = 'בחר Pre / Live / Review כדי לקבל חוות דעת מחולקת מ-Claude ומ-OpenAI.';
+    return;
+  }
+  body.className = '';
+  function row(provider, item) {
+    item = item || {};
+    return '<tr><td>' + aiEsc(provider) + '</td>' +
+      '<td><span class="opinion-decision">' + aiEsc(item.decision || '—') + '</span></td>' +
+      '<td><span class="opinion-confidence">' + aiEsc(item.confidence || '—') + '</span></td>' +
+      '<td>' + aiEsc(item.reason || '—') + '</td>' +
+      '<td>' + aiEsc(item.action || '—') + '</td>' +
+      '<td>' + aiEsc(item.risk || '—') + '</td></tr>';
+  }
+  var agree = opinion.claude && opinion.openai && opinion.claude.decision === opinion.openai.decision;
+  body.innerHTML =
+    '<div class="compare-summary ' + (agree ? 'agree' : 'disagree') + '">' +
+      '<div class="compare-summary-cell">STATUS<b>' + (agree ? 'AGREE' : 'REVIEW') + '</b></div>' +
+      '<div class="compare-summary-cell">STAGE<b>' + aiEsc(stage.toUpperCase()) + '</b></div>' +
+      '<div class="compare-summary-cell">CLAUDE<b>' + aiEsc(opinion.claude ? opinion.claude.decision : 'ERR') + '</b></div>' +
+      '<div class="compare-summary-cell">OPENAI<b>' + aiEsc(opinion.openai ? opinion.openai.decision : 'ERR') + '</b></div>' +
+    '</div>' +
+    '<table class="opinion-table"><thead><tr><th>מנוע</th><th>החלטה</th><th>ביטחון</th><th>סיבה</th><th>פעולה</th><th>סיכון</th></tr></thead><tbody>' +
+      row('Claude', opinion.claude) + row('OpenAI', opinion.openai) +
+    '</tbody></table>';
+  var status = document.getElementById('aiOpinionStatus');
+  if (status) status.textContent = opinion.ts ? new Date(opinion.ts).toLocaleTimeString('he-IL') : '';
+}
+
+function loadLatestOpinionForSignal(sig) {
+  if (!sig) return null;
+  var store = getStoredOpinions();
+  var stages = ['live','pre','review'];
+  for (var i=0;i<stages.length;i++) {
+    var op = store[opinionStoreKey(sig, stages[i])];
+    if (op) return { stage:stages[i], opinion:op };
+  }
+  return null;
+}
+
+async function runAIOpinion(stage) {
+  var sig = getActiveTradeSignal();
+  if (!sig) return showToast({type:'warn', title:'אין סיגנל לחוות דעת'});
+  var apiKey = localStorage.getItem('claude_api_key');
+  if (!apiKey && !_openAiHealth.anthropic) { showKeyModal(); return; }
+  var status = document.getElementById('aiOpinionStatus');
+  var body = document.getElementById('aiOpinionBody');
+  if (status) status.textContent = 'מנתח...';
+  if (body) { body.className = 'opinion-empty'; body.textContent = 'Claude ו-OpenAI מנתחים את העסקה...'; }
+  try {
+    var ctx = await gatherDashboardContext();
+    var shot = await fetchTvScreenshotBase64();
+    var prompt = buildOpinionPrompt(stage, sig) + '\n\nContext:\n' + ctx;
+    var content = [];
+    if (shot) content.push({ type:'image', source:{ type:'base64', media_type:shot.media_type, data:shot.data } });
+    content.push({ type:'text', text:prompt });
+    var messages = [{ role:'user', content: content }];
+    var pair = await Promise.allSettled([
+      callClaudeChat(messages, 'ענה בעברית. החזר JSON בלבד.', apiKey),
+      callOpenAIChat(messages, 'ענה בעברית. החזר JSON בלבד.')
+    ]);
+    var opinion = {
+      ts: Date.now(),
+      stage: stage,
+      signalId: sigKey(sig),
+      claude: pair[0].status === 'fulfilled' ? parseOpinionJson(pair[0].value.reply, stage) : { decision:'ERROR', confidence:'—', reason:pair[0].reason.message, action:'בדוק Claude', risk:'' },
+      openai: pair[1].status === 'fulfilled' ? parseOpinionJson(pair[1].value.reply, stage) : { decision:'ERROR', confidence:'—', reason:pair[1].reason.message, action:'בדוק OpenAI', risk:'' }
+    };
+    var store = getStoredOpinions();
+    store[opinionStoreKey(sig, stage)] = opinion;
+    saveStoredOpinions(store);
+    saveJournalNote(sig, 'ai-opinion-' + stage);
+    archiveSignalSnapshot(sig, 'ai-opinion-' + stage);
+    renderAIOpinion(stage, opinion);
+    if (opinion.claude.decision !== opinion.openai.decision) {
+      emitTradeAlert({key:'opinion-disagree:'+sigKey(sig)+':'+stage+':'+opinion.claude.decision+':'+opinion.openai.decision,type:'warn',title:'AI Opinion Disagreement',message:'Claude: '+opinion.claude.decision+' · OpenAI: '+opinion.openai.decision,direction:sig.Direction,major:true});
+    }
+  } catch(e) {
+    if (status) status.textContent = 'שגיאה';
+    if (body) { body.className = 'opinion-empty'; body.textContent = 'שגיאה בחוות דעת: ' + e.message; }
+  }
+}
+
+function copyLatestOpinionJson() {
+  var sig = getActiveTradeSignal();
+  var latest = loadLatestOpinionForSignal(sig);
+  if (!latest) return showToast({type:'warn', title:'אין חוות דעת להעתקה'});
+  copyTextSafe(JSON.stringify(latest.opinion, null, 2), 'Opinion JSON הועתק');
+}
+
 function renderCockpit() {
   var sig = getActiveTradeSignal();
   var s = getRiskSettings();
@@ -4560,6 +4724,8 @@ function renderCockpit() {
   renderCockpitInsights();
   renderSmartJournal();
   renderSnapshotArchive();
+  var latestOpinion = loadLatestOpinionForSignal(sig);
+  renderAIOpinion(latestOpinion ? latestOpinion.stage : 'pre', latestOpinion ? latestOpinion.opinion : null);
   runWatchdog(false);
 }
 
