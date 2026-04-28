@@ -537,6 +537,23 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 .trade-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
 .trade-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
 .trade-stat-value{font-family:var(--mono);font-size:22px;font-weight:700}
+.ai-perf-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.ai-perf-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.ai-perf-title{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px}
+.ai-perf-note{font-size:11px;color:var(--muted)}
+.ai-perf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}
+.ai-perf-card{border:1px solid var(--border);border-radius:6px;background:var(--bg-soft);padding:10px;min-width:0}
+.ai-perf-card.claude{border-color:var(--blue-line)}
+.ai-perf-card.openai{border-color:var(--green-line)}
+.ai-perf-card.weighted{border-color:var(--yellow-line)}
+.ai-perf-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.ai-perf-name{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text)}
+.ai-perf-source{font-family:var(--mono);font-size:9px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:1px 6px;white-space:nowrap}
+.ai-perf-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ai-perf-metric{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 6px;text-align:center;min-width:0}
+.ai-perf-metric span{display:block;font-size:9px;color:var(--muted);margin-bottom:3px}
+.ai-perf-metric b{display:block;font-family:var(--mono);font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-perf-card-foot{font-size:10px;color:var(--text-dim);line-height:1.5;margin-top:8px;min-height:30px}
 .trades-charts-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
 .trades-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .trades-table-hdr{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between}
@@ -552,7 +569,7 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 .tr-streak-w{width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block;margin:1px}
 .tr-streak-l{width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block;margin:1px}
 .trades-filter-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-@media(max-width:768px){.trades-stats-grid{grid-template-columns:repeat(2,1fr)}.trades-charts-row{grid-template-columns:1fr}}
+@media(max-width:768px){.trades-stats-grid{grid-template-columns:repeat(2,1fr)}.trades-charts-row{grid-template-columns:1fr}.ai-perf-grid{grid-template-columns:1fr}}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 #dashboard{display:none}
@@ -1345,6 +1362,41 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         <div class="trade-stat-card"><div class="trade-stat-label">❌ Losses</div><div class="trade-stat-value c-red" id="tr-losses">—</div></div>
         <div class="trade-stat-card"><div class="trade-stat-label">⏳ פתוחות</div><div class="trade-stat-value" id="tr-pending" style="color:var(--muted)">—</div></div>
         <div class="trade-stat-card"><div class="trade-stat-label">רצף נוכחי</div><div id="tr-streak" style="margin-top:4px">—</div></div>
+      </div>
+      <div class="ai-perf-wrap">
+        <div class="ai-perf-hdr">
+          <span class="ai-perf-title">🤖 ביצועי המלצות לפי מנוע</span>
+          <span class="ai-perf-note" id="aiPerfNote">Claude לפי SharePoint · OpenAI לפי חוות דעת שמורות</span>
+        </div>
+        <div class="ai-perf-grid">
+          <div class="ai-perf-card claude">
+            <div class="ai-perf-card-head"><span class="ai-perf-name">Claude</span><span class="ai-perf-source">stored verdict</span></div>
+            <div class="ai-perf-metrics">
+              <div class="ai-perf-metric"><span>עסקאות</span><b id="aiPerfClaudeCount">—</b></div>
+              <div class="ai-perf-metric"><span>סגורות</span><b id="aiPerfClaudeClosed">—</b></div>
+              <div class="ai-perf-metric"><span>הצלחה</span><b id="aiPerfClaudeWR">—</b></div>
+            </div>
+            <div class="ai-perf-card-foot" id="aiPerfClaudeFoot">—</div>
+          </div>
+          <div class="ai-perf-card openai">
+            <div class="ai-perf-card-head"><span class="ai-perf-name">OpenAI / Codex</span><span class="ai-perf-source">saved opinions</span></div>
+            <div class="ai-perf-metrics">
+              <div class="ai-perf-metric"><span>עסקאות</span><b id="aiPerfOpenAICount">—</b></div>
+              <div class="ai-perf-metric"><span>סגורות</span><b id="aiPerfOpenAIClosed">—</b></div>
+              <div class="ai-perf-metric"><span>הצלחה</span><b id="aiPerfOpenAIWR">—</b></div>
+            </div>
+            <div class="ai-perf-card-foot" id="aiPerfOpenAIFoot">—</div>
+          </div>
+          <div class="ai-perf-card weighted">
+            <div class="ai-perf-card-head"><span class="ai-perf-name">משוקלל</span><span class="ai-perf-source">agreement</span></div>
+            <div class="ai-perf-metrics">
+              <div class="ai-perf-metric"><span>עסקאות</span><b id="aiPerfWeightedCount">—</b></div>
+              <div class="ai-perf-metric"><span>סגורות</span><b id="aiPerfWeightedClosed">—</b></div>
+              <div class="ai-perf-metric"><span>הצלחה</span><b id="aiPerfWeightedWR">—</b></div>
+            </div>
+            <div class="ai-perf-card-foot" id="aiPerfWeightedFoot">—</div>
+          </div>
+        </div>
       </div>
       <div class="trades-charts-row">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px">
@@ -3802,6 +3854,7 @@ async function loadSystemSettings() {
 // ===================== TRADES DASHBOARD =====================
 var tradeFilter = null;
 var tradesTimeChart = null;
+var _pendingAITradeAsk = null;
 
 function setTradeFilter(f) {
   tradeFilter = f;
@@ -3811,6 +3864,86 @@ function setTradeFilter(f) {
   var btnId = !f?'trAll':f==='win'?'trWin':f==='loss'?'trLoss':f==='pending'?'trPend':f==='long'?'trLong2':'trShort2';
   var btn=document.getElementById(btnId); if(btn) btn.classList.add('active');
   renderTradesDashboard(allSignals);
+}
+
+function aiPerfSet(id, text, color) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  if (color) el.style.color = color;
+}
+
+function aiPerfRateColor(rate) {
+  return rate == null ? 'var(--muted)' : rate >= 60 ? 'var(--green)' : rate >= 45 ? 'var(--yellow)' : 'var(--red)';
+}
+
+function aiPerfDecisionBias(decision) {
+  var d = String(decision || '').toUpperCase().replace(/[\s-]+/g, '_');
+  if (!d) return null;
+  if (['TAKE','LONG','SHORT','HOLD','MOVE_BE','TRIM','TAKE_PARTIAL','PARTIAL','REDUCE_SIZE','A','B'].indexOf(d) !== -1) return 1;
+  if (['WAIT','SKIP','EXIT','NO_TRADE','AVOID','ERROR','D'].indexOf(d) !== -1) return 0;
+  if (d === 'C') return 0.5;
+  return null;
+}
+
+function aiPerfLatestOpinion(sig) {
+  if (typeof loadLatestOpinionForSignal !== 'function') return null;
+  try { return loadLatestOpinionForSignal(sig); } catch(e) { return null; }
+}
+
+function renderAIProviderPerformance(tradeItems, closedItems) {
+  tradeItems = tradeItems || [];
+  closedItems = closedItems || [];
+  var wins = closedItems.filter(function(it){ return isWin((it.Result||'').toUpperCase()); }).length;
+  var losses = closedItems.filter(function(it){ return isLoss((it.Result||'').toUpperCase()); }).length;
+  var closedCount = wins + losses;
+  var claudeWR = closedCount ? Math.round(wins / closedCount * 100) : null;
+
+  aiPerfSet('aiPerfClaudeCount', String(tradeItems.length), 'var(--blue)');
+  aiPerfSet('aiPerfClaudeClosed', String(closedCount), 'var(--text)');
+  aiPerfSet('aiPerfClaudeWR', claudeWR == null ? '—' : claudeWR + '%', aiPerfRateColor(claudeWR));
+  aiPerfSet('aiPerfClaudeFoot', closedCount ? ('TAKE בפועל: ' + wins + 'W / ' + losses + 'L') : 'אין עסקאות סגורות לחישוב.');
+
+  var openaiSeen = 0, openaiClosed = 0, openaiCorrect = 0;
+  var weightedSeen = 0, weightedClosed = 0, weightedCorrect = 0, weightedWithOpenAI = 0;
+  closedItems.forEach(function(it){
+    var r = (it.Result||'').toUpperCase();
+    var resultWin = isWin(r);
+    var resultLoss = isLoss(r);
+    if (!resultWin && !resultLoss) return;
+
+    var latest = aiPerfLatestOpinion(it);
+    var openaiBias = latest && latest.opinion && latest.opinion.openai ? aiPerfDecisionBias(latest.opinion.openai.decision) : null;
+    if (openaiBias != null) {
+      openaiSeen++;
+      openaiClosed++;
+      if ((openaiBias >= 0.5 && resultWin) || (openaiBias < 0.5 && resultLoss)) openaiCorrect++;
+    }
+
+    var claudeBias = aiPerfDecisionBias(it.ClaudeVerdict || 'TAKE');
+    if (claudeBias != null) {
+      weightedSeen++;
+      weightedClosed++;
+      if (openaiBias != null) weightedWithOpenAI++;
+      var combined = openaiBias == null ? claudeBias : (claudeBias * 0.55 + openaiBias * 0.45);
+      if ((combined >= 0.5 && resultWin) || (combined < 0.5 && resultLoss)) weightedCorrect++;
+    }
+  });
+
+  var openaiWR = openaiClosed ? Math.round(openaiCorrect / openaiClosed * 100) : null;
+  aiPerfSet('aiPerfOpenAICount', String(openaiSeen), openaiSeen ? 'var(--green)' : 'var(--muted)');
+  aiPerfSet('aiPerfOpenAIClosed', String(openaiClosed), openaiClosed ? 'var(--text)' : 'var(--muted)');
+  aiPerfSet('aiPerfOpenAIWR', openaiWR == null ? '—' : openaiWR + '%', aiPerfRateColor(openaiWR));
+  aiPerfSet('aiPerfOpenAIFoot', openaiClosed ? ('דיוק המלצה: ' + openaiCorrect + '/' + openaiClosed) : 'אין עדיין חוות דעת OpenAI שמורות לעסקאות סגורות.');
+
+  var weightedWR = weightedClosed ? Math.round(weightedCorrect / weightedClosed * 100) : null;
+  aiPerfSet('aiPerfWeightedCount', String(weightedSeen), weightedSeen ? 'var(--yellow)' : 'var(--muted)');
+  aiPerfSet('aiPerfWeightedClosed', String(weightedClosed), weightedClosed ? 'var(--text)' : 'var(--muted)');
+  aiPerfSet('aiPerfWeightedWR', weightedWR == null ? '—' : weightedWR + '%', aiPerfRateColor(weightedWR));
+  aiPerfSet('aiPerfWeightedFoot', weightedClosed ? ('0.55 Claude + 0.45 OpenAI; עם OpenAI: ' + weightedWithOpenAI) : 'אין מספיק נתונים.');
+
+  var note = document.getElementById('aiPerfNote');
+  if (note) note.textContent = openaiClosed ? 'OpenAI/משוקלל משתמשים בחוות דעת שמורות מה-Cockpit/Compare' : 'כדי למלא OpenAI: הרץ חוות דעת AI על עסקאות ואז המדד יתעדכן';
 }
 
 function renderTradesDashboard(items) {
@@ -3895,6 +4028,7 @@ function renderTradesDashboard(items) {
   el=document.getElementById('tr-losses');    if(el) el.textContent=losses.length;
   el=document.getElementById('tr-pending');   if(el) el.textContent=pending.length;
   el=document.getElementById('tr-streak');    if(el) el.innerHTML=streakHtml;
+  renderAIProviderPerformance(tradeItems, closed);
 
   // Chart
   var cumData=[],cumLabels=[],cum=0;
@@ -4179,6 +4313,7 @@ function askAIAboutSignal(idx, provider) {
 function askAIAboutTrade(idx, provider) {
   var trade = window._tradeItems && window._tradeItems[idx];
   if (!trade) return;
+  _pendingAITradeAsk = { trade: trade, provider: normalizeAIProvider(provider), ts: Date.now() };
   openAIChatWithPrompt(provider, buildTradeAIPrompt(trade));
 }
 
@@ -4705,7 +4840,7 @@ function renderAIOpinion(stage, opinion) {
 function loadLatestOpinionForSignal(sig) {
   if (!sig) return null;
   var store = getStoredOpinions();
-  var stages = ['live','pre','review'];
+  var stages = ['chat','live','pre','review'];
   for (var i=0;i<stages.length;i++) {
     var op = store[opinionStoreKey(sig, stages[i])];
     if (op) return { stage:stages[i], opinion:op };
@@ -5036,6 +5171,45 @@ async function callOpenAIChat(messages, systemPrompt) {
   };
 }
 
+function parseTradeChatOpinion(text, stage) {
+  var item = { stage:stage, decision:'UNKNOWN', confidence:'—', reason:'', action:'', risk:'' };
+  if (typeof parseOpinionJson === 'function') {
+    item = parseOpinionJson(text, stage);
+  }
+  var verdict = typeof extractAIVerdict === 'function' ? extractAIVerdict(text) : null;
+  if (verdict && (!item.decision || item.decision === 'TEXT' || item.decision === 'UNKNOWN')) item.decision = verdict;
+  if (!item.reason) item.reason = String(text || '').slice(0, 400);
+  return item;
+}
+
+function maybeSaveTradeChatOpinion(reply) {
+  if (!_pendingAITradeAsk || !_pendingAITradeAsk.trade) return;
+  if (Date.now() - _pendingAITradeAsk.ts > 120000) { _pendingAITradeAsk = null; return; }
+  var trade = _pendingAITradeAsk.trade;
+  var provider = _pendingAITradeAsk.provider;
+  var stage = 'chat';
+  var store = getStoredOpinions();
+  var key = opinionStoreKey(trade, stage);
+  var existing = store[key] || { ts:new Date().toISOString() };
+  existing.ts = new Date().toISOString();
+  existing.stage = stage;
+  if (provider === 'compare') {
+    var parts = parseCompareContent(reply);
+    if (parts) {
+      existing.claude = parseTradeChatOpinion(parts.claude, stage);
+      existing.openai = parseTradeChatOpinion(parts.openai, stage);
+    }
+  } else if (provider === 'openai') {
+    existing.openai = parseTradeChatOpinion(reply, stage);
+  } else {
+    existing.claude = parseTradeChatOpinion(reply, stage);
+  }
+  store[key] = existing;
+  saveStoredOpinions(store);
+  _pendingAITradeAsk = null;
+  renderAIProviderPerformance(window._tradeItems || [], (window._tradeItems || []).filter(function(it){ var r=(it.Result||'').toUpperCase(); return isWin(r)||isLoss(r); }));
+}
+
 async function sendChatMessage() {
   var input = document.getElementById('chatInput');
   var sendBtn = document.getElementById('chatSendBtn');
@@ -5098,6 +5272,7 @@ async function sendChatMessage() {
       cacheCreate = usage.cache_creation_input_tokens || 0;
     }
     addChatMessage('assistant', reply);
+    maybeSaveTradeChatOpinion(reply);
     // Cache badge
     if (cacheRead > 0) { cacheBadge.style.display = 'inline'; cacheBadge.textContent = '⚡ cached ('+cacheRead+'t)'; }
     var inTok = usage.input_tokens || usage.prompt_tokens || usage.input || 0;
