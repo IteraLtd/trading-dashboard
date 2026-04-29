@@ -1193,6 +1193,18 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         </div>
       </div>
 
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">🤖 SharePoint AI Storage</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+          יוצר או מאמת רשימת <b style="color:var(--text)">AITradeOpinions</b> לשמירת חוות דעת OpenAI / Claude / Compare בצורה קבועה ב-SharePoint.
+          זה שלב 1 לפני טעינה וכתיבה אוטומטית של המלצות מהדשבורד.
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="ensureAITradeOpinionsList(true)" id="aiSpSetupBtn" class="vol-btn" style="font-size:11px">צור / אמת רשימת AITradeOpinions</button>
+          <span id="aiSpSetupStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;align-items:center">
         <button onclick="saveSettingsToSP()" id="saveSettingsBtn" style="background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">✅ שמור והפעל</button>
         <span id="saveSettingsStatus" style="font-size:12px;color:var(--muted)"></span>
@@ -3956,6 +3968,121 @@ async function getDigest() {
     var d = await r.json();
     return d.d.GetContextWebInformation.FormDigestValue;
   } catch(e) { return ''; }
+}
+
+const AI_OPINIONS_LIST = 'AITradeOpinions';
+const AI_OPINIONS_FIELDS = [
+  { name:'SignalID',         type:'Number',   fieldTypeKind:9 },
+  { name:'SignalTime',       type:'DateTime', fieldTypeKind:4 },
+  { name:'Provider',         type:'Text',     fieldTypeKind:2 },
+  { name:'Stage',            type:'Text',     fieldTypeKind:2 },
+  { name:'Decision',         type:'Text',     fieldTypeKind:2 },
+  { name:'Confidence',       type:'Number',   fieldTypeKind:9 },
+  { name:'Reason',           type:'Note',     fieldTypeKind:3 },
+  { name:'AIAction',         type:'Note',     fieldTypeKind:3 },
+  { name:'Risk',             type:'Note',     fieldTypeKind:3 },
+  { name:'RawJSON',          type:'Note',     fieldTypeKind:3 },
+  { name:'CreatedAt',        type:'DateTime', fieldTypeKind:4 }
+];
+
+async function spRest(url, opts) {
+  opts = opts || {};
+  var headers = Object.assign({
+    'Authorization': 'Bearer ' + (await getToken()),
+    'Accept': 'application/json;odata=verbose'
+  }, opts.headers || {});
+  if (opts.method && opts.method !== 'GET') {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json;odata=verbose';
+    headers['X-RequestDigest'] = headers['X-RequestDigest'] || (await getDigest());
+  }
+  var r = await fetch(url, Object.assign({}, opts, { headers: headers }));
+  var text = await r.text();
+  var data = null;
+  try { data = text ? JSON.parse(text) : null; } catch(e) { data = text; }
+  if (!r.ok) {
+    var msg = data && data.error && data.error.message ? (data.error.message.value || data.error.message) : (typeof data === 'string' ? data.slice(0, 180) : ('HTTP ' + r.status));
+    throw new Error(msg);
+  }
+  return data;
+}
+
+async function spListExists(title) {
+  try {
+    await spRest(SITE + "/_api/web/lists/getbytitle('" + encodeURIComponent(title).replace(/'/g, "''") + "')?$select=Title,Id");
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+async function createAITradeOpinionsList() {
+  await spRest(SITE + '/_api/web/lists', {
+    method: 'POST',
+    body: JSON.stringify({
+      '__metadata': { 'type': 'SP.List' },
+      'Title': AI_OPINIONS_LIST,
+      'Description': 'AI trade opinions from Claude, OpenAI, and Compare flows.',
+      'BaseTemplate': 100
+    })
+  });
+}
+
+async function spFieldExists(listTitle, fieldName) {
+  try {
+    await spRest(SITE + "/_api/web/lists/getbytitle('" + listTitle + "')/fields/getbyinternalnameortitle('" + fieldName + "')?$select=InternalName,Title");
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+async function createAITradeOpinionField(field) {
+  var metadataType = field.type === 'Note' ? 'SP.FieldMultiLineText' : field.type === 'Number' ? 'SP.FieldNumber' : field.type === 'DateTime' ? 'SP.FieldDateTime' : 'SP.FieldText';
+  var body = {
+    '__metadata': { 'type': metadataType },
+    'Title': field.name,
+    'FieldTypeKind': field.fieldTypeKind,
+    'Required': false
+  };
+  if (field.type === 'Note') body.NumberOfLines = 6;
+  await spRest(SITE + "/_api/web/lists/getbytitle('" + AI_OPINIONS_LIST + "')/fields", {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+}
+
+async function ensureAITradeOpinionsList(manual) {
+  var btn = document.getElementById('aiSpSetupBtn');
+  var status = document.getElementById('aiSpSetupStatus');
+  if (btn) { btn.disabled = true; btn.textContent = 'בודק SharePoint...'; }
+  if (status) { status.textContent = 'מתחיל בדיקה...'; status.style.color = 'var(--muted)'; }
+  try {
+    var createdList = false;
+    var createdFields = [];
+    if (!(await spListExists(AI_OPINIONS_LIST))) {
+      if (status) status.textContent = 'יוצר רשימה ' + AI_OPINIONS_LIST + '...';
+      await createAITradeOpinionsList();
+      createdList = true;
+    }
+    for (var i=0;i<AI_OPINIONS_FIELDS.length;i++) {
+      var f = AI_OPINIONS_FIELDS[i];
+      if (!(await spFieldExists(AI_OPINIONS_LIST, f.name))) {
+        if (status) status.textContent = 'יוצר שדה ' + f.name + '...';
+        await createAITradeOpinionField(f);
+        createdFields.push(f.name);
+      }
+    }
+    if (status) {
+      status.textContent = (createdList ? 'נוצרה רשימה. ' : 'הרשימה קיימת. ') + (createdFields.length ? 'נוצרו שדות: ' + createdFields.join(', ') : 'כל השדות קיימים.') + ' · ' + new Date().toLocaleTimeString('he-IL');
+      status.style.color = 'var(--green)';
+    }
+    if (manual && typeof showToast === 'function') showToast({type:'success', title:'AITradeOpinions מוכנה', message:createdFields.length ? 'נוצרו ' + createdFields.length + ' שדות' : 'לא נדרש שינוי'});
+  } catch(e) {
+    if (status) { status.textContent = 'שגיאה: ' + e.message; status.style.color = 'var(--red)'; }
+    if (manual && typeof showToast === 'function') showToast({type:'error', title:'SharePoint setup failed', message:e.message});
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'צור / אמת רשימת AITradeOpinions'; }
+  }
 }
 
 async function loadSystemSettings() {
