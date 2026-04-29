@@ -389,6 +389,14 @@ button .ic,.menu-item .ic{margin-left:2px}
 .dyn-card.bear{border-right-color:var(--red);background:linear-gradient(90deg,transparent,var(--red-soft) 140%)}
 .dyn-card.warn{border-right-color:var(--yellow);background:linear-gradient(90deg,transparent,var(--yellow-soft) 140%)}
 .dyn-card.info{border-right-color:var(--blue);background:linear-gradient(90deg,transparent,var(--blue-soft) 140%)}
+.dyn-decision{display:grid;grid-template-columns:minmax(86px,.35fr) 1fr auto;gap:8px;align-items:center;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 9px;border-right:3px solid var(--yellow)}
+.dyn-decision.actionable{border-right-color:var(--green);background:linear-gradient(90deg,transparent,var(--green-soft) 150%)}
+.dyn-decision.watch{border-right-color:var(--blue);background:linear-gradient(90deg,transparent,var(--blue-soft) 150%)}
+.dyn-decision.wait{border-right-color:var(--yellow);background:linear-gradient(90deg,transparent,var(--yellow-soft) 150%)}
+.dyn-decision-state{font-family:var(--mono);font-size:12px;font-weight:800;color:var(--text);white-space:nowrap}
+.dyn-decision-text{font-size:11px;color:var(--text);line-height:1.45;min-width:0}
+.dyn-mini-btn{background:transparent;border:1px solid var(--border);color:var(--blue);font-family:var(--mono);font-size:10px;padding:4px 8px;border-radius:var(--r-xs);cursor:pointer;white-space:nowrap}
+.dyn-mini-btn:hover{background:var(--blue-soft);border-color:var(--blue-line)}
 .dyn-spin{display:inline-block;animation:dspin .7s linear infinite}
 @keyframes dspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .result-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;justify-content:center}
@@ -442,6 +450,11 @@ button .ic,.menu-item .ic{margin-left:2px}
 .r-notrade{background:transparent;color:var(--muted);opacity:.55;font-style:italic;border:1px dashed var(--border)}
 .sig-time{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text);font-variant-numeric:tabular-nums;font-weight:500}
 .score-txt{font-family:var(--mono);font-size:var(--fs-xs);color:var(--yellow);font-variant-numeric:tabular-nums;font-weight:600}
+.skip-reason-chip,.hq-chip,.risk-chip{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--r-xs);white-space:nowrap;line-height:1.3}
+.skip-reason-chip{color:var(--red);background:var(--red-soft);border:1px solid var(--red-line)}
+.hq-chip{color:var(--green);background:var(--green-soft);border:1px solid var(--green-line)}
+.risk-chip{color:var(--blue);background:var(--blue-soft);border:1px solid var(--blue-line)}
+.risk-chip.warn{color:var(--yellow);background:var(--yellow-soft);border-color:var(--yellow-line)}
 
 /* PRICE TABLE */
 .price-table{width:100%;border-collapse:collapse;margin-bottom:6px}
@@ -554,6 +567,12 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 .ai-perf-metric span{display:block;font-size:9px;color:var(--muted);margin-bottom:3px}
 .ai-perf-metric b{display:block;font-family:var(--mono);font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ai-perf-card-foot{font-size:10px;color:var(--text-dim);line-height:1.5;margin-top:8px;min-height:30px}
+.risk-guard-banner{display:none;align-items:center;justify-content:space-between;gap:10px;background:var(--bg-soft);border:1px solid var(--border);border-right:3px solid var(--blue);border-radius:8px;padding:9px 12px;margin:-6px 0 16px}
+.risk-guard-banner.warn{display:flex;border-right-color:var(--yellow);background:linear-gradient(90deg,transparent,var(--yellow-soft) 150%)}
+.risk-guard-banner.danger{display:flex;border-right-color:var(--red);background:linear-gradient(90deg,transparent,var(--red-soft) 150%)}
+.risk-guard-main{font-size:12px;color:var(--text);line-height:1.45}
+.risk-guard-main b{font-family:var(--mono);font-size:12px;color:var(--text)}
+.risk-guard-meta{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
 .trades-charts-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
 .trades-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .trades-table-hdr{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between}
@@ -568,6 +587,12 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
 .tr-short{background:rgba(255,69,96,.12);color:var(--red);border:1px solid rgba(255,69,96,.3);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
 .tr-streak-w{width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block;margin:1px}
 .tr-streak-l{width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block;margin:1px}
+.tr-right{font-family:var(--mono);font-size:10px;font-weight:700;border:1px solid var(--border);border-radius:999px;padding:2px 7px;white-space:nowrap}
+.tr-right.both{color:var(--green);background:var(--green-soft);border-color:var(--green-line)}
+.tr-right.claude{color:var(--blue);background:var(--blue-soft);border-color:var(--blue-line)}
+.tr-right.openai{color:var(--green);background:var(--green-soft);border-color:var(--green-line)}
+.tr-right.none{color:var(--red);background:var(--red-soft);border-color:var(--red-line)}
+.tr-right.na{color:var(--muted);background:var(--surface2)}
 .trades-filter-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 @media(max-width:768px){.trades-stats-grid{grid-template-columns:repeat(2,1fr)}.trades-charts-row{grid-template-columns:1fr}.ai-perf-grid{grid-template-columns:1fr}}
 
@@ -1363,6 +1388,10 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         <div class="trade-stat-card"><div class="trade-stat-label">⏳ פתוחות</div><div class="trade-stat-value" id="tr-pending" style="color:var(--muted)">—</div></div>
         <div class="trade-stat-card"><div class="trade-stat-label">רצף נוכחי</div><div id="tr-streak" style="margin-top:4px">—</div></div>
       </div>
+      <div id="riskGuardBanner" class="risk-guard-banner">
+        <div class="risk-guard-main" id="riskGuardMain">—</div>
+        <div class="risk-guard-meta" id="riskGuardMeta">—</div>
+      </div>
       <div class="ai-perf-wrap">
         <div class="ai-perf-hdr">
           <span class="ai-perf-title">🤖 ביצועי המלצות לפי מנוע</span>
@@ -1416,6 +1445,8 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         <button class="quick-btn" id="trPend"   onclick="setTradeFilter('pending')" style="color:var(--muted)">⏳ פתוח</button>
         <button class="quick-btn" id="trLong2"  onclick="setTradeFilter('long')"    style="color:var(--green)">▲ LONG</button>
         <button class="quick-btn" id="trShort2" onclick="setTradeFilter('short')"   style="color:var(--red)">▼ SHORT</button>
+        <button class="quick-btn" id="trAgree"  onclick="setTradeFilter('agree')"   style="color:var(--green)">AI מסכימים</button>
+        <button class="quick-btn" id="trDisagree" onclick="setTradeFilter('disagree')" style="color:var(--yellow)">אי-הסכמה</button>
         <span style="margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--muted)" id="tradesTableCount"></span>
       </div>
       <div class="trades-table-wrap">
@@ -1426,9 +1457,9 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
         <div style="overflow-x:auto">
           <table class="trades-tbl">
             <thead><tr>
-              <th>תאריך/שעה</th><th>כיוון</th><th>כניסה</th><th>SL</th><th>TP1</th><th>TP2</th><th>תוצאה</th><th>P&L</th><th>ציון</th><th>Verdict</th><th>Ticker</th><th>AI</th>
+              <th>תאריך/שעה</th><th>כיוון</th><th>כניסה</th><th>SL</th><th>TP1</th><th>TP2</th><th>תוצאה</th><th>P&L</th><th>ציון</th><th>Verdict</th><th>מי צדק</th><th>Risk</th><th>Ticker</th><th>AI</th>
             </tr></thead>
-            <tbody id="tradesTableBody"><tr><td colspan="12" style="text-align:center;color:var(--muted);padding:20px">טוען עסקאות...</td></tr></tbody>
+            <tbody id="tradesTableBody"><tr><td colspan="14" style="text-align:center;color:var(--muted);padding:20px">טוען עסקאות...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1716,6 +1747,56 @@ function dist(a, b) {
   return Math.abs(parseFloat(a) - parseFloat(b)).toFixed(1);
 }
 
+function parseSignalAnalysis(sig) {
+  try { return JSON.parse(sig && sig.ClaudeAnalysis || '{}') || {}; } catch(e) { return {}; }
+}
+
+function getSkipReason(sig) {
+  var a = parseSignalAnalysis(sig);
+  var raw = a.v3_filter_blocked || a.skip_reason || a.reject_reason || a.blocked_by || a.reason || '';
+  raw = String(raw || '').trim();
+  if (!raw) return '';
+  var map = {
+    chop:'CHOP', choppy:'CHOP', range:'RANGE', trend:'TREND', regime:'REGIME',
+    volume:'VOLUME', low_volume:'LOW VOL', volatility:'VOL', atr:'ATR',
+    rr:'RR', risk_reward:'RR', exhaustion:'EXHAUST', rsi_overbought:'RSI OB',
+    rsi_oversold:'RSI OS', force:'FORCE', cooldown:'COOLDOWN'
+  };
+  var key = raw.toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+  return map[key] || raw.replace(/_/g, ' ').slice(0, 22).toUpperCase();
+}
+
+function isHighQualitySignal(sig) {
+  var v = String(sig && sig.ClaudeVerdict || '').toUpperCase();
+  if (v !== 'TAKE') return false;
+  var score = parseFloat(sig.ClaudeScore || sig.Score || 0);
+  var e = parseFloat(sig.Entry || 0), s = parseFloat(sig.SL || 0);
+  var tp = parseFloat(sig['OData__x0054_P2'] || sig.TP2 || sig['OData__x0054_P1'] || sig.TP1 || 0);
+  var rr = e && s && tp ? Math.abs(tp - e) / Math.abs(e - s) : 0;
+  var a = parseSignalAnalysis(sig);
+  return score >= 80 && rr >= 1.25 && !a.v3_filter_blocked;
+}
+
+function signalRiskChip(sig) {
+  if (!sig || String(sig.ClaudeVerdict || '').toUpperCase() !== 'TAKE') return '';
+  if (typeof riskCalcFor !== 'function') return '';
+  var risk = riskCalcFor(sig);
+  if (!risk || risk.riskPts == null) return '';
+  var cls = risk.contracts <= 0 ? ' warn' : '';
+  return '<span class="risk-chip' + cls + '" title="חישוב לפי הגדרות Risk Cockpit">SIZE ' + (risk.contracts || 0) + '</span>';
+}
+
+function skipReasonSummary(items) {
+  var counts = {};
+  (items || []).forEach(function(sig){
+    if (String(sig.ClaudeVerdict || '').toUpperCase() !== 'SKIP') return;
+    var reason = getSkipReason(sig) || 'UNKNOWN';
+    counts[reason] = (counts[reason] || 0) + 1;
+  });
+  return Object.keys(counts).sort(function(a,b){ return counts[b] - counts[a]; })
+    .slice(0,3).map(function(k){ return k + ' ' + counts[k]; }).join(' · ');
+}
+
 function buildPriceBar(entry, sl, tp1, tp2, direction, maxRange, verdict) {
   var e = parseFloat(entry), s = parseFloat(sl), t1 = parseFloat(tp1), t2 = parseFloat(tp2)||0;
   if (!e || !s || !t1) return '';
@@ -1930,10 +2011,11 @@ function renderSignals(items) {
     var dClass = d === 'long' ? 'dir-long' : 'dir-short';
 
     // Extract signal type and reason from ClaudeAnalysis JSON
-    var _ca = {};
-    try { _ca = JSON.parse(it.ClaudeAnalysis||'{}'); } catch(e){}
+    var _ca = parseSignalAnalysis(it);
     var sigType = _ca.signal_type || '';
     var sigReason = _ca.reason || '';
+    var skipReason = getSkipReason(it);
+    var hq = isHighQualitySignal(it);
 
     html += '<div class="sig-row" onclick="showPopupById(' + i + ')">';
 
@@ -1947,6 +2029,9 @@ function renderSignals(items) {
     html += '<span class="dir-badge ' + dClass + '" style="white-space:nowrap">' + (d === 'long' ? '▲' : '▼') + ' ' + (it.Direction||'') + '</span>';
     html += '<span class="score-txt" style="font-size:12px;white-space:nowrap">⭐' + (it.ClaudeScore||'—') + '</span>';
     if (sigType) html += '<span style="font-family:var(--mono);font-size:10px;color:var(--blue);background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);padding:1px 6px;border-radius:3px;white-space:nowrap" title="' + sigReason + '">' + sigType + '</span>';
+    if (skipReason && v === 'skip') html += '<span class="skip-reason-chip" title="סיבת SKIP">' + escapeHtml(skipReason) + '</span>';
+    if (hq) html += '<span class="hq-chip" title="Score/RR/filters aligned">HIGH QUALITY</span>';
+    html += signalRiskChip(it);
     html += '</div>';
     html += '<div class="sig-left" style="flex-wrap:wrap;gap:6px">';
     html += '<span class="verdict-badge ' + vClass + '" style="white-space:nowrap">' + (it.ClaudeVerdict||'NEUTRAL') + '</span>';
@@ -2037,7 +2122,8 @@ function updateStats(items) {
   var banner = document.getElementById('skipStreakBanner');
   if (streak >= STREAK_THRESHOLD) {
     document.getElementById('skipStreakTitle').textContent = '⛔ רצף ' + streak + ' SKIP רצופים';
-    document.getElementById('skipStreakMsg').textContent = 'המערכת דוחה סיגנלים ברצף — בדוק תנאי שוק, מגמה, או פרמטרי סיסטם';
+    var skipTop = skipReasonSummary(items.slice(0, Math.max(streak, 10)));
+    document.getElementById('skipStreakMsg').innerHTML = 'המערכת דוחה סיגנלים ברצף' + (skipTop ? ' · סיבות מובילות: ' + escapeHtml(skipTop) : '') + ' <button class="dyn-mini-btn" onclick="event.stopPropagation();askAIAboutSkipStreak()" style="margin-right:8px">נתח למה</button>';
     banner.style.display = 'flex';
   } else {
     banner.style.display = 'none';
@@ -2499,6 +2585,35 @@ function updateDynTimer() {
   el.textContent = 'עדכון בעוד ' + Math.floor(rem/60) + ':' + String(rem%60).padStart(2,'0');
 }
 
+function cleanAIHebrewText(value) {
+  return escapeHtml(String(value || '')
+    .replace(/טיול/g, 'טריילינג')
+    .replace(/מומנטה/g, 'מומנטום')
+    .replace(/מערכת התנגדות/g, 'רמת התנגדות'));
+}
+
+function buildDynamicDecisionHtml(pj, skipStreak, topFilters, skipWR) {
+  var state = String(pj.decision_state || '').toUpperCase();
+  if (state !== 'ACTIONABLE' && state !== 'WATCH' && state !== 'WAIT') {
+    state = skipStreak >= 3 ? 'WAIT' : 'WATCH';
+  }
+  var cls = state === 'ACTIONABLE' ? 'actionable' : state === 'WATCH' ? 'watch' : 'wait';
+  var reason = pj.no_decision_reason || pj.next_action || '';
+  if (!reason) {
+    reason = state === 'WAIT' ? 'אין edge נקי כרגע' : state === 'WATCH' ? 'יש תנאי מעקב, מחכים לאישור' : 'קיים setup שדורש בדיקה';
+  }
+  var details = [];
+  if (skipStreak >= 3) details.push('SKIP רצוף: ' + skipStreak);
+  if (topFilters) details.push('פילטרים: ' + topFilters);
+  if (skipWR !== '—') details.push('SKIP WR: ' + skipWR + '%');
+  var msg = cleanAIHebrewText(reason + (details.length ? ' · ' + details.join(' · ') : ''));
+  return '<div class="dyn-decision ' + cls + '">' +
+    '<div class="dyn-decision-state">' + state + '</div>' +
+    '<div class="dyn-decision-text">' + msg + '</div>' +
+    '<button class="dyn-mini-btn" onclick="askAIAboutDynamicState()">נתח למה</button>' +
+    '</div>';
+}
+
 async function runDynamicAnalysis(manual) {
   var apiKey = localStorage.getItem('claude_api_key');
   var panel  = document.getElementById('dynPanel');
@@ -2594,7 +2709,8 @@ async function runDynamicAnalysis(manual) {
       '- אם יש "rsi_overbought" > 3 — ציין שמומלץ לחכות לתיקון\n' +
       '- התמקד בניתוח bias (LONG vs SHORT) ורמות מפתח\n\n' +
       'FORMAT (JSON בלבד):\n' +
-      '{"market_state":["מגמה","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"],"skip_alert":"","quality_note":""}\n' +
+      '{"decision_state":"WAIT|WATCH|ACTIONABLE","no_decision_reason":"סיבה קצרה אם אין החלטה","next_action":"פעולה אחת עכשיו","market_state":["מגמה","bias","עוצמה"],"key_levels":["רמה1","רמה2","רמה3"],"forecast":["צפי1","צפי2","צפי3"],"patterns":["תבנית1","תבנית2","תבנית3"],"skip_alert":"","quality_note":""}\n' +
+      'decision_state: WAIT אם אין edge, WATCH אם יש תנאי מעקב, ACTIONABLE רק אם יש סיגנל איכותי.\n' +
       'skip_alert: סיבה בעברית אם SKIP>=3, אחרת ריק.\n' +
       'quality_note: הערה קצרה על איכות הסיגנלים (עברית), אחרת ריק.\n' +
       'ענה JSON בלבד:';
@@ -2625,14 +2741,15 @@ async function runDynamicAnalysis(manual) {
     var html = '';
     try {
       var pj = JSON.parse(text);
+      html += buildDynamicDecisionHtml(pj, skipStreak, topFilters, skipWR);
 
       // skip_alert — מוצג ראשון אם קיים
       if (pj.skip_alert && pj.skip_alert.trim().length > 3) {
-        html += '<div style="background:var(--red-soft);border-right:3px solid var(--red);border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:var(--red)">⛔ ' + pj.skip_alert + '</div>';
+        html += '<div style="background:var(--red-soft);border-right:3px solid var(--red);border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:var(--red)">⛔ ' + cleanAIHebrewText(pj.skip_alert) + '</div>';
       }
       // quality_note — הערה על איכות הסיגנלים
       if (pj.quality_note && pj.quality_note.trim().length > 3) {
-        html += '<div style="background:var(--yellow-soft);border-right:3px solid var(--yellow);border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:var(--yellow)">📋 ' + pj.quality_note + '</div>';
+        html += '<div style="background:var(--yellow-soft);border-right:3px solid var(--yellow);border-radius:5px;padding:6px 10px;margin-bottom:6px;font-size:11px;color:var(--yellow)">📋 ' + cleanAIHebrewText(pj.quality_note) + '</div>';
       }
 
       // Reads palette at runtime so light/dark and future token changes apply
@@ -2649,7 +2766,7 @@ async function runDynamicAnalysis(manual) {
         if (!arr.length) return;
         html += '<div style="background:'+d.soft+';border-right:3px solid '+d.c+';border-radius:5px;padding:6px 10px;margin-bottom:6px;display:flex;gap:8px;align-items:baseline">';
         html += '<span style="font-weight:700;font-size:11px;color:'+d.c+';white-space:nowrap;min-width:70px">'+d.icon+' '+d.t+'</span>';
-        html += '<span style="font-size:11px;line-height:1.5;color:var(--text)">'+arr.join(' · ')+'</span>';
+        html += '<span style="font-size:11px;line-height:1.5;color:var(--text)">'+arr.map(cleanAIHebrewText).join(' · ')+'</span>';
         html += '</div>';
       });
     } catch(pe) {
@@ -3858,10 +3975,10 @@ var _pendingAITradeAsk = null;
 
 function setTradeFilter(f) {
   tradeFilter = f;
-  ['trAll','trWin','trLoss','trPend','trLong2','trShort2'].forEach(function(id){
+  ['trAll','trWin','trLoss','trPend','trLong2','trShort2','trAgree','trDisagree'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.classList.remove('active');
   });
-  var btnId = !f?'trAll':f==='win'?'trWin':f==='loss'?'trLoss':f==='pending'?'trPend':f==='long'?'trLong2':'trShort2';
+  var btnId = !f?'trAll':f==='win'?'trWin':f==='loss'?'trLoss':f==='pending'?'trPend':f==='long'?'trLong2':f==='short'?'trShort2':f==='agree'?'trAgree':'trDisagree';
   var btn=document.getElementById(btnId); if(btn) btn.classList.add('active');
   renderTradesDashboard(allSignals);
 }
@@ -3891,9 +4008,79 @@ function aiPerfLatestOpinion(sig) {
   try { return loadLatestOpinionForSignal(sig); } catch(e) { return null; }
 }
 
+function tradeAIState(it, result) {
+  var r = String(result || it.Result || '').toUpperCase();
+  var isClosed = isWin(r) || isLoss(r);
+  var resultWin = isWin(r);
+  var latest = aiPerfLatestOpinion(it);
+  var openaiDecision = latest && latest.opinion && latest.opinion.openai ? latest.opinion.openai.decision : '';
+  var openaiBias = openaiDecision ? aiPerfDecisionBias(openaiDecision) : null;
+  var claudeBias = aiPerfDecisionBias(it.ClaudeVerdict || 'TAKE');
+  var claudePositive = claudeBias == null ? null : claudeBias >= 0.5;
+  var openaiPositive = openaiBias == null ? null : openaiBias >= 0.5;
+  var claudeCorrect = isClosed && claudePositive != null ? (claudePositive ? resultWin : !resultWin) : null;
+  var openaiCorrect = isClosed && openaiPositive != null ? (openaiPositive ? resultWin : !resultWin) : null;
+  var agreement = openaiPositive != null && claudePositive != null && openaiPositive === claudePositive;
+  var label = 'אין OAI', cls = 'na';
+  if (!isClosed) { label = 'פתוח'; cls = 'na'; }
+  else if (openaiCorrect == null) { label = claudeCorrect ? 'Claude' : 'אף אחד'; cls = claudeCorrect ? 'claude' : 'none'; }
+  else if (claudeCorrect && openaiCorrect) { label = 'שניהם'; cls = 'both'; }
+  else if (claudeCorrect) { label = 'Claude'; cls = 'claude'; }
+  else if (openaiCorrect) { label = 'OpenAI'; cls = 'openai'; }
+  else { label = 'אף אחד'; cls = 'none'; }
+  return { latest:latest, openaiBias:openaiBias, claudeBias:claudeBias, agreement:agreement, label:label, cls:cls };
+}
+
+function tradeAgreementFilter(it, result, wantAgree) {
+  var st = tradeAIState(it, result);
+  if (!st.latest || st.openaiBias == null || st.claudeBias == null) return false;
+  return wantAgree ? st.agreement : !st.agreement;
+}
+
+function tradeRiskText(it) {
+  if (typeof riskCalcFor !== 'function') return '—';
+  var risk = riskCalcFor(it);
+  if (!risk || risk.riskPts == null) return '—';
+  return (risk.contracts || 0) + 'c · ' + risk.riskPts.toFixed(1) + 'p';
+}
+
+function renderRiskGuard(sortedClosed, cumPnl, pending) {
+  var banner = document.getElementById('riskGuardBanner');
+  var main = document.getElementById('riskGuardMain');
+  var meta = document.getElementById('riskGuardMeta');
+  if (!banner || !main || !meta) return;
+  var todayKey = new Date().toDateString();
+  var todayR = 0, todayClosed = 0;
+  sortedClosed.forEach(function(it){
+    if (new Date(it.SignalTime).toDateString() !== todayKey) return;
+    todayClosed++;
+    var rr = parseFloat(it.RiskReward || it.PnLR || 1.5);
+    todayR += isWin((it.Result||'').toUpperCase()) ? (rr > 0 ? rr : 1.5) : -1;
+  });
+  var lastLosses = 0;
+  for (var i=sortedClosed.length-1;i>=0;i--) {
+    if (isLoss((sortedClosed[i].Result||'').toUpperCase())) lastLosses++;
+    else break;
+  }
+  banner.className = 'risk-guard-banner';
+  banner.style.display = '';
+  if (todayR <= -2 || lastLosses >= 3) {
+    banner.classList.add('danger');
+    main.innerHTML = '<b>Daily Guard:</b> לעצור כניסות חדשות או לעבור ל-paper/half size.';
+  } else if (todayR <= -1 || lastLosses >= 2) {
+    banner.classList.add('warn');
+    main.innerHTML = '<b>Risk Guard:</b> אחרי רצף הפסדים מומלץ להקטין גודל ולדרוש HIGH QUALITY בלבד.';
+  } else {
+    banner.style.display = 'none';
+    return;
+  }
+  meta.textContent = 'Today ' + todayR.toFixed(2) + 'R · closed ' + todayClosed + ' · loss streak ' + lastLosses + ' · pending ' + pending.length;
+}
+
 function renderAIProviderPerformance(tradeItems, closedItems) {
   tradeItems = tradeItems || [];
   closedItems = closedItems || [];
+  var minSample = 10;
   var wins = closedItems.filter(function(it){ return isWin((it.Result||'').toUpperCase()); }).length;
   var losses = closedItems.filter(function(it){ return isLoss((it.Result||'').toUpperCase()); }).length;
   var closedCount = wins + losses;
@@ -3902,7 +4089,7 @@ function renderAIProviderPerformance(tradeItems, closedItems) {
   aiPerfSet('aiPerfClaudeCount', String(tradeItems.length), 'var(--blue)');
   aiPerfSet('aiPerfClaudeClosed', String(closedCount), 'var(--text)');
   aiPerfSet('aiPerfClaudeWR', claudeWR == null ? '—' : claudeWR + '%', aiPerfRateColor(claudeWR));
-  aiPerfSet('aiPerfClaudeFoot', closedCount ? ('TAKE בפועל: ' + wins + 'W / ' + losses + 'L') : 'אין עסקאות סגורות לחישוב.');
+  aiPerfSet('aiPerfClaudeFoot', closedCount ? ('TAKE בפועל: ' + wins + 'W / ' + losses + 'L' + (closedCount < minSample ? ' · מדגם קטן' : '')) : 'אין עסקאות סגורות לחישוב.');
 
   var openaiSeen = 0, openaiClosed = 0, openaiCorrect = 0;
   var weightedSeen = 0, weightedClosed = 0, weightedCorrect = 0, weightedWithOpenAI = 0;
@@ -3934,13 +4121,13 @@ function renderAIProviderPerformance(tradeItems, closedItems) {
   aiPerfSet('aiPerfOpenAICount', String(openaiSeen), openaiSeen ? 'var(--green)' : 'var(--muted)');
   aiPerfSet('aiPerfOpenAIClosed', String(openaiClosed), openaiClosed ? 'var(--text)' : 'var(--muted)');
   aiPerfSet('aiPerfOpenAIWR', openaiWR == null ? '—' : openaiWR + '%', aiPerfRateColor(openaiWR));
-  aiPerfSet('aiPerfOpenAIFoot', openaiClosed ? ('דיוק המלצה: ' + openaiCorrect + '/' + openaiClosed) : 'אין עדיין חוות דעת OpenAI שמורות לעסקאות סגורות.');
+  aiPerfSet('aiPerfOpenAIFoot', openaiClosed ? ('דיוק המלצה: ' + openaiCorrect + '/' + openaiClosed + (openaiClosed < minSample ? ' · מדגם קטן' : '')) : 'אין עדיין חוות דעת OpenAI שמורות לעסקאות סגורות.');
 
   var weightedWR = weightedClosed ? Math.round(weightedCorrect / weightedClosed * 100) : null;
   aiPerfSet('aiPerfWeightedCount', String(weightedSeen), weightedSeen ? 'var(--yellow)' : 'var(--muted)');
   aiPerfSet('aiPerfWeightedClosed', String(weightedClosed), weightedClosed ? 'var(--text)' : 'var(--muted)');
   aiPerfSet('aiPerfWeightedWR', weightedWR == null ? '—' : weightedWR + '%', aiPerfRateColor(weightedWR));
-  aiPerfSet('aiPerfWeightedFoot', weightedClosed ? ('0.55 Claude + 0.45 OpenAI; עם OpenAI: ' + weightedWithOpenAI) : 'אין מספיק נתונים.');
+  aiPerfSet('aiPerfWeightedFoot', weightedClosed ? ('0.55 Claude + 0.45 OpenAI; עם OpenAI: ' + weightedWithOpenAI + (weightedClosed < minSample ? ' · מדגם קטן' : '')) : 'אין מספיק נתונים.');
 
   var note = document.getElementById('aiPerfNote');
   if (note) note.textContent = openaiClosed ? 'OpenAI/משוקלל משתמשים בחוות דעת שמורות מה-Cockpit/Compare' : 'כדי למלא OpenAI: הרץ חוות דעת AI על עסקאות ואז המדד יתעדכן';
@@ -3984,6 +4171,8 @@ function renderTradesDashboard(items) {
   else if (tradeFilter==='pending') filtered=tradeItems.filter(isActivePending);
   else if (tradeFilter==='long')    filtered=tradeItems.filter(function(it){return (it.Direction||'').toUpperCase()==='LONG';});
   else if (tradeFilter==='short')   filtered=tradeItems.filter(function(it){return (it.Direction||'').toUpperCase()==='SHORT';});
+  else if (tradeFilter==='agree')   filtered=tradeItems.filter(function(it){return tradeAgreementFilter(it, effResult(it), true);});
+  else if (tradeFilter==='disagree') filtered=tradeItems.filter(function(it){return tradeAgreementFilter(it, effResult(it), false);});
 
   var closed=tradeItems.filter(function(it){var r=effResult(it);return isWin(r)||isLoss(r);});
   var wins=tradeItems.filter(function(it){return isWin(effResult(it));});
@@ -4029,6 +4218,7 @@ function renderTradesDashboard(items) {
   el=document.getElementById('tr-pending');   if(el) el.textContent=pending.length;
   el=document.getElementById('tr-streak');    if(el) el.innerHTML=streakHtml;
   renderAIProviderPerformance(tradeItems, closed);
+  renderRiskGuard(sortedClosed, cumPnl, pending);
 
   // Chart
   var cumData=[],cumLabels=[],cum=0;
@@ -4077,7 +4267,7 @@ function renderTradesDashboard(items) {
   var tbody=document.getElementById('tradesTableBody');
   if(!tbody) return;
   window._tradeItems = filtered;
-  if(!filtered.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:20px">אין עסקאות להציג</td></tr>';return;}
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="14" style="text-align:center;color:var(--muted);padding:20px">אין עסקאות להציג</td></tr>';return;}
   var rows='';
   for(var i=0;i<filtered.length;i++){
     var it=filtered[i];
@@ -4092,12 +4282,15 @@ function renderTradesDashboard(items) {
     var vColor=v==='TAKE'?'var(--green)':v==='SKIP'?'var(--red)':v==='WAIT'?'var(--yellow)':'var(--muted)';
     var tp1=it['OData__x0054_P1']||it.TP1||'—';
     var tp2=it['OData__x0054_P2']||it.TP2||'—';
+    var aiState = tradeAIState(it, r);
+    var whoRight = '<span class="tr-right '+aiState.cls+'" title="השוואת תוצאת העסקה מול המלצות שמורות">'+aiState.label+'</span>';
+    var riskTxt = tradeRiskText(it);
     var aiBtns='<span class="ai-row-actions" title="ניתוח AI לעסקה">'
       +"<button onclick=\"askAIAboutTrade("+i+",'claude')\" title=\"שאל Claude\">C</button>"
       +"<button class=\"ai-openai\" onclick=\"askAIAboutTrade("+i+",'openai')\" title=\"שאל OpenAI\">O</button>"
       +"<button class=\"ai-compare\" onclick=\"askAIAboutTrade("+i+",'compare')\" title=\"השווה Claude מול OpenAI\">CMP</button>"
       +'</span>';
-    rows+='<tr><td style="color:var(--blue)">'+fmtTime(it.SignalTime)+'</td><td>'+dBadge+'</td><td style="color:white;font-weight:600">'+(it.Entry||'—')+'</td><td style="color:var(--red)">'+(it.SL||'—')+'</td><td style="color:rgba(0,208,132,.7)">'+tp1+'</td><td style="color:var(--green)">'+tp2+'</td><td class="'+rClass+'">'+rTxt+'</td><td>'+rrTxt+'</td><td style="color:var(--yellow)">'+(it.ClaudeScore||'—')+'</td><td style="color:'+vColor+';font-weight:600">'+(v||'—')+'</td><td style="color:var(--muted)">'+(it.Ticker||'MNQ')+'</td><td>'+aiBtns+'</td></tr>';
+    rows+='<tr><td style="color:var(--blue)">'+fmtTime(it.SignalTime)+'</td><td>'+dBadge+'</td><td style="color:white;font-weight:600">'+(it.Entry||'—')+'</td><td style="color:var(--red)">'+(it.SL||'—')+'</td><td style="color:rgba(0,208,132,.7)">'+tp1+'</td><td style="color:var(--green)">'+tp2+'</td><td class="'+rClass+'">'+rTxt+'</td><td>'+rrTxt+'</td><td style="color:var(--yellow)">'+(it.ClaudeScore||'—')+'</td><td style="color:'+vColor+';font-weight:600">'+(v||'—')+'</td><td>'+whoRight+'</td><td style="color:var(--text-dim)">'+riskTxt+'</td><td style="color:var(--muted)">'+(it.Ticker||'MNQ')+'</td><td>'+aiBtns+'</td></tr>';
   }
   tbody.innerHTML=rows;
 }
@@ -4297,6 +4490,38 @@ function buildTradeAIPrompt(trade) {
   parts.push('');
   parts.push(isPendingTrade ? 'מה הפעולה הנכונה עכשיו בניהול העסקה, ומה חייב לקרות כדי לבטל את הרעיון?' : 'מה למדנו מהעסקה, האם הכניסה היתה מוצדקת, ומה לשנות בחוקי הסינון/ניהול?');
   return parts.join('\n');
+}
+
+function buildSkipStreakPrompt() {
+  var recent = (allSignals || []).slice(0, 30);
+  var rows = recent.map(function(s){
+    return [
+      s.SignalTime || '?',
+      s.Direction || '?',
+      s.ClaudeVerdict || '?',
+      s.Result || 'PENDING',
+      'score=' + (s.ClaudeScore || '?'),
+      'skip=' + (getSkipReason(s) || '-')
+    ].join(' | ');
+  }).join('\n');
+  return 'נתח רצף SKIP במערכת MNQ.\n' +
+    'החזר טבלה קצרה: סיבה מובילה | עדות מהנתונים | האם הפילטר עוזר או אגרסיבי מדי | שינוי מומלץ.\n\n' +
+    'סיכום סיבות: ' + (skipReasonSummary(recent) || 'אין') + '\n\n' +
+    'סיגנלים אחרונים:\n' + rows;
+}
+
+function askAIAboutSkipStreak() {
+  openAIChatWithPrompt('compare', buildSkipStreakPrompt());
+}
+
+function askAIAboutDynamicState() {
+  var latest = (allSignals || []).slice(0, 12).map(function(s){
+    return (s.SignalTime||'?') + ' | ' + (s.Direction||'?') + ' | ' + (s.ClaudeVerdict||'?') + ' | ' + (s.Result||'PENDING') + ' | skip=' + (getSkipReason(s)||'-');
+  }).join('\n');
+  openAIChatWithPrompt('compare',
+    'נתח למה AI Live לא נותן פעולה ברורה כרגע. החזר תשובה בטבלה: גורם | מצב | משמעות | פעולה מומלצת.\n\n' +
+    'Bridge: ' + (_bridgeStatus || 'unknown') + '\n' +
+    'סיגנלים אחרונים:\n' + latest);
 }
 
 // Backward-compatible wrapper for older buttons/shortcuts.
