@@ -3991,6 +3991,7 @@ const AI_OPINIONS_LIST = 'AITradeOpinions';
 const AI_EVENTS_LIST = 'AIEvents';
 const AI_EVENT_FLOW_KEY = 'mnq_ai_event_flow_url';
 var _aiOpinionListItemType = null;
+var _aiEventListItemType = null;
 var _aiOpinionsLoadedFromSharePoint = false;
 const AI_OPINIONS_FIELDS = [
   { name:'SignalID',         type:'Number',   fieldTypeKind:9 },
@@ -4098,9 +4099,19 @@ async function createSPField(listTitle, field) {
 
 async function getAIOpinionItemType() {
   if (_aiOpinionListItemType) return _aiOpinionListItemType;
-  var data = await spRest(SITE + "/_api/web/lists/getbytitle('" + AI_OPINIONS_LIST + "')?$select=ListItemEntityTypeFullName");
-  _aiOpinionListItemType = data && data.d && data.d.ListItemEntityTypeFullName ? data.d.ListItemEntityTypeFullName : 'SP.Data.AITradeOpinionsListItem';
+  _aiOpinionListItemType = await getSPListItemType(AI_OPINIONS_LIST, 'SP.Data.AITradeOpinionsListItem');
   return _aiOpinionListItemType;
+}
+
+async function getAIEventItemType() {
+  if (_aiEventListItemType) return _aiEventListItemType;
+  _aiEventListItemType = await getSPListItemType(AI_EVENTS_LIST, 'SP.Data.AIEventsListItem');
+  return _aiEventListItemType;
+}
+
+async function getSPListItemType(listTitle, fallback) {
+  var data = await spRest(SITE + "/_api/web/lists/getbytitle('" + listTitle + "')?$select=ListItemEntityTypeFullName");
+  return data && data.d && data.d.ListItemEntityTypeFullName ? data.d.ListItemEntityTypeFullName : fallback;
 }
 
 async function ensureAITradeOpinionsList(manual) {
@@ -4288,8 +4299,8 @@ async function testAIEventFlow() {
   var status = document.getElementById('aiEventFlowStatus');
   if (status) { status.textContent = 'שולח בדיקה...'; status.style.color = 'var(--muted)'; }
   try {
-    await postAIEvent('test', { source:'dashboard', at:new Date().toISOString() }, true);
-    if (status) { status.textContent = 'Event נשלח בהצלחה'; status.style.color = 'var(--green)'; }
+    var mode = await postAIEvent('test', { source:'dashboard', level:'info', at:new Date().toISOString() }, true);
+    if (status) { status.textContent = mode === 'flow' ? 'Event נשלח ל-Flow בהצלחה' : 'Event נשמר ישירות ב-SharePoint'; status.style.color = 'var(--green)'; }
   } catch(e) {
     if (status) { status.textContent = 'שגיאה: ' + e.message; status.style.color = 'var(--red)'; }
   }
@@ -4314,28 +4325,55 @@ function compactSignalForEvent(sig) {
 
 async function postAIEvent(eventType, payload, throwOnError) {
   var url = getAIEventFlowUrl();
-  if (!url) {
-    if (throwOnError) throw new Error('AI Event Flow URL לא מוגדר');
-    return false;
+  var createdAt = new Date().toISOString();
+  var flowError = null;
+  try {
+    if (url) {
+      var r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: eventType,
+          source: 'mnq-dashboard',
+          createdAt: createdAt,
+          payload: payload || {}
+        })
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return 'flow';
+    }
+  } catch(e) {
+    flowError = e;
+    console.warn('AI event flow failed, falling back to SharePoint:', e.message);
   }
   try {
-    var r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        eventType: eventType,
-        source: 'mnq-dashboard',
-        createdAt: new Date().toISOString(),
-        payload: payload || {}
-      })
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return true;
-  } catch(e) {
-    if (throwOnError) throw e;
-    console.warn('AI event flow failed:', e.message);
+    await saveAIEventToSharePoint(eventType, payload || {}, createdAt);
+    return 'sharepoint';
+  } catch(e2) {
+    if (throwOnError) throw new Error((flowError ? flowError.message + ' | ' : '') + 'SharePoint: ' + e2.message);
+    console.warn('AI event SharePoint fallback failed:', e2.message);
     return false;
   }
+}
+
+async function saveAIEventToSharePoint(eventType, payload, createdAt) {
+  await ensureAISharePointLists(false, false);
+  var typeName = await getAIEventItemType();
+  var signalId = payload && payload.signal && payload.signal.id != null ? parseInt(payload.signal.id, 10) : NaN;
+  var body = {
+    '__metadata': { 'type': typeName },
+    'Title': String(eventType || 'event'),
+    'EventType': String(eventType || 'event'),
+    'Source': 'mnq-dashboard',
+    'EventTime': createdAt || new Date().toISOString(),
+    'PayloadJSON': JSON.stringify(payload || {}),
+    'Severity': String((payload && (payload.level || payload.severity)) || 'info')
+  };
+  if (isFinite(signalId)) body.SignalID = signalId;
+  await spRest(SITE + "/_api/web/lists/getbytitle('" + AI_EVENTS_LIST + "')/items", {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
 }
 
 function postAIEventOnce(key, eventType, payload) {
