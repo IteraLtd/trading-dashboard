@@ -1203,6 +1203,16 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
           <button onclick="ensureAITradeOpinionsList(true)" id="aiSpSetupBtn" class="vol-btn" style="font-size:11px">צור / אמת רשימת AITradeOpinions</button>
           <span id="aiSpSetupStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
         </div>
+        <div style="height:1px;background:var(--border);margin:14px 0"></div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.6">
+          Power Automate AI Events אופציונלי: הדשבורד ישלח אירועים כמו שמירת המלצה, אי-הסכמה ו-Risk Guard ל-Flow שתגדיר כאן.
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="password" id="aiEventFlowUrlInput" placeholder="Power Automate HTTP trigger URL..." style="flex:1;min-width:280px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--fg);font-size:12px;direction:ltr">
+          <button onclick="saveAIEventFlowUrl()" class="vol-btn" style="font-size:11px">שמור Flow URL</button>
+          <button onclick="testAIEventFlow()" class="vol-btn" style="font-size:11px">בדיקת Event</button>
+          <span id="aiEventFlowStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
+        </div>
       </div>
 
       <div style="display:flex;gap:10px;align-items:center">
@@ -1724,6 +1734,7 @@ function startDash() {
   initSoundBtn();
   loadSystemStatus();
   loadAppearanceSettings();
+  initAISharePointSettings();
   refresh();
   setInterval(refresh, REFRESH);
   startDynamicAnalysis();
@@ -2028,6 +2039,7 @@ function renderSignals(items) {
     var sigReason = _ca.reason || '';
     var skipReason = getSkipReason(it);
     var hq = isHighQualitySignal(it);
+    if (hq) postAIEventOnce('high-quality:' + sigKey(it), 'high_quality_take', { signal: compactSignalForEvent(it), reason: sigReason || sigType || 'HIGH QUALITY' });
 
     html += '<div class="sig-row" onclick="showPopupById(' + i + ')">';
 
@@ -2863,6 +2875,7 @@ async function refresh() {
   try {
     allSignals = await fetchList('TradingPredictions', '$orderby=SignalTime%20desc&$top=100');
     var scans = await fetchList('TradingScans', '$orderby=ScanTime%20desc&$top=10');
+    await loadAITradeOpinionsFromSharePoint(false);
     loadTradingStats();
     loadSystemSettings();
     if (scans.length > 0) { console.log('SCAN KEYS:', JSON.stringify(Object.keys(scans[0]))); console.log('SCAN DATA:', JSON.stringify(scans[0])); }
@@ -3530,6 +3543,11 @@ function alertCompareDisagreement(sig, claudeText, openaiText) {
     direction: sig ? sig.Direction : '',
     major: true
   });
+  postAIEventOnce('ai-disagreement:' + (sig ? sigKey(sig) : 'chat') + ':' + c + ':' + o, 'ai_disagreement', {
+    signal: compactSignalForEvent(sig),
+    claude: c,
+    openai: o
+  });
 }
 
 function runTradeAlertEngine(items, source, candles) {
@@ -3971,6 +3989,9 @@ async function getDigest() {
 }
 
 const AI_OPINIONS_LIST = 'AITradeOpinions';
+const AI_EVENT_FLOW_KEY = 'mnq_ai_event_flow_url';
+var _aiOpinionListItemType = null;
+var _aiOpinionsLoadedFromSharePoint = false;
 const AI_OPINIONS_FIELDS = [
   { name:'SignalID',         type:'Number',   fieldTypeKind:9 },
   { name:'SignalTime',       type:'DateTime', fieldTypeKind:4 },
@@ -4051,6 +4072,13 @@ async function createAITradeOpinionField(field) {
   });
 }
 
+async function getAIOpinionItemType() {
+  if (_aiOpinionListItemType) return _aiOpinionListItemType;
+  var data = await spRest(SITE + "/_api/web/lists/getbytitle('" + AI_OPINIONS_LIST + "')?$select=ListItemEntityTypeFullName");
+  _aiOpinionListItemType = data && data.d && data.d.ListItemEntityTypeFullName ? data.d.ListItemEntityTypeFullName : 'SP.Data.AITradeOpinionsListItem';
+  return _aiOpinionListItemType;
+}
+
 async function ensureAITradeOpinionsList(manual) {
   var btn = document.getElementById('aiSpSetupBtn');
   var status = document.getElementById('aiSpSetupStatus');
@@ -4083,6 +4111,208 @@ async function ensureAITradeOpinionsList(manual) {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'צור / אמת רשימת AITradeOpinions'; }
   }
+}
+
+function normalizeOpinionProvider(provider) {
+  provider = String(provider || '').toLowerCase();
+  return provider === 'openai' ? 'openai' : provider === 'compare' ? 'compare' : 'claude';
+}
+
+function opinionCreatedAtValue(ts) {
+  if (!ts) return new Date().toISOString();
+  if (typeof ts === 'number') return new Date(ts).toISOString();
+  var d = new Date(ts);
+  return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
+function confidenceNumber(confidence) {
+  var n = parseFloat(confidence);
+  return isFinite(n) ? n : null;
+}
+
+function spOpinionToItem(row, stage) {
+  return {
+    stage: row.Stage || stage || 'chat',
+    decision: row.Decision || 'UNKNOWN',
+    confidence: row.Confidence == null ? '—' : row.Confidence,
+    reason: row.Reason || '',
+    action: row.AIAction || '',
+    risk: row.Risk || '',
+    raw: row.RawJSON || ''
+  };
+}
+
+function mergeSharePointOpinions(rows) {
+  var store = getStoredOpinions();
+  var seen = {};
+  (rows || []).forEach(function(row){
+    var signalId = row.SignalID != null ? String(row.SignalID) : '';
+    if (!signalId) return;
+    var stage = row.Stage || 'chat';
+    var provider = normalizeOpinionProvider(row.Provider);
+    if (provider === 'compare') return;
+    var key = signalId + ':' + stage;
+    var seenKey = key + ':' + provider;
+    if (seen[seenKey]) return;
+    seen[seenKey] = true;
+    var op = store[key] || { ts: opinionCreatedAtValue(row.CreatedAt), stage: stage, signalId: signalId, source:'sharepoint' };
+    op.ts = op.ts || opinionCreatedAtValue(row.CreatedAt);
+    op.stage = stage;
+    op.signalId = signalId;
+    op.source = 'sharepoint';
+    op[provider] = spOpinionToItem(row, stage);
+    store[key] = op;
+  });
+  saveStoredOpinions(store);
+  return store;
+}
+
+async function loadAITradeOpinionsFromSharePoint(force) {
+  if (_aiOpinionsLoadedFromSharePoint && !force) return getStoredOpinions();
+  try {
+    if (!(await spListExists(AI_OPINIONS_LIST))) return getStoredOpinions();
+    var rows = await fetchList(AI_OPINIONS_LIST, '$orderby=CreatedAt%20desc&$top=1000');
+    _aiOpinionsLoadedFromSharePoint = true;
+    return mergeSharePointOpinions(rows);
+  } catch(e) {
+    console.warn('AITradeOpinions load failed:', e.message);
+    return getStoredOpinions();
+  }
+}
+
+async function saveAITradeOpinionToSharePoint(sig, stage, provider, item, raw) {
+  if (!sig || !item) return;
+  await ensureAITradeOpinionsList(false);
+  var typeName = await getAIOpinionItemType();
+  var signalIdNum = parseInt(sigKey(sig), 10);
+  var body = {
+    '__metadata': { 'type': typeName },
+    'Title': (provider || 'AI') + ' ' + (stage || 'chat') + ' #' + sigKey(sig),
+    'SignalTime': sig.SignalTime || null,
+    'Provider': provider,
+    'Stage': stage || item.stage || 'chat',
+    'Decision': item.decision || 'UNKNOWN',
+    'Reason': item.reason || '',
+    'AIAction': item.action || '',
+    'Risk': item.risk || '',
+    'RawJSON': raw || item.raw || JSON.stringify(item),
+    'CreatedAt': opinionCreatedAtValue(Date.now())
+  };
+  if (isFinite(signalIdNum)) body.SignalID = signalIdNum;
+  var conf = confidenceNumber(item.confidence);
+  if (conf != null) body.Confidence = conf;
+  await spRest(SITE + "/_api/web/lists/getbytitle('" + AI_OPINIONS_LIST + "')/items", {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+}
+
+async function persistOpinion(sig, stage, opinion, rawByProvider) {
+  if (!sig || !opinion) return;
+  var store = getStoredOpinions();
+  store[opinionStoreKey(sig, stage)] = opinion;
+  saveStoredOpinions(store);
+  var jobs = [];
+  if (opinion.claude) jobs.push(saveAITradeOpinionToSharePoint(sig, stage, 'Claude', opinion.claude, rawByProvider && rawByProvider.claude));
+  if (opinion.openai) jobs.push(saveAITradeOpinionToSharePoint(sig, stage, 'OpenAI', opinion.openai, rawByProvider && rawByProvider.openai));
+  Promise.allSettled(jobs).then(function(results){
+    var failed = results.filter(function(r){ return r.status === 'rejected'; });
+    if (failed.length) {
+      console.warn('AI opinion SharePoint save failed:', failed.map(function(f){ return f.reason && f.reason.message; }).join(' | '));
+      if (typeof showToast === 'function') showToast({type:'warn', title:'AI נשמר מקומית בלבד', message:'שמירה ל-SharePoint נכשלה: ' + failed[0].reason.message});
+    } else if (jobs.length) {
+      if (typeof showToast === 'function') showToast({type:'success', title:'AI opinion נשמר ל-SharePoint', duration:2500});
+      loadAITradeOpinionsFromSharePoint(true).then(function(){ if (currentTab === 'trades') renderTradesDashboard(allSignals); });
+    }
+  });
+  postAIEvent('ai_opinion_saved', { signal: compactSignalForEvent(sig), stage: stage, opinion: opinion });
+}
+
+function getAIEventFlowUrl() {
+  return (localStorage.getItem(AI_EVENT_FLOW_KEY) || '').trim();
+}
+
+function saveAIEventFlowUrl() {
+  var input = document.getElementById('aiEventFlowUrlInput');
+  var status = document.getElementById('aiEventFlowStatus');
+  var val = input ? input.value.trim() : '';
+  if (val) localStorage.setItem(AI_EVENT_FLOW_KEY, val);
+  else localStorage.removeItem(AI_EVENT_FLOW_KEY);
+  if (status) { status.textContent = val ? 'נשמר' : 'נוקה'; status.style.color = val ? 'var(--green)' : 'var(--muted)'; }
+}
+
+async function testAIEventFlow() {
+  var status = document.getElementById('aiEventFlowStatus');
+  if (status) { status.textContent = 'שולח בדיקה...'; status.style.color = 'var(--muted)'; }
+  try {
+    await postAIEvent('test', { source:'dashboard', at:new Date().toISOString() }, true);
+    if (status) { status.textContent = 'Event נשלח בהצלחה'; status.style.color = 'var(--green)'; }
+  } catch(e) {
+    if (status) { status.textContent = 'שגיאה: ' + e.message; status.style.color = 'var(--red)'; }
+  }
+}
+
+function compactSignalForEvent(sig) {
+  if (!sig) return null;
+  return {
+    id: sigKey(sig),
+    signalTime: sig.SignalTime,
+    ticker: sig.Ticker || 'MNQ',
+    direction: sig.Direction,
+    entry: sig.Entry,
+    sl: sig.SL,
+    tp1: sig.TP1 || sig['OData__x0054_P1'],
+    tp2: sig.TP2 || sig['OData__x0054_P2'],
+    result: sig.Result || 'PENDING',
+    claudeVerdict: sig.ClaudeVerdict,
+    claudeScore: sig.ClaudeScore
+  };
+}
+
+async function postAIEvent(eventType, payload, throwOnError) {
+  var url = getAIEventFlowUrl();
+  if (!url) {
+    if (throwOnError) throw new Error('AI Event Flow URL לא מוגדר');
+    return false;
+  }
+  try {
+    var r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventType: eventType,
+        source: 'mnq-dashboard',
+        createdAt: new Date().toISOString(),
+        payload: payload || {}
+      })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return true;
+  } catch(e) {
+    if (throwOnError) throw e;
+    console.warn('AI event flow failed:', e.message);
+    return false;
+  }
+}
+
+function postAIEventOnce(key, eventType, payload) {
+  var storeKey = 'mnq_ai_event_once_v1';
+  var seen = {};
+  try { seen = JSON.parse(localStorage.getItem(storeKey) || '{}'); } catch(e) {}
+  if (seen[key]) return false;
+  seen[key] = Date.now();
+  try {
+    var keys = Object.keys(seen);
+    if (keys.length > 200) keys.sort(function(a,b){return seen[a]-seen[b];}).slice(0, keys.length-200).forEach(function(k){ delete seen[k]; });
+    localStorage.setItem(storeKey, JSON.stringify(seen));
+  } catch(e) {}
+  postAIEvent(eventType, payload);
+  return true;
+}
+
+function initAISharePointSettings() {
+  var input = document.getElementById('aiEventFlowUrlInput');
+  if (input) input.value = getAIEventFlowUrl();
 }
 
 async function loadSystemSettings() {
@@ -4191,17 +4421,27 @@ function renderRiskGuard(sortedClosed, cumPnl, pending) {
   }
   banner.className = 'risk-guard-banner';
   banner.style.display = '';
+  var eventLevel = '';
   if (todayR <= -2 || lastLosses >= 3) {
     banner.classList.add('danger');
+    eventLevel = 'danger';
     main.innerHTML = '<b>Daily Guard:</b> לעצור כניסות חדשות או לעבור ל-paper/half size.';
   } else if (todayR <= -1 || lastLosses >= 2) {
     banner.classList.add('warn');
+    eventLevel = 'warn';
     main.innerHTML = '<b>Risk Guard:</b> אחרי רצף הפסדים מומלץ להקטין גודל ולדרוש HIGH QUALITY בלבד.';
   } else {
     banner.style.display = 'none';
     return;
   }
   meta.textContent = 'Today ' + todayR.toFixed(2) + 'R · closed ' + todayClosed + ' · loss streak ' + lastLosses + ' · pending ' + pending.length;
+  postAIEventOnce('risk-guard:' + eventLevel + ':' + todayKey + ':' + todayClosed + ':' + lastLosses, 'risk_guard_triggered', {
+    level: eventLevel,
+    todayR: parseFloat(todayR.toFixed(2)),
+    todayClosed: todayClosed,
+    lossStreak: lastLosses,
+    pending: pending.length
+  });
 }
 
 function renderAIProviderPerformance(tradeItems, closedItems) {
@@ -5221,21 +5461,22 @@ async function runAIOpinion(stage) {
       callClaudeChat(messages, 'ענה בעברית. החזר JSON בלבד.', apiKey),
       callOpenAIChat(messages, 'ענה בעברית. החזר JSON בלבד.')
     ]);
+    var cRaw = pair[0].status === 'fulfilled' ? pair[0].value.reply : '';
+    var oRaw = pair[1].status === 'fulfilled' ? pair[1].value.reply : '';
     var opinion = {
       ts: Date.now(),
       stage: stage,
       signalId: sigKey(sig),
-      claude: pair[0].status === 'fulfilled' ? parseOpinionJson(pair[0].value.reply, stage) : { decision:'ERROR', confidence:'—', reason:pair[0].reason.message, action:'בדוק Claude', risk:'' },
-      openai: pair[1].status === 'fulfilled' ? parseOpinionJson(pair[1].value.reply, stage) : { decision:'ERROR', confidence:'—', reason:pair[1].reason.message, action:'בדוק OpenAI', risk:'' }
+      claude: pair[0].status === 'fulfilled' ? parseOpinionJson(cRaw, stage) : { decision:'ERROR', confidence:'—', reason:pair[0].reason.message, action:'בדוק Claude', risk:'' },
+      openai: pair[1].status === 'fulfilled' ? parseOpinionJson(oRaw, stage) : { decision:'ERROR', confidence:'—', reason:pair[1].reason.message, action:'בדוק OpenAI', risk:'' }
     };
-    var store = getStoredOpinions();
-    store[opinionStoreKey(sig, stage)] = opinion;
-    saveStoredOpinions(store);
+    persistOpinion(sig, stage, opinion, { claude:cRaw, openai:oRaw });
     saveJournalNote(sig, 'ai-opinion-' + stage);
     archiveSignalSnapshot(sig, 'ai-opinion-' + stage);
     renderAIOpinion(stage, opinion);
     if (opinion.claude.decision !== opinion.openai.decision) {
       emitTradeAlert({key:'opinion-disagree:'+sigKey(sig)+':'+stage+':'+opinion.claude.decision+':'+opinion.openai.decision,type:'warn',title:'AI Opinion Disagreement',message:'Claude: '+opinion.claude.decision+' · OpenAI: '+opinion.openai.decision,direction:sig.Direction,major:true});
+      postAIEvent('ai_opinion_disagreement', { signal: compactSignalForEvent(sig), stage: stage, claude: opinion.claude, openai: opinion.openai });
     }
   } catch(e) {
     if (status) status.textContent = 'שגיאה';
@@ -5543,21 +5784,26 @@ function maybeSaveTradeChatOpinion(reply) {
   var store = getStoredOpinions();
   var key = opinionStoreKey(trade, stage);
   var existing = store[key] || { ts:new Date().toISOString() };
+  var rawByProvider = {};
   existing.ts = new Date().toISOString();
   existing.stage = stage;
+  existing.signalId = sigKey(trade);
   if (provider === 'compare') {
     var parts = parseCompareContent(reply);
     if (parts) {
       existing.claude = parseTradeChatOpinion(parts.claude, stage);
       existing.openai = parseTradeChatOpinion(parts.openai, stage);
+      rawByProvider.claude = parts.claude;
+      rawByProvider.openai = parts.openai;
     }
   } else if (provider === 'openai') {
     existing.openai = parseTradeChatOpinion(reply, stage);
+    rawByProvider.openai = reply;
   } else {
     existing.claude = parseTradeChatOpinion(reply, stage);
+    rawByProvider.claude = reply;
   }
-  store[key] = existing;
-  saveStoredOpinions(store);
+  persistOpinion(trade, stage, existing, rawByProvider);
   _pendingAITradeAsk = null;
   renderAIProviderPerformance(window._tradeItems || [], (window._tradeItems || []).filter(function(it){ var r=(it.Result||'').toUpperCase(); return isWin(r)||isLoss(r); }));
 }
