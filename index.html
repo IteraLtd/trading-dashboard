@@ -1196,11 +1196,10 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px">
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">🤖 SharePoint AI Storage</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
-          יוצר או מאמת רשימת <b style="color:var(--text)">AITradeOpinions</b> לשמירת חוות דעת OpenAI / Claude / Compare בצורה קבועה ב-SharePoint.
-          זה שלב 1 לפני טעינה וכתיבה אוטומטית של המלצות מהדשבורד.
+          יוצר או מאמת את רשימות <b style="color:var(--text)">AITradeOpinions</b> ו-<b style="color:var(--text)">AIEvents</b> לשמירת חוות דעת והתראות AI בצורה קבועה ב-SharePoint.
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="ensureAITradeOpinionsList(true)" id="aiSpSetupBtn" class="vol-btn" style="font-size:11px">צור / אמת רשימת AITradeOpinions</button>
+          <button onclick="ensureAISharePointLists(true)" id="aiSpSetupBtn" class="vol-btn" style="font-size:11px">צור / אמת רשימות AI</button>
           <span id="aiSpSetupStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
         </div>
         <div style="height:1px;background:var(--border);margin:14px 0"></div>
@@ -3989,6 +3988,7 @@ async function getDigest() {
 }
 
 const AI_OPINIONS_LIST = 'AITradeOpinions';
+const AI_EVENTS_LIST = 'AIEvents';
 const AI_EVENT_FLOW_KEY = 'mnq_ai_event_flow_url';
 var _aiOpinionListItemType = null;
 var _aiOpinionsLoadedFromSharePoint = false;
@@ -4004,6 +4004,14 @@ const AI_OPINIONS_FIELDS = [
   { name:'Risk',             type:'Note',     fieldTypeKind:3 },
   { name:'RawJSON',          type:'Note',     fieldTypeKind:3 },
   { name:'CreatedAt',        type:'DateTime', fieldTypeKind:4 }
+];
+const AI_EVENTS_FIELDS = [
+  { name:'EventType',   type:'Text',     fieldTypeKind:2 },
+  { name:'Source',      type:'Text',     fieldTypeKind:2 },
+  { name:'EventTime',   type:'DateTime', fieldTypeKind:4 },
+  { name:'PayloadJSON', type:'Note',     fieldTypeKind:3 },
+  { name:'SignalID',    type:'Number',   fieldTypeKind:9 },
+  { name:'Severity',    type:'Text',     fieldTypeKind:2 }
 ];
 
 async function spRest(url, opts) {
@@ -4037,12 +4045,20 @@ async function spListExists(title) {
 }
 
 async function createAITradeOpinionsList() {
+  await createSPGenericList(AI_OPINIONS_LIST, 'AI trade opinions from Claude, OpenAI, and Compare flows.');
+}
+
+async function createAIEventsList() {
+  await createSPGenericList(AI_EVENTS_LIST, 'General AI events from MNQ dashboard: disagreements, risk guard, high quality signals, tests.');
+}
+
+async function createSPGenericList(title, description) {
   await spRest(SITE + '/_api/web/lists', {
     method: 'POST',
     body: JSON.stringify({
       '__metadata': { 'type': 'SP.List' },
-      'Title': AI_OPINIONS_LIST,
-      'Description': 'AI trade opinions from Claude, OpenAI, and Compare flows.',
+      'Title': title,
+      'Description': description || '',
       'BaseTemplate': 100
     })
   });
@@ -4058,6 +4074,14 @@ async function spFieldExists(listTitle, fieldName) {
 }
 
 async function createAITradeOpinionField(field) {
+  await createSPField(AI_OPINIONS_LIST, field);
+}
+
+async function createAIEventField(field) {
+  await createSPField(AI_EVENTS_LIST, field);
+}
+
+async function createSPField(listTitle, field) {
   var metadataType = field.type === 'Note' ? 'SP.FieldMultiLineText' : field.type === 'Number' ? 'SP.FieldNumber' : field.type === 'DateTime' ? 'SP.FieldDateTime' : 'SP.FieldText';
   var body = {
     '__metadata': { 'type': metadataType },
@@ -4066,7 +4090,7 @@ async function createAITradeOpinionField(field) {
     'Required': false
   };
   if (field.type === 'Note') body.NumberOfLines = 6;
-  await spRest(SITE + "/_api/web/lists/getbytitle('" + AI_OPINIONS_LIST + "')/fields", {
+  await spRest(SITE + "/_api/web/lists/getbytitle('" + listTitle + "')/fields", {
     method: 'POST',
     body: JSON.stringify(body)
   });
@@ -4080,6 +4104,10 @@ async function getAIOpinionItemType() {
 }
 
 async function ensureAITradeOpinionsList(manual) {
+  return ensureAISharePointLists(manual, true);
+}
+
+async function ensureAISharePointLists(manual, opinionsOnly) {
   var btn = document.getElementById('aiSpSetupBtn');
   var status = document.getElementById('aiSpSetupStatus');
   if (btn) { btn.disabled = true; btn.textContent = 'בודק SharePoint...'; }
@@ -4100,16 +4128,31 @@ async function ensureAITradeOpinionsList(manual) {
         createdFields.push(f.name);
       }
     }
+    if (!opinionsOnly) {
+      if (!(await spListExists(AI_EVENTS_LIST))) {
+        if (status) status.textContent = 'יוצר רשימה ' + AI_EVENTS_LIST + '...';
+        await createAIEventsList();
+        createdList = true;
+      }
+      for (var j=0;j<AI_EVENTS_FIELDS.length;j++) {
+        var ef = AI_EVENTS_FIELDS[j];
+        if (!(await spFieldExists(AI_EVENTS_LIST, ef.name))) {
+          if (status) status.textContent = 'יוצר שדה ' + AI_EVENTS_LIST + '.' + ef.name + '...';
+          await createAIEventField(ef);
+          createdFields.push(AI_EVENTS_LIST + '.' + ef.name);
+        }
+      }
+    }
     if (status) {
-      status.textContent = (createdList ? 'נוצרה רשימה. ' : 'הרשימה קיימת. ') + (createdFields.length ? 'נוצרו שדות: ' + createdFields.join(', ') : 'כל השדות קיימים.') + ' · ' + new Date().toLocaleTimeString('he-IL');
+      status.textContent = (createdList ? 'נוצרו/אומתו רשימות. ' : 'הרשימות קיימות. ') + (createdFields.length ? 'נוצרו שדות: ' + createdFields.join(', ') : 'כל השדות קיימים.') + ' · ' + new Date().toLocaleTimeString('he-IL');
       status.style.color = 'var(--green)';
     }
-    if (manual && typeof showToast === 'function') showToast({type:'success', title:'AITradeOpinions מוכנה', message:createdFields.length ? 'נוצרו ' + createdFields.length + ' שדות' : 'לא נדרש שינוי'});
+    if (manual && typeof showToast === 'function') showToast({type:'success', title:'רשימות AI מוכנות', message:createdFields.length ? 'נוצרו ' + createdFields.length + ' שדות' : 'לא נדרש שינוי'});
   } catch(e) {
     if (status) { status.textContent = 'שגיאה: ' + e.message; status.style.color = 'var(--red)'; }
     if (manual && typeof showToast === 'function') showToast({type:'error', title:'SharePoint setup failed', message:e.message});
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'צור / אמת רשימת AITradeOpinions'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'צור / אמת רשימות AI'; }
   }
 }
 
