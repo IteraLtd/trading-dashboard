@@ -1457,6 +1457,10 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
               <div class="pnl-metric"><span>היום $</span><b id="pnlActualToday">—</b></div>
               <div class="pnl-metric"><span>עסקאות</span><b id="pnlActualCount">—</b></div>
             </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+              <button onclick="backfillTradeExecutionsFromSignals()" id="backfillExecBtn" class="quick-btn" style="font-size:10px">ייבא עסקאות קודמות</button>
+              <span id="backfillExecStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
+            </div>
           </div>
         </div>
         <div style="padding:0 10px 10px">
@@ -4353,6 +4357,16 @@ async function loadTradeExecutionsFromSharePoint(force) {
   }
 }
 
+async function saveTradeExecutionToSharePoint(bodyFields) {
+  await ensureAISharePointLists(false, false);
+  var typeName = await getTradeExecutionItemType();
+  var body = Object.assign({ '__metadata': { 'type': typeName } }, bodyFields || {});
+  await spRest(SITE + "/_api/web/lists/getbytitle('" + TRADE_EXECUTIONS_LIST + "')/items", {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+}
+
 async function saveAITradeOpinionToSharePoint(sig, stage, provider, item, raw) {
   if (!sig || !item) return;
   await ensureAITradeOpinionsList(false);
@@ -4613,6 +4627,100 @@ function pnlSet(id, text, value) {
   if (!el) return;
   el.textContent = text;
   el.style.color = colorForPnl(value);
+}
+
+function signalExitPriceForResult(sig, result) {
+  var r = String(result || sig.Result || '').toUpperCase();
+  if (r === 'SL_HIT' || r === 'LOSS') return parseFloat(sig.SL || sig.StopLoss || 0) || null;
+  if (r === 'TP2_HIT') return parseFloat(sig.TP2 || sig['OData__x0054_P2'] || sig.TP1 || sig['OData__x0054_P1'] || 0) || null;
+  if (r === 'TP1_HIT' || r === 'WIN') return parseFloat(sig.TP1 || sig['OData__x0054_P1'] || sig.TP2 || sig['OData__x0054_P2'] || 0) || null;
+  if (r === 'BE') return parseFloat(sig.Entry || sig.EntryPrice || 0) || null;
+  return null;
+}
+
+function signalExecutionBackfill(sig) {
+  var result = String(sig.Result || '').toUpperCase();
+  var entry = parseFloat(sig.Entry || sig.EntryPrice || 0) || null;
+  var exit = signalExitPriceForResult(sig, result);
+  var dir = String(sig.Direction || '').toUpperCase();
+  var qty = 1;
+  try {
+    if (typeof riskCalcFor === 'function') {
+      var risk = riskCalcFor(sig);
+      if (risk && risk.contracts > 0) qty = risk.contracts;
+    }
+  } catch(e) {}
+  var points = 0;
+  if (entry != null && exit != null) points = dir === 'SHORT' ? entry - exit : exit - entry;
+  var rr = tradeResultR(sig, result);
+  return {
+    Title: 'Backfill #' + sigKey(sig),
+    SignalID: parseInt(sigKey(sig), 10),
+    ExecutionTime: sig.SignalTime || sig.Created || new Date().toISOString(),
+    Ticker: sig.Ticker || 'MNQ',
+    Direction: dir || '',
+    EntryPrice: entry,
+    ExitPrice: exit,
+    Quantity: qty,
+    Contracts: qty,
+    Result: result,
+    PnLPoints: parseFloat(points.toFixed(2)),
+    PnLDollars: parseFloat((points * 2 * qty).toFixed(2)),
+    PnLR: parseFloat(rr.toFixed(2)),
+    Fees: 0,
+    Source: 'signal-backfill',
+    Notes: 'Backfilled from TradingPredictions. Not confirmed broker execution.',
+    CreatedAt: new Date().toISOString()
+  };
+}
+
+async function backfillTradeExecutionsFromSignals() {
+  var btn = document.getElementById('backfillExecBtn');
+  var status = document.getElementById('backfillExecStatus');
+  if (btn) { btn.disabled = true; btn.textContent = 'מייבא...'; }
+  if (status) { status.textContent = 'בודק כפילויות...'; status.style.color = 'var(--muted)'; }
+  try {
+    await ensureAISharePointLists(false, false);
+    var existing = await loadTradeExecutionsFromSharePoint(true);
+    var seen = {};
+    (existing || []).forEach(function(ex){
+      if (ex.SignalID != null) seen[String(parseInt(ex.SignalID, 10))] = true;
+    });
+    var candidates = (allSignals || []).filter(function(sig){
+      var v = String(sig.ClaudeVerdict || '').toUpperCase();
+      var r = String(sig.Result || '').toUpperCase();
+      var id = String(parseInt(sigKey(sig), 10));
+      return v === 'TAKE' && (isWin(r) || isLoss(r) || r === 'BE') && !seen[id];
+    });
+    if (!candidates.length) {
+      if (status) { status.textContent = 'אין עסקאות חדשות לייבוא'; status.style.color = 'var(--yellow)'; }
+      return;
+    }
+    var ok = 0, failed = 0;
+    for (var i=0;i<candidates.length;i++) {
+      var body = signalExecutionBackfill(candidates[i]);
+      if (!isFinite(body.SignalID)) delete body.SignalID;
+      if (body.EntryPrice == null) delete body.EntryPrice;
+      if (body.ExitPrice == null) delete body.ExitPrice;
+      try {
+        await saveTradeExecutionToSharePoint(body);
+        ok++;
+      } catch(e) {
+        console.warn('Execution backfill failed:', e.message);
+        failed++;
+      }
+      if (status) status.textContent = 'ייבוא: ' + ok + '/' + candidates.length;
+    }
+    allExecutions = await loadTradeExecutionsFromSharePoint(true);
+    renderTradesDashboard(allSignals);
+    if (status) { status.textContent = failed ? ('יובאו ' + ok + ', נכשלו ' + failed) : ('יובאו ' + ok + ' עסקאות'); status.style.color = failed ? 'var(--yellow)' : 'var(--green)'; }
+    if (typeof showToast === 'function') showToast({type:failed?'warn':'success', title:'ייבוא עסקאות הסתיים', message:'יובאו ' + ok + ' רשומות ל-TradeExecutions'});
+  } catch(e) {
+    if (status) { status.textContent = 'שגיאה: ' + e.message; status.style.color = 'var(--red)'; }
+    if (typeof showToast === 'function') showToast({type:'error', title:'ייבוא נכשל', message:e.message});
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'ייבא עסקאות קודמות'; }
+  }
 }
 
 function aiPerfSet(id, text, color) {
