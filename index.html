@@ -1459,6 +1459,8 @@ hr{border:none;height:1px;background:var(--border);margin:var(--sp-4) 0}
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
               <button onclick="backfillTradeExecutionsFromSignals()" id="backfillExecBtn" class="quick-btn" style="font-size:10px">ייבא עסקאות קודמות</button>
+              <button onclick="openTradovateCsvImport()" id="tradovateCsvBtn" class="quick-btn" style="font-size:10px;color:var(--green)">ייבא CSV Tradovate</button>
+              <input id="tradovateCsvInput" type="file" accept=".csv,text/csv" style="display:none" onchange="handleTradovateCsvFile(this.files && this.files[0])">
               <span id="backfillExecStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span>
             </div>
           </div>
@@ -2273,7 +2275,7 @@ function showPopup(item) {
   document.getElementById('overlay').classList.add('show');
 }
 
-var allSignals = [], allExecutions = [], dirChart = null;
+var allSignals = [], allExecutions = [], visibleSignals = [], visibleExecutions = [], dirChart = null;
 var verdictFilter = null;
 var dirFilter = null;
 
@@ -2336,19 +2338,36 @@ function setDirFilter(d) {
   applyFilter();
 }
 
-function applyFilter() {
-  var dateVal = document.getElementById('dateFilter').value;
-  var filtered = allSignals;
-  // Date filter
-  if (dateVal) {
-    var isRange = document.getElementById('btnWeek').classList.contains('active');
-    filtered = filtered.filter(function(it) {
-      if (!it.SignalTime) return false;
-      var d = new Date(it.SignalTime);
-      var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-      return isRange ? ds >= dateVal : ds === dateVal;
-    });
+function itemDateKey(item, fields) {
+  fields = fields || ['SignalTime'];
+  for (var i=0;i<fields.length;i++) {
+    var raw = item && item[fields[i]];
+    if (!raw) continue;
+    var d = new Date(raw);
+    if (isNaN(d.getTime())) continue;
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   }
+  return '';
+}
+
+function filterBySelectedDate(items, fields) {
+  var dateVal = document.getElementById('dateFilter').value;
+  if (!dateVal) return (items || []).slice();
+  var isRange = document.getElementById('btnWeek').classList.contains('active');
+  return (items || []).filter(function(it) {
+    var ds = itemDateKey(it, fields);
+    if (!ds) return false;
+    return isRange ? ds >= dateVal : ds === dateVal;
+  });
+}
+
+function currentVisibleSignals() {
+  return Array.isArray(visibleSignals) ? visibleSignals : filterBySelectedDate(allSignals, ['SignalTime','Created','Modified']);
+}
+
+function applyFilter() {
+  var filtered = filterBySelectedDate(allSignals, ['SignalTime','Created','Modified']);
+  visibleExecutions = filterBySelectedDate(allExecutions, ['ExecutionTime','TradeTime','SignalTime','CreatedAt','Created','Modified']);
   // Verdict filter
   if (verdictFilter) {
     filtered = filtered.filter(function(it){ return (it.ClaudeVerdict||'').toLowerCase() === verdictFilter; });
@@ -2361,6 +2380,8 @@ function applyFilter() {
   renderSignals(filtered);
   updateStats(filtered);
   updateAnalysis(filtered);
+  visibleSignals = filtered;
+  if (currentTab === 'trades') renderTradesDashboard(visibleSignals);
 }
 
 function updateAnalysis(items) {
@@ -3766,7 +3787,7 @@ function switchTab(tab) {
   if (tab === 'cockpit')   renderCockpit();
   if (tab === 'backtest')  btInit();
   if (tab === 'settings')  initSettingsPanel();
-  if (tab === 'trades')    renderTradesDashboard(allSignals);
+  if (tab === 'trades')    renderTradesDashboard(currentVisibleSignals());
   if (tab === 'chat')      initChatPanel();
 }
 
@@ -4097,6 +4118,7 @@ const TRADE_EXECUTIONS_FIELDS = [
   { name:'PnLR',           type:'Number',   fieldTypeKind:9 },
   { name:'Fees',           type:'Number',   fieldTypeKind:9 },
   { name:'Source',         type:'Text',     fieldTypeKind:2 },
+  { name:'ImportKey',      type:'Text',     fieldTypeKind:2 },
   { name:'Notes',          type:'Note',     fieldTypeKind:3 },
   { name:'CreatedAt',      type:'DateTime', fieldTypeKind:4 }
 ];
@@ -4409,7 +4431,7 @@ async function persistOpinion(sig, stage, opinion, rawByProvider) {
       if (typeof showToast === 'function') showToast({type:'warn', title:'AI נשמר מקומית בלבד', message:'שמירה ל-SharePoint נכשלה: ' + failed[0].reason.message});
     } else if (jobs.length) {
       if (typeof showToast === 'function') showToast({type:'success', title:'AI opinion נשמר ל-SharePoint', duration:2500});
-      loadAITradeOpinionsFromSharePoint(true).then(function(){ if (currentTab === 'trades') renderTradesDashboard(allSignals); });
+      loadAITradeOpinionsFromSharePoint(true).then(function(){ if (currentTab === 'trades') applyFilter(); });
     }
   });
   postAIEvent('ai_opinion_saved', { signal: compactSignalForEvent(sig), stage: stage, opinion: opinion });
@@ -4551,7 +4573,7 @@ function setTradeDataMode(mode) {
   ['trModeSignals','trModeActual'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
   var btn=document.getElementById(tradeDataMode === 'actual' ? 'trModeActual' : 'trModeSignals');
   if (btn) btn.classList.add('active');
-  renderTradesDashboard(allSignals);
+  renderTradesDashboard(currentVisibleSignals());
 }
 
 function setTradeFilter(f) {
@@ -4561,7 +4583,7 @@ function setTradeFilter(f) {
   });
   var btnId = !f?'trAll':f==='win'?'trWin':f==='loss'?'trLoss':f==='pending'?'trPend':f==='long'?'trLong2':f==='short'?'trShort2':f==='agree'?'trAgree':'trDisagree';
   var btn=document.getElementById(btnId); if(btn) btn.classList.add('active');
-  renderTradesDashboard(allSignals);
+  renderTradesDashboard(currentVisibleSignals());
 }
 
 function localDateKey(ts) {
@@ -4640,6 +4662,7 @@ function signalExitPriceForResult(sig, result) {
 
 function signalExecutionBackfill(sig) {
   var result = String(sig.Result || '').toUpperCase();
+  var importKey = 'signal-backfill:' + sigKey(sig);
   var entry = parseFloat(sig.Entry || sig.EntryPrice || 0) || null;
   var exit = signalExitPriceForResult(sig, result);
   var dir = String(sig.Direction || '').toUpperCase();
@@ -4669,9 +4692,21 @@ function signalExecutionBackfill(sig) {
     PnLR: parseFloat(rr.toFixed(2)),
     Fees: 0,
     Source: 'signal-backfill',
-    Notes: 'Backfilled from TradingPredictions. Not confirmed broker execution.',
+    ImportKey: importKey,
+    Notes: importKey + ' | Backfilled from TradingPredictions. Not confirmed broker execution.',
     CreatedAt: new Date().toISOString()
   };
+}
+
+function tradeExecutionImportKey(ex) {
+  if (!ex) return '';
+  var direct = String(ex.ImportKey || '').trim();
+  if (direct) return direct;
+  var notes = String(ex.Notes || '');
+  var m = notes.match(/(?:tradovate(?:-open)?|signal-backfill):[^|]+/);
+  if (m) return m[0].trim();
+  if (ex.SignalID != null && String(ex.Source || '').indexOf('signal-backfill') >= 0) return 'signal-backfill:' + parseInt(ex.SignalID, 10);
+  return '';
 }
 
 async function backfillTradeExecutionsFromSignals() {
@@ -4684,12 +4719,14 @@ async function backfillTradeExecutionsFromSignals() {
     var existing = await loadTradeExecutionsFromSharePoint(true);
     var seen = {};
     (existing || []).forEach(function(ex){
-      if (ex.SignalID != null) seen[String(parseInt(ex.SignalID, 10))] = true;
+      var importKey = tradeExecutionImportKey(ex);
+      if (importKey) seen[importKey] = true;
+      if (ex.SignalID != null) seen['signal-backfill:' + parseInt(ex.SignalID, 10)] = true;
     });
     var candidates = (allSignals || []).filter(function(sig){
       var v = String(sig.ClaudeVerdict || '').toUpperCase();
       var r = String(sig.Result || '').toUpperCase();
-      var id = String(parseInt(sigKey(sig), 10));
+      var id = 'signal-backfill:' + parseInt(sigKey(sig), 10);
       return v === 'TAKE' && (isWin(r) || isLoss(r) || r === 'BE') && !seen[id];
     });
     if (!candidates.length) {
@@ -4712,7 +4749,7 @@ async function backfillTradeExecutionsFromSignals() {
       if (status) status.textContent = 'ייבוא: ' + ok + '/' + candidates.length;
     }
     allExecutions = await loadTradeExecutionsFromSharePoint(true);
-    renderTradesDashboard(allSignals);
+    applyFilter();
     if (status) { status.textContent = failed ? ('יובאו ' + ok + ', נכשלו ' + failed) : ('יובאו ' + ok + ' עסקאות'); status.style.color = failed ? 'var(--yellow)' : 'var(--green)'; }
     if (typeof showToast === 'function') showToast({type:failed?'warn':'success', title:'ייבוא עסקאות הסתיים', message:'יובאו ' + ok + ' רשומות ל-TradeExecutions'});
   } catch(e) {
@@ -4720,6 +4757,196 @@ async function backfillTradeExecutionsFromSignals() {
     if (typeof showToast === 'function') showToast({type:'error', title:'ייבוא נכשל', message:e.message});
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'ייבא עסקאות קודמות'; }
+  }
+}
+
+function openTradovateCsvImport() {
+  var input = document.getElementById('tradovateCsvInput');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+
+function parseCsvRows(text) {
+  var rows = [], row = [], cur = '', inQuotes = false;
+  text = String(text || '').replace(/^\uFEFF/, '');
+  for (var i=0;i<text.length;i++) {
+    var ch = text[i], next = text[i+1];
+    if (ch === '"') {
+      if (inQuotes && next === '"') { cur += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      row.push(cur); cur = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cur);
+      if (row.some(function(v){ return String(v).trim() !== ''; })) rows.push(row);
+      row = []; cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  row.push(cur);
+  if (row.some(function(v){ return String(v).trim() !== ''; })) rows.push(row);
+  if (!rows.length) return [];
+  var headers = rows.shift().map(function(h){ return String(h || '').trim(); });
+  return rows.map(function(r){
+    var obj = {};
+    headers.forEach(function(h, idx){ obj[h] = r[idx] == null ? '' : r[idx]; });
+    return obj;
+  });
+}
+
+function parseTradovateFill(row) {
+  var title = String(row.Title || row.title || '');
+  var text = String(row.Text || row.text || '');
+  if (!/executed/i.test(title) || !/\b(Buy|Sell)\b/i.test(text)) return null;
+  var m = text.replace(/,/g, '').match(/\b(Buy|Sell)\s+(\d+(?:\.\d+)?)\s+at\s+([0-9]+(?:\.[0-9]+)?)/i);
+  if (!m) return null;
+  var idMatch = title.match(/\(([^)]+)\)/);
+  var time = row.Time || row.time || row.Date || row.date || '';
+  var d = new Date(String(time).replace(' ', 'T'));
+  if (isNaN(d.getTime())) d = new Date(time);
+  return {
+    symbol: String(row.Symbol || row.symbol || 'MNQ').trim(),
+    time: isNaN(d.getTime()) ? String(time) : d.toISOString(),
+    title: title,
+    orderId: idMatch ? idMatch[1].replace(/\D/g, '') : '',
+    side: m[1].toUpperCase(),
+    qty: parseFloat(m[2]),
+    price: parseFloat(m[3]),
+    isPartial: /partially executed/i.test(title)
+  };
+}
+
+function tradovateDedupFills(fills) {
+  var grouped = {};
+  fills.forEach(function(f){
+    var key = [f.orderId || f.title, f.side, f.price].join('|');
+    var prev = grouped[key];
+    if (!prev || f.qty >= prev.qty || new Date(f.time) > new Date(prev.time)) grouped[key] = f;
+  });
+  return Object.keys(grouped).map(function(k){ return grouped[k]; }).sort(function(a,b){ return new Date(a.time) - new Date(b.time); });
+}
+
+function buildTradesFromTradovateFills(fills) {
+  var lots = [], trades = [];
+  fills.forEach(function(f){
+    var fillSide = f.side === 'BUY' ? 1 : -1;
+    var remaining = f.qty;
+    while (remaining > 0 && lots.length && lots[0].side !== fillSide) {
+      var lot = lots[0];
+      var q = Math.min(remaining, lot.qty);
+      var direction = lot.side === 1 ? 'LONG' : 'SHORT';
+      var points = direction === 'LONG' ? f.price - lot.price : lot.price - f.price;
+      var dollars = points * 2 * q;
+      var key = 'tradovate:' + (lot.orderId || 'entry') + ':' + (f.orderId || 'exit') + ':' + lot.time + ':' + f.time + ':' + q;
+      trades.push({
+        Title: 'Tradovate ' + direction + ' ' + f.symbol + ' ' + f.time,
+        ExecutionTime: f.time,
+        Ticker: f.symbol || lot.symbol || 'MNQ',
+        Direction: direction,
+        EntryPrice: lot.price,
+        ExitPrice: f.price,
+        Quantity: q,
+        Contracts: q,
+        Result: dollars > 0 ? 'WIN' : dollars < 0 ? 'LOSS' : 'BE',
+        PnLPoints: parseFloat(points.toFixed(2)),
+        PnLDollars: parseFloat(dollars.toFixed(2)),
+        PnLR: parseFloat((dollars > 0 ? Math.max(points / 10, 0.01) : dollars < 0 ? -1 : 0).toFixed(2)),
+        Fees: 0,
+        Source: 'tradovate-csv',
+        ImportKey: key,
+        Notes: key + ' | entryOrder=' + (lot.orderId || '') + ' | exitOrder=' + (f.orderId || '')
+      });
+      lot.qty -= q;
+      remaining -= q;
+      if (lot.qty <= 0.000001) lots.shift();
+    }
+    if (remaining > 0) {
+      lots.push({
+        side: fillSide,
+        qty: remaining,
+        price: f.price,
+        time: f.time,
+        symbol: f.symbol,
+        orderId: f.orderId
+      });
+    }
+  });
+  lots.forEach(function(lot){
+    var direction = lot.side === 1 ? 'LONG' : 'SHORT';
+    trades.push({
+      Title: 'Tradovate OPEN ' + direction + ' ' + lot.symbol + ' ' + lot.time,
+      ExecutionTime: lot.time,
+      Ticker: lot.symbol || 'MNQ',
+      Direction: direction,
+      EntryPrice: lot.price,
+      Quantity: lot.qty,
+      Contracts: lot.qty,
+      Result: 'PENDING',
+      PnLPoints: 0,
+      PnLDollars: 0,
+      PnLR: 0,
+      Fees: 0,
+      Source: 'tradovate-csv-open',
+      ImportKey: 'tradovate-open:' + (lot.orderId || 'entry') + ':' + lot.time + ':' + lot.qty,
+      Notes: 'tradovate-open:' + (lot.orderId || 'entry') + ':' + lot.time + ':' + lot.qty + ' | unmatched open fill'
+    });
+  });
+  return trades;
+}
+
+async function handleTradovateCsvFile(file) {
+  if (!file) return;
+  var btn = document.getElementById('tradovateCsvBtn');
+  var status = document.getElementById('backfillExecStatus');
+  if (btn) { btn.disabled = true; btn.textContent = 'קורא CSV...'; }
+  if (status) { status.textContent = 'קורא קובץ...'; status.style.color = 'var(--muted)'; }
+  try {
+    var text = await file.text();
+    var rows = parseCsvRows(text);
+    var fills = tradovateDedupFills(rows.map(parseTradovateFill).filter(Boolean));
+    var trades = buildTradesFromTradovateFills(fills);
+    if (!trades.length) {
+      if (status) { status.textContent = 'לא נמצאו עסקאות סגורות ב-CSV'; status.style.color = 'var(--yellow)'; }
+      return;
+    }
+    await ensureAISharePointLists(false, false);
+    var existing = await loadTradeExecutionsFromSharePoint(true);
+    var seen = {};
+    (existing || []).forEach(function(ex){
+      var key = tradeExecutionImportKey(ex);
+      if (key) seen[key] = true;
+    });
+    var ok = 0, dup = 0, failed = 0;
+    for (var i=0;i<trades.length;i++) {
+      var noteKey = tradeExecutionImportKey(trades[i]);
+      if (!noteKey) noteKey = String(trades[i].Notes || trades[i].Title || '');
+      if (seen[noteKey]) { dup++; continue; }
+      try {
+        await saveTradeExecutionToSharePoint(trades[i]);
+        seen[noteKey] = true;
+        ok++;
+      } catch(e) {
+        console.warn('Tradovate CSV import failed:', e.message);
+        failed++;
+      }
+      if (status) status.textContent = 'ייבוא CSV: ' + ok + '/' + trades.length;
+    }
+    allExecutions = await loadTradeExecutionsFromSharePoint(true);
+    applyFilter();
+    if (status) {
+      status.textContent = 'CSV: יובאו ' + ok + ', כפולים ' + dup + (failed ? ', נכשלו ' + failed : '');
+      status.style.color = failed ? 'var(--yellow)' : 'var(--green)';
+    }
+    if (typeof showToast === 'function') showToast({type:failed?'warn':'success', title:'ייבוא Tradovate הסתיים', message:'fills: ' + fills.length + ' · עסקאות: ' + trades.length + ' · יובאו: ' + ok});
+  } catch(e) {
+    if (status) { status.textContent = 'שגיאה: ' + e.message; status.style.color = 'var(--red)'; }
+    if (typeof showToast === 'function') showToast({type:'error', title:'ייבוא CSV נכשל', message:e.message});
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'ייבא CSV Tradovate'; }
   }
 }
 
@@ -5088,9 +5315,10 @@ function renderTradesDashboard(items) {
 
   var closed=tradeItems.filter(function(it){var r=effResult(it);return isWin(r)||isLoss(r);});
   closed.forEach(function(it){ it._effResult = effResult(it); });
-  renderPnlCompare(tradeItems, closed, allExecutions || []);
+  var scopedExecutions = visibleExecutions || filterBySelectedDate(allExecutions, ['ExecutionTime','TradeTime','SignalTime','CreatedAt','Created','Modified']);
+  renderPnlCompare(tradeItems, closed, scopedExecutions || []);
   if (tradeDataMode === 'actual') {
-    renderActualExecutionsDashboard(allExecutions || []);
+    renderActualExecutionsDashboard(scopedExecutions || []);
     return;
   }
   var wins=tradeItems.filter(function(it){return isWin(effResult(it));});
